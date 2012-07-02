@@ -1,0 +1,44 @@
+# 集群配置.需要将本机的内网地址也配置上
+host_alias:
+    cs1: "192.168.1.215:9500"
+    cs2: "192.168.1.216:9500"
+cluster:
+      name: search_system
+      hosts: [cs1,cs2]
+
+#host:
+#   local: cs1
+
+# 单位:秒
+index:
+   setting:
+     refresh_interval: 10000000
+     refresh_delay: 0
+
+cache:
+    enable: true
+
+redis:
+    host: 192.168.1.216
+    port: 6379
+#这个是控制索引模式的
+#master: true
+search:
+    setting:
+       fetch_remote_time_out: 2
+    deduplicate: [blog]
+    total_fetch_size: 150
+    persist: mongo
+
+datasources:
+    mysql:
+       host: 127.0.0.1
+       port: 3306
+       database: csdn_search_client
+       username: root
+       password: csdn.net
+
+mongo:
+   host: 192.168.1.220
+   port: 27017
+   database: csdn_data_center

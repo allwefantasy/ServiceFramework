@@ -1,0 +1,23 @@
+datasources:
+    mysql:
+       host: 127.0.0.1
+       port: 3306
+       database: wow
+       username: root
+       password: csdn.net
+    mongodb:
+       host: 127.0.0.1
+       port: 27017
+       database: csdn_data_center
+    redis:
+        host: 127.0.0.1
+        port: 6379
+
+application:
+    controller: com.allwefantasy.controller
+    model:      com.allwefantasy.model
+    service:    com.allwefantasy.service
+    util:       com.allwefantasy.util
+
+http:
+    port: 9400
