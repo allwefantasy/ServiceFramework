@@ -10,6 +10,7 @@ import net.csdn.exception.RecordNotFoundException;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.support.HttpStatus;
 import net.sf.json.JSONException;
+import net.sf.json.xml.XMLSerializer;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -65,16 +66,33 @@ public class HttpServer {
                 private String content;
                 private byte[] contentByte;
                 private int status = HttpStatus.HttpStatusOK;
+                private String content_type = "application/json; charset=UTF-8";
 
                 public void write(String content) {
                     this.content = content;
                 }
 
                 @Override
+                public void write(String content, ViewType viewType) {
+                    if (viewType == ViewType.xml) {
+                        content_type = "application/xml; charset=UTF-8";
+                    }
+                    this.content = content;
+                }
+
                 public void write(int httpStatus, String content) {
                     this.content = content;
                     this.status = httpStatus;
                 }
+
+                @Override
+                public void write(int httpStatus, String content, ViewType viewType) {
+                    if (viewType == ViewType.xml) {
+                        content_type = "application/xml; charset=UTF-8";
+                    }
+                    this.content = content;
+                }
+
 
                 public void write(byte[] contentByte) {
                     this.contentByte = contentByte;

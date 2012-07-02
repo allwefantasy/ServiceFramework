@@ -1,4 +1,4 @@
-package com.allwefantasy.model;
+package com.example.model;
 
 import net.csdn.BaseServiceWithIocTest;
 import net.csdn.jpa.JPA;

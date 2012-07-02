@@ -6,9 +6,14 @@ package net.csdn.modules.http;
  * Time: 下午10:27
  */
 public interface RestResponse {
+
     public void write(String content);
 
+    public void write(String content, ViewType viewType);
+
     public void write(int httpStatus, String content);
+
+    public void write(int httpStatus, String content, ViewType viewType);
 
     public void write(byte[] content);
 

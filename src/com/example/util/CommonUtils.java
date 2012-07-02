@@ -1,4 +1,4 @@
-package com.allwefantasy.util;
+package com.example.util;
 
 import net.csdn.annotation.Util;
 

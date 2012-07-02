@@ -1,6 +1,6 @@
-package com.allwefantasy.service.hello;
+package com.example.service.hello;
 
-import com.allwefantasy.service.hello.impl.CoolHelloService;
+import com.example.service.hello.impl.CoolHelloService;
 import net.csdn.annotation.Service;
 
 /**

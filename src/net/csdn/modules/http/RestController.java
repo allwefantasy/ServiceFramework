@@ -1,7 +1,6 @@
 package net.csdn.modules.http;
 
 import net.csdn.ServiceFramwork;
-import net.csdn.bootstrap.Bootstrap;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
@@ -23,14 +22,14 @@ public class RestController {
 
     private CSLogger logger = Loggers.getLogger(getClass());
 
-    private final PathTrie<Tuple<Class<BaseRestHandler>, Method>> getHandlers = new PathTrie<Tuple<Class<BaseRestHandler>, Method>>();
-    private final PathTrie<Tuple<Class<BaseRestHandler>, Method>> postHandlers = new PathTrie<Tuple<Class<BaseRestHandler>, Method>>();
-    private final PathTrie<Tuple<Class<BaseRestHandler>, Method>> putHandlers = new PathTrie<Tuple<Class<BaseRestHandler>, Method>>();
-    private final PathTrie<Tuple<Class<BaseRestHandler>, Method>> deleteHandlers = new PathTrie<Tuple<Class<BaseRestHandler>, Method>>();
-    private final PathTrie<Tuple<Class<BaseRestHandler>, Method>> headHandlers = new PathTrie<Tuple<Class<BaseRestHandler>, Method>>();
-    private final PathTrie<Tuple<Class<BaseRestHandler>, Method>> optionsHandlers = new PathTrie<Tuple<Class<BaseRestHandler>, Method>>();
+    private final PathTrie<Tuple<Class<ApplicationController>, Method>> getHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
+    private final PathTrie<Tuple<Class<ApplicationController>, Method>> postHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
+    private final PathTrie<Tuple<Class<ApplicationController>, Method>> putHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
+    private final PathTrie<Tuple<Class<ApplicationController>, Method>> deleteHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
+    private final PathTrie<Tuple<Class<ApplicationController>, Method>> headHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
+    private final PathTrie<Tuple<Class<ApplicationController>, Method>> optionsHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
 
-    public void registerHandler(RestRequest.Method method, String path, Tuple<Class<BaseRestHandler>, Method> handler) {
+    public void registerHandler(RestRequest.Method method, String path, Tuple<Class<ApplicationController>, Method> handler) {
         switch (method) {
             case GET:
                 getHandlers.insert(path, handler);
@@ -57,23 +56,23 @@ public class RestController {
 
 
     public void dispatchRequest(final RestRequest request, RestResponse restResponse) throws Exception {
-        final Tuple<Class<BaseRestHandler>, Method> handlerKey = getHandler(request);
+        final Tuple<Class<ApplicationController>, Method> handlerKey = getHandler(request);
         if (handlerKey == null) {
             throw new RecordNotFoundException(format("你请求的URL地址[{}]不存在", request.rawPath().toString()));
         }
-        BaseRestHandler baseRestHandler = ServiceFramwork.injector.getInstance(handlerKey.v1());
+        ApplicationController applicationController = ServiceFramwork.injector.getInstance(handlerKey.v1());
 
-        Field field = BaseRestHandler.class.getDeclaredField("request");
+        Field field = ApplicationController.class.getDeclaredField("request");
         field.setAccessible(true);
-        field.set(baseRestHandler, request);
-        field = BaseRestHandler.class.getDeclaredField("restResponse");
+        field.set(applicationController, request);
+        field = ApplicationController.class.getDeclaredField("restResponse");
         field.setAccessible(true);
-        field.set(baseRestHandler, restResponse);
-        handlerKey.v2().invoke(baseRestHandler);
+        field.set(applicationController, restResponse);
+        handlerKey.v2().invoke(applicationController);
 
     }
 
-    private Tuple<Class<BaseRestHandler>, Method> getHandler(RestRequest request) {
+    private Tuple<Class<ApplicationController>, Method> getHandler(RestRequest request) {
         String path = getPath(request);
         RestRequest.Method method = request.method();
         if (method == RestRequest.Method.GET) {
@@ -94,9 +93,6 @@ public class RestController {
     }
 
     private String getPath(RestRequest request) {
-        // we use rawPath since we don't want to decode it while processing the path resolution
-        // so we can handle things like:
-        // my_index/my_type/http%3A%2F%2Fwww.google.com
         return request.rawPath();
     }
 

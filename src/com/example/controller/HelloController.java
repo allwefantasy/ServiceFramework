@@ -1,15 +1,17 @@
-package com.allwefantasy.controller;
+package com.example.controller;
 
-import com.allwefantasy.model.Blog;
-import com.allwefantasy.service.hello.HelloService;
+import com.example.model.Blog;
+import com.example.service.hello.HelloService;
 import com.google.inject.Inject;
 import net.csdn.annotation.At;
 import net.csdn.exception.RecordNotFoundException;
-import net.csdn.modules.http.BaseRestHandler;
+import net.csdn.modules.http.ApplicationController;
+import net.csdn.modules.http.ViewType;
 
 import java.util.List;
 
 import static net.csdn.common.collections.WowCollections.newHashMap;
+import static net.csdn.common.logging.support.MessageFormat.format;
 import static net.csdn.modules.http.RestRequest.Method.GET;
 import static net.csdn.modules.http.RestRequest.Method.POST;
 
@@ -18,7 +20,7 @@ import static net.csdn.modules.http.RestRequest.Method.POST;
  * Date: 12-7-1
  * Time: 下午8:16
  */
-public class RestHelloController extends BaseRestHandler {
+public class HelloController extends ApplicationController {
 
     @Inject
     HelloService helloService;
@@ -35,11 +37,11 @@ public class RestHelloController extends BaseRestHandler {
     @At(path = {"/blog"}, types = {POST})
     public void saveJson() {
 
-        Blog blog = Blog.create(contentAsJSON());
+        Blog blog = Blog.create(paramAsJSON());
 
         blog.save();
 
-        render(OK, "博客创建成功");
+        render(format(OK, "博客创建成功"));
     }
 
     //处理普通表单请求请求
@@ -50,14 +52,14 @@ public class RestHelloController extends BaseRestHandler {
 
         blog.save();
 
-        render(OK, "博客创建成功");
+        render(format(OK, "博客创建成功"));
     }
 
     @At(path = {"/blog/{id}"}, types = {GET})
     public void find() {
-        Blog blog = Blog.findById(param("id"));
+        Blog blog = Blog.findById(paramAsInt("id"));
         if (blog == null) throw new RecordNotFoundException("没有找到ID为[" + param("id") + "]的博客");
-        render(blog);
+        render(blog, ViewType.xml);
     }
 
     @At(path = {"/blog"}, types = {GET})

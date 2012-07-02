@@ -1,6 +1,6 @@
-package com.allwefantasy.service.hello.impl;
+package com.example.service.hello.impl;
 
-import com.allwefantasy.service.hello.HelloService;
+import com.example.service.hello.HelloService;
 
 /**
  * User: WilliamZhu

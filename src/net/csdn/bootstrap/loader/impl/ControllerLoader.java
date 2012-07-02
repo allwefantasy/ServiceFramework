@@ -9,7 +9,7 @@ import net.csdn.annotation.At;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.settings.Settings;
-import net.csdn.modules.http.BaseRestHandler;
+import net.csdn.modules.http.ApplicationController;
 import net.csdn.modules.http.RestController;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.scan.ScanService;
@@ -63,7 +63,7 @@ public class ControllerLoader implements Loader {
                         RestRequest.Method[] httpMethods = at.types();
                         RestController restController = ServiceFramwork.injector.getInstance(RestController.class);
                         for (RestRequest.Method httpMethod : httpMethods) {
-                            Tuple<Class<BaseRestHandler>, Method> tuple = new Tuple<Class<BaseRestHandler>, Method>(clzz, method);
+                            Tuple<Class<ApplicationController>, Method> tuple = new Tuple<Class<ApplicationController>, Method>(clzz, method);
                             restController.registerHandler(httpMethod, url, tuple);
                         }
                         bind(clzz);

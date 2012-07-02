@@ -14,10 +14,10 @@ datasources:
         port: 6379
 
 application:
-    controller: com.allwefantasy.controller
-    model:      com.allwefantasy.model
-    service:    com.allwefantasy.service
-    util:       com.allwefantasy.util
+    controller: com.example.controller
+    model:      com.example.model
+    service:    com.example.service
+    util:       com.example.util
 
 http:
     port: 9400
