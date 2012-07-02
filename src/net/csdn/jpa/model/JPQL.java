@@ -2,7 +2,6 @@ package net.csdn.jpa.model;
 
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
-import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.context.JPAContext;
 import net.csdn.jpa.model.GenericModel.JPAQuery;
 import org.apache.commons.beanutils.BeanUtils;

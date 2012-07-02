@@ -1,7 +1,5 @@
 package net.csdn;
 
-import net.csdn.BaseServiceWithIocTest;
-
 /**
  * User: WilliamZhu
  * Date: 12-6-20

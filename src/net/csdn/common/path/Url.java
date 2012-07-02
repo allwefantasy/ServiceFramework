@@ -2,7 +2,6 @@ package net.csdn.common.path;
 
 import com.google.common.collect.Lists;
 import net.csdn.common.collect.Tuple;
-import net.csdn.modules.gateway.Host;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -49,25 +48,6 @@ public class Url {
             urls.add(url);
         }
         return urls;
-    }
-
-    public static List<Url> urls(List<Host> hosts, String path, String... queries) {
-        String[] strHosts = new String[hosts.size()];
-        int count = 0;
-        for (Host host : hosts) {
-            strHosts[count++] = host.hostAndPort();
-        }
-
-        return urls(strHosts, path, queries);
-    }
-
-    public static List<Url> urls(List<Host> hosts, String path, Map params, String... queries) {
-        String[] strHosts = new String[hosts.size()];
-        int count = 0;
-        for (Host host : hosts) {
-            strHosts[count++] = host.hostAndPort();
-        }
-        return urls(strHosts, path, params, queries);
     }
 
     public static List<Url> urls(String[] hosts, String path, Map params, String... queries) {

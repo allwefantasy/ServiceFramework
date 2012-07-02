@@ -1,7 +1,5 @@
 package net.csdn.jpa.context;
 
-import net.csdn.jpa.model.JPQL;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;

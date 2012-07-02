@@ -1,57 +1,23 @@
-# 集群配置.需要将本机的内网地址也配置上
-
-#host_alias:
-#    cs1: "192.168.11.5:9400"
-#    cs2: "192.168.11.5:9500"
-#cluster:
-#      name: jack
-#      hosts: [cs1,cs2]
-
-#host:
-#   local: cs1
-
-# 单位:秒
-index:
-   setting:
-     refresh_interval: 10000000
-     refresh_delay: 0
-#这个是控制索引模式的。如果激活此选项，需要在其他服务器上配置激活slave配置
-#master: true
-#如果集群中有某台服务器激活了master: true。那么所有的其他服务器需要激活该选项
-#slave: true
-search:
-    setting:
-       fetch_remote_time_out: 2
-    deduplicate: [blog]
-    total_fetch_size: 150
-    persist: mongo
-
-cache:
-    enable: true
-
-redis:
-    host: 127.0.0.1
-    port: 6379
-
 datasources:
     mysql:
-       host: 192.168.6.35
+       host: 127.0.0.1
        port: 3306
-       database: csdn_search_client
+       database: wow
        username: root
        password: csdn.net
+    mongodb:
+       host: 127.0.0.1
+       port: 27017
+       database: csdn_data_center
+    redis:
+        host: 127.0.0.1
+        port: 6379
 
-mongo:
-   host: 127.0.0.1
-   port: 27017
-   database: csdn_data_center
+application:
+    controller: com.allwefantasy.controller
+    model:      com.allwefantasy.model
+    service:    com.allwefantasy.service
+    util:       com.allwefantasy.util
 
-
-# Path Settings
-#path:
-#   conf: /home/william/workspace/test/conf
-#   data: /home/william/workspace/test//data
-#   work: /home/william/workspace/test//work
-#   logs: /home/william/workspace/test//logs
-#   gateway: /home/william/workspace/test/gateway
-
+http:
+    port: 9400

@@ -1,7 +1,7 @@
 package net.csdn.modules.scan;
 
 import javassist.ClassPool;
-import javassist.CtClass;
+import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.Bootstrap;
 import net.csdn.modules.scan.component.ClasspathUrlFinder;
 import net.csdn.modules.scan.component.Filter;
@@ -99,7 +99,7 @@ public class DefaultScanService implements ScanService {
     @Override
     public Class scanClass(InputStream bits, LoadClassEnhanceCallBack loadClassEnhanceCallBack) throws IOException {
         DataInputStream dstream = new DataInputStream(new BufferedInputStream(bits));
-        ClassPool cp = Bootstrap.classPool;
+        ClassPool cp = ServiceFramwork.classPool;
         try {
             try {
                 return loadClassEnhanceCallBack.loaded(cp, dstream);

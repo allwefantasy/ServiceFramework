@@ -3,7 +3,6 @@ package net.csdn.modules.threadpool;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
-import net.csdn.CsdnSearchIllegalArgumentException;
 import net.csdn.common.settings.Settings;
 import net.csdn.common.unit.TimeValue;
 
@@ -70,7 +69,7 @@ public class DefaultThreadPoolService implements ThreadPoolService {
     public Executor executor(String name) {
         Executor executor = executors.get(name);
         if (executor == null) {
-            throw new CsdnSearchIllegalArgumentException("No executor found for [" + name + "]");
+            throw new IllegalArgumentException("No executor found for [" + name + "]");
         }
         return executor;
     }

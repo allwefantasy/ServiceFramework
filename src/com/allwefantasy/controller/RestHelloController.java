@@ -4,15 +4,14 @@ import com.allwefantasy.model.Blog;
 import com.allwefantasy.service.hello.HelloService;
 import com.google.inject.Inject;
 import net.csdn.annotation.At;
-import net.csdn.annotation.Service;
 import net.csdn.exception.RecordNotFoundException;
 import net.csdn.modules.http.BaseRestHandler;
-
-import static net.csdn.modules.http.RestRequest.Method.*;
 
 import java.util.List;
 
 import static net.csdn.common.collections.WowCollections.newHashMap;
+import static net.csdn.modules.http.RestRequest.Method.GET;
+import static net.csdn.modules.http.RestRequest.Method.POST;
 
 /**
  * User: WilliamZhu

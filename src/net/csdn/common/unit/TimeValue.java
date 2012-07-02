@@ -1,6 +1,7 @@
 package net.csdn.common.unit;
 
 import net.csdn.common.Strings;
+import net.csdn.exception.ParseException;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
 import org.joda.time.format.PeriodFormat;
@@ -228,7 +229,7 @@ public class TimeValue implements Serializable {
             }
             return new TimeValue(millis, TimeUnit.MILLISECONDS);
         } catch (NumberFormatException e) {
-            throw new CsdnSearchParseException("Failed to parse [" + sValue + "]", e);
+            throw new ParseException("Failed to parse [" + sValue + "]", e);
         }
     }
 

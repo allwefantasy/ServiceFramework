@@ -1,21 +1,11 @@
 package com.allwefantasy.model;
 
-import javassist.ClassPool;
 import net.csdn.BaseServiceWithIocTest;
-import net.csdn.common.settings.Settings;
-import net.csdn.enhancers.Enhancer;
 import net.csdn.jpa.JPA;
-import net.csdn.jpa.context.JPAConfig;
-import net.csdn.jpa.context.JPAEnhancer;
-import net.csdn.modules.scan.DefaultScanService;
-import net.csdn.modules.scan.ScanService;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.DataInputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.newHashMap;
 
@@ -27,6 +17,7 @@ import static net.csdn.common.collections.WowCollections.newHashMap;
 public class BlogTest extends BaseServiceWithIocTest {
     @Test
     public void testName() throws Exception {
+        Blog.deleteAll();
 
         long count = Blog.count();
         Assert.assertTrue(count == 0);

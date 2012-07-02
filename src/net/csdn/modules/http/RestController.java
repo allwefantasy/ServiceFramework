@@ -1,6 +1,6 @@
 package net.csdn.modules.http;
 
-import net.csdn.CsdnSearchException;
+import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.Bootstrap;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
@@ -8,7 +8,6 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.PathTrie;
 import net.csdn.exception.ArgumentErrorException;
 import net.csdn.exception.RecordNotFoundException;
-import org.apache.commons.beanutils.BeanUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -62,7 +61,7 @@ public class RestController {
         if (handlerKey == null) {
             throw new RecordNotFoundException(format("你请求的URL地址[{}]不存在", request.rawPath().toString()));
         }
-        BaseRestHandler baseRestHandler = Bootstrap.injector.getInstance(handlerKey.v1());
+        BaseRestHandler baseRestHandler = ServiceFramwork.injector.getInstance(handlerKey.v1());
 
         Field field = BaseRestHandler.class.getDeclaredField("request");
         field.setAccessible(true);

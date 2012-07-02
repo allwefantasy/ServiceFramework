@@ -1,7 +1,6 @@
 package net.csdn.modules.transport;
 
 import com.google.inject.Inject;
-import net.csdn.CsdnSearchIllegalArgumentException;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
@@ -148,7 +147,7 @@ public class DefaultHttpTransportService implements HttpTransportService {
     }
 
 
-    private HttpRequestBase createMethod(URI uri, String jsonData, RestRequest.Method method) throws CsdnSearchIllegalArgumentException {
+    private HttpRequestBase createMethod(URI uri, String jsonData, RestRequest.Method method)  {
         HttpRequestBase httpRequestBase;
         if (method == RestRequest.Method.GET) {
             httpRequestBase = new HttpGet(uri);

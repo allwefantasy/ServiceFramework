@@ -2,6 +2,7 @@ package net.csdn.common.unit;
 
 
 import net.csdn.common.Strings;
+import net.csdn.exception.ParseException;
 
 import java.io.Serializable;
 
@@ -100,11 +101,11 @@ public class SizeValue implements Serializable {
         return Strings.format1Decimals(value, suffix);
     }
 
-    public static SizeValue parseSizeValue(String sValue) throws CsdnSearchParseException {
+    public static SizeValue parseSizeValue(String sValue) throws ParseException {
         return parseSizeValue(sValue, null);
     }
 
-    public static SizeValue parseSizeValue(String sValue, SizeValue defaultValue) throws CsdnSearchParseException {
+    public static SizeValue parseSizeValue(String sValue, SizeValue defaultValue) throws ParseException {
         if (sValue == null) {
             return defaultValue;
         }
@@ -122,7 +123,7 @@ public class SizeValue implements Serializable {
                 singles = Long.parseLong(sValue);
             }
         } catch (NumberFormatException e) {
-            throw new CsdnSearchParseException("Failed to parse [" + sValue + "]", e);
+            throw new ParseException("Failed to parse [" + sValue + "]", e);
         }
         return new SizeValue(singles, SizeUnit.SINGLE);
     }

@@ -6,17 +6,17 @@ package net.csdn.modules.cache;
  * Time: 上午7:33
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import com.google.inject.Inject;
 import net.csdn.common.settings.Settings;
-import net.csdn.common.settings.SettingsException;
+import net.csdn.exception.SettingsException;
 import net.csdn.modules.compress.gzip.GZip;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 
 public class RedisClient {

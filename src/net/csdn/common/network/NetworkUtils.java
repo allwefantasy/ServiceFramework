@@ -1,7 +1,6 @@
 package net.csdn.common.network;
 
 import com.google.common.collect.Lists;
-import net.csdn.CsdnSearchIllegalArgumentException;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 
@@ -101,7 +100,7 @@ public class NetworkUtils {
                         try {
                             return ((Integer) getIndexMethod.invoke(o1)).intValue() - ((Integer) getIndexMethod.invoke(o2)).intValue();
                         } catch (Exception e) {
-                            throw new CsdnSearchIllegalArgumentException("failed to fetch index of network interface");
+                            throw new IllegalArgumentException("failed to fetch index of network interface");
                         }
                     }
                 });

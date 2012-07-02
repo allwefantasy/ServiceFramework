@@ -2,9 +2,7 @@ package com.allwefantasy.model;
 
 import net.csdn.jpa.model.GenericModel;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.Id;
 
 /**
  * User: WilliamZhu

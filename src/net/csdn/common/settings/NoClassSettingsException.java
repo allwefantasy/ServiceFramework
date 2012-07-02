@@ -1,5 +1,7 @@
 package net.csdn.common.settings;
 
+import net.csdn.exception.SettingsException;
+
 /**
  * User: william
  * Date: 11-9-1

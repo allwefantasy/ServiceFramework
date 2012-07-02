@@ -1,6 +1,7 @@
 package net.csdn.common.unit;
 
 import net.csdn.common.Strings;
+import net.csdn.exception.ParseException;
 
 import java.io.Serializable;
 
@@ -101,11 +102,11 @@ public class ByteSizeValue implements Serializable {
         return Strings.format1Decimals(value, suffix);
     }
 
-    public static ByteSizeValue parseBytesSizeValue(String sValue) throws CsdnSearchParseException {
+    public static ByteSizeValue parseBytesSizeValue(String sValue) throws ParseException {
         return parseBytesSizeValue(sValue, null);
     }
 
-    public static ByteSizeValue parseBytesSizeValue(String sValue, ByteSizeValue defaultValue) throws CsdnSearchParseException {
+    public static ByteSizeValue parseBytesSizeValue(String sValue, ByteSizeValue defaultValue) throws ParseException {
         if (sValue == null) {
             return defaultValue;
         }
@@ -129,7 +130,7 @@ public class ByteSizeValue implements Serializable {
                 bytes = Long.parseLong(sValue);
             }
         } catch (NumberFormatException e) {
-            throw new CsdnSearchParseException("Failed to parse [" + sValue + "]", e);
+            throw new ParseException("Failed to parse [" + sValue + "]", e);
         }
         return new ByteSizeValue(bytes, ByteSizeUnit.BYTES);
     }

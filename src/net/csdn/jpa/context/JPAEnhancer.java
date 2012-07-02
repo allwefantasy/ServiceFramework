@@ -1,6 +1,5 @@
 package net.csdn.jpa.context;
 
-import com.google.inject.Inject;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
@@ -14,11 +13,9 @@ import net.csdn.enhancers.Enhancer;
 import java.io.DataInputStream;
 import java.lang.reflect.Modifier;
 import java.sql.*;
-import java.util.HashMap;
 import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.newArrayList;
-import static net.csdn.common.collections.WowCollections.newHashMap;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**

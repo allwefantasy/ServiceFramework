@@ -1,7 +1,5 @@
 package net.csdn.modules.http;
 
-import net.csdn.modules.http.support.HttpStatus;
-
 /**
  * User: WilliamZhu
  * Date: 12-6-12

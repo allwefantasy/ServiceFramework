@@ -12,6 +12,5 @@ public class TransportModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(HttpTransportService.class).to(DefaultHttpTransportService.class).in(Singleton.class);
-        bind(SearchTransportService.class).to(DefaultSearchTransportService.class).in(Singleton.class);
     }
 }

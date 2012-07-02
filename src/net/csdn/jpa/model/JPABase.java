@@ -6,7 +6,6 @@ import net.csdn.jpa.context.JPAContext;
 import org.apache.commons.beanutils.BeanUtils;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Id;
 
 /**
  * User: WilliamZhu

@@ -1,7 +1,5 @@
 package net.csdn.modules.http;
 
-import net.csdn.CsdnSearchException;
-import net.csdn.CsdnSearchIllegalArgumentException;
 import net.csdn.common.Booleans;
 import net.csdn.common.Unicode;
 import net.csdn.common.io.Streams;
@@ -47,7 +45,7 @@ public class DefaultRestRequest implements RestRequest {
         try {
             content = Streams.copyToByteArray(servletRequest.getInputStream());
         } catch (IOException e) {
-            throw new CsdnSearchException("Fail to parse request params");
+            throw new IllegalArgumentException("Fail to parse request params");
         }
         if ("application/json".equals(contentType)) return;
 
@@ -161,7 +159,7 @@ public class DefaultRestRequest implements RestRequest {
         try {
             return Float.parseFloat(sValue);
         } catch (NumberFormatException e) {
-            throw new CsdnSearchIllegalArgumentException("Failed to parse float parameter [" + key + "] with value [" + sValue + "]", e);
+            throw new IllegalArgumentException("Failed to parse float parameter [" + key + "] with value [" + sValue + "]", e);
         }
     }
 
@@ -174,7 +172,7 @@ public class DefaultRestRequest implements RestRequest {
         try {
             return Integer.parseInt(sValue);
         } catch (NumberFormatException e) {
-            throw new CsdnSearchIllegalArgumentException("Failed to parse int parameter [" + key + "] with value [" + sValue + "]", e);
+            throw new IllegalArgumentException("Failed to parse int parameter [" + key + "] with value [" + sValue + "]", e);
         }
     }
 
@@ -187,7 +185,7 @@ public class DefaultRestRequest implements RestRequest {
         try {
             return Long.parseLong(sValue);
         } catch (NumberFormatException e) {
-            throw new CsdnSearchIllegalArgumentException("Failed to parse int parameter [" + key + "] with value [" + sValue + "]", e);
+            throw new IllegalArgumentException("Failed to parse int parameter [" + key + "] with value [" + sValue + "]", e);
         }
     }
 

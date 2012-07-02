@@ -1,8 +1,12 @@
 package net.csdn.enhancers;
 
-import javassist.*;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.annotation.MemberValue;
+import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.Bootstrap;
 
 import java.io.DataInputStream;
@@ -19,17 +23,9 @@ public abstract class Enhancer {
     protected ClassPool classPool;
 
     public Enhancer() {
-        this.classPool = Bootstrap.classPool;
+        this.classPool = ServiceFramwork.classPool;
     }
 
-
-//    public Class loadClass(String className) {
-//        try {
-//            return classPool.get(className).getClass();
-//        } catch (NotFoundException e) {
-//            throw new JPAQueryException(format("无法知道className为{}的类", className), e.getCause());
-//        }
-//    }
 
     public abstract void enhanceThisClass(DataInputStream dataInputStream) throws Exception;
 

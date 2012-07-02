@@ -1,7 +1,6 @@
 package net.csdn.modules.http;
 
 import com.google.inject.Inject;
-import net.csdn.CsdnSearchException;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
@@ -10,7 +9,6 @@ import net.csdn.exception.RecordExistedException;
 import net.csdn.exception.RecordNotFoundException;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.support.HttpStatus;
-import net.csdn.modules.gateway.GatewayData;
 import net.sf.json.JSONException;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;

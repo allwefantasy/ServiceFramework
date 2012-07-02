@@ -3,9 +3,7 @@ package net.csdn.modules.persist.mongodb;
 import com.google.inject.Inject;
 import com.mongodb.*;
 import net.csdn.common.settings.Settings;
-import net.csdn.common.settings.SettingsException;
 import net.csdn.modules.cache.RedisClient;
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.net.UnknownHostException;

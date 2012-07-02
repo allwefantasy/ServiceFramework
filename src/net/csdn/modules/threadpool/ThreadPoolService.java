@@ -4,8 +4,6 @@ package net.csdn.modules.threadpool;/**
  * Time: 上午11:18
  */
 
-import net.csdn.common.unit.TimeValue;
-
 import java.util.concurrent.Executor;
 
 public interface ThreadPoolService {

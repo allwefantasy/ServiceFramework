@@ -1,6 +1,5 @@
 package net.csdn;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 import net.csdn.bootstrap.Bootstrap;
 import org.junit.After;
@@ -24,7 +23,7 @@ public class BaseServiceWithIocTest {
         Method method = Bootstrap.class.getDeclaredMethod("configureSystem");
         method.setAccessible(true);
         method.invoke(null);
-        injector = Bootstrap.injector;
+        injector = ServiceFramwork.injector;
     }
 
     @After
