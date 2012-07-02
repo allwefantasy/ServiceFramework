@@ -127,7 +127,7 @@ public class HttpServer {
                 }
 
                 public void output(String msg) throws IOException {
-                    httpServletResponse.setContentType("application/json; charset=UTF-8");
+                    httpServletResponse.setContentType(content_type);
                     //httpServletResponse.setContentLength(msg.length());
                     PrintWriter printWriter = httpServletResponse.getWriter();
                     printWriter.write(msg);

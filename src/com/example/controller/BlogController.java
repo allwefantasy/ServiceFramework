@@ -20,7 +20,7 @@ import static net.csdn.modules.http.RestRequest.Method.POST;
  * Date: 12-7-1
  * Time: 下午8:16
  */
-public class HelloController extends ApplicationController {
+public class BlogController extends ApplicationController {
 
     @Inject
     HelloService helloService;
