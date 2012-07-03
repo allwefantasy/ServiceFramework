@@ -44,7 +44,7 @@ public class BlogController extends ApplicationController {
         render(format(OK, "博客创建成功"));
     }
 
-    //处理普通表单请求请求
+    //普通表单请求处理示例
     @At(path = {"/blog/{id}"}, types = {POST})
     public void saveForm() {
 

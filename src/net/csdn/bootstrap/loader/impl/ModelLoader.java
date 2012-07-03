@@ -4,8 +4,8 @@ import javassist.ClassPool;
 import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.settings.Settings;
-import net.csdn.enhancers.Enhancer;
-import net.csdn.jpa.context.JPAEnhancer;
+import net.csdn.enhancer.Enhancer;
+import net.csdn.jpa.enhancer.JPAEnhancer;
 import net.csdn.modules.scan.ScanService;
 
 import java.io.DataInputStream;

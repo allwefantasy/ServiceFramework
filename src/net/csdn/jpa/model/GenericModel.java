@@ -14,6 +14,9 @@ import java.util.Map;
  */
 public class GenericModel extends JPABase {
 
+
+
+
     //----------------------------------------------------------------------------------
     public static JPQL where(String cc) {
         throw new UnsupportedOperationException("ooooooops...not implemented yet....");

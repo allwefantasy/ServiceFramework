@@ -3,9 +3,18 @@ package net.csdn.jpa.model;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.context.JPAContext;
+import net.csdn.validate.ValidateParse;
+import net.csdn.validate.ValidateResult;
+import net.csdn.validate.impl.PresentParse;
 import org.apache.commons.beanutils.BeanUtils;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Transient;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static net.csdn.common.collections.WowCollections.newArrayList;
 
 /**
  * User: WilliamZhu
@@ -13,6 +22,9 @@ import javax.persistence.EntityManager;
  * Time: 下午9:53
  */
 public class JPABase implements Model {
+
+    protected List validateParses = newArrayList(new PresentParse());
+
     public static JPAContext getJPAContext() {
         return getJPAConfig().getJPAContext();
     }
@@ -46,6 +58,17 @@ public class JPABase implements Model {
     public void save() {
         em().persist(this);
         em().flush();
+    }
+
+    @Transient
+    public final List<ValidateResult> validateResults = new ArrayList<ValidateResult>();
+
+    public boolean valid() {
+        for (Object validateParse : validateParses) {
+            ((ValidateParse) validateParse).parse(this, this.validateResults);
+        }
+        if (validateResults.size() > 0) return false;
+        return true;
     }
 
     public EntityManager em() {
