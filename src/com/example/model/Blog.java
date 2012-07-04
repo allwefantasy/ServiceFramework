@@ -10,6 +10,7 @@ import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.newHashMap;
 import static net.csdn.validate.ValidateHelper.*;
+import static net.csdn.validate.ValidateHelper.Format.with;
 import static net.csdn.validate.ValidateHelper.Length.*;
 import static net.csdn.validate.ValidateHelper.Numericality.greater_than;
 import static net.csdn.validate.ValidateHelper.Numericality.less_than;
@@ -36,6 +37,8 @@ public class Blog extends GenericModel {
     }
      </code>
      */
+
+
     @Validate
     private static Map $content/*需要验证的字段名 以$开始*/ =
             newHashMap(

@@ -1,3 +1,4 @@
+###############datasource config##################
 datasources:
     mysql:
        host: 127.0.0.1
@@ -13,11 +14,29 @@ datasources:
         host: 127.0.0.1
         port: 6379
 
+
+###############application config##################
 application:
     controller: com.example.controller
     model:      com.example.model
     service:    com.example.service
     util:       com.example.util
 
+
+###############http config##################
 http:
     port: 9400
+
+
+
+###############validator config##################
+#如果需要添加验证器，只要配置好类全名即可
+#替换验证器实现，则替换相应的类名即可
+#warning: 验证器需要线程安全
+
+validator:
+   format:        net.csdn.validate.impl.Format
+   numericality:  net.csdn.validate.impl.Numericality
+   presence:      net.csdn.validate.impl.Presence
+   uniqueness:    net.csdn.validate.impl.Uniqueness
+   length:        net.csdn.validate.impl.Length

@@ -17,7 +17,7 @@ import static net.csdn.common.collections.WowCollections.newHashMap;
  * Date: 12-7-4
  * Time: 上午7:10
  */
-public class UniquenessParse extends BaseValidateParse {
+public class Uniqueness extends BaseValidateParse {
     private static String notice = "{} is not uniq";
 
     @Override

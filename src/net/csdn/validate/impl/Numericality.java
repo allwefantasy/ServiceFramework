@@ -24,7 +24,7 @@ import static net.csdn.validate.ValidateHelper.message;
  * Date: 12-7-3
  * Time: 下午8:12
  */
-public class NumericalityParse extends BaseValidateParse {
+public class Numericality extends BaseValidateParse {
 
     private static String notice = "{} is not a valid numeric";
 

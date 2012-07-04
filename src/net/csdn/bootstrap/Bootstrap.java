@@ -61,6 +61,7 @@ public class Bootstrap {
         loaders.add(new ServiceLoader());
         loaders.add(new UtilLoader());
         loaders.add(new ControllerLoader());
+        loaders.add(new ValidatorLoader());
 
         for (Loader loader : loaders) {
             loader.load(tuple.v1());

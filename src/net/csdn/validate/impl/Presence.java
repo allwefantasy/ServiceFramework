@@ -19,7 +19,7 @@ import static net.csdn.validate.ValidateHelper.presence;
  * Date: 12-7-3
  * Time: 下午6:22
  */
-public class PresenceParse extends BaseValidateParse {
+public class Presence extends BaseValidateParse {
     private CSLogger logger = Loggers.getLogger(getClass());
     private static String notice = "{} should not null or empty";
 

@@ -11,6 +11,12 @@ public class ValidateHelper {
     public static String numericality = "numericality";
     public static String message = "message";
     public static String uniqueness = "uniqueness";
+    public static String format = "format";
+
+
+    public static class Format {
+        public static String with = "with";
+    }
 
     public static class Numericality {
         public static String greater_than = "greater_than";

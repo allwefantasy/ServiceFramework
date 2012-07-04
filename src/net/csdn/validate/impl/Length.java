@@ -14,7 +14,7 @@ import java.util.Map;
  * Date: 12-7-3
  * Time: 上午8:21
  */
-public class LengthParse extends BaseValidateParse {
+public class Length extends BaseValidateParse {
     private static String notice = "{} length is not allowed";
 
     @Override
