@@ -30,7 +30,7 @@ public abstract class BaseValidateParse implements ValidateParse {
     }
 
     protected ValidateResult validateResult(String msg, String targetFieldName) {
-        return new ValidateResult(msg, targetFieldName);
+        return new ValidateResult(format(msg, targetFieldName), targetFieldName);
     }
 
     protected String messageWithDefault(Map info, String message) {

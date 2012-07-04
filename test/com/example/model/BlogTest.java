@@ -36,7 +36,7 @@ public class BlogTest extends BaseServiceWithIocTest {
         Blog blog = Blog.create(newHashMap("id", 5, "content", "wow"));
         Assert.assertTrue(blog.valid() == false);
 
-        blog = Blog.create(newHashMap("id", 2, "c ontent", "wow"));
+        blog = Blog.create(newHashMap("id", 2, "content", "wow"));
         Assert.assertTrue(blog.valid() == false);
 
         blog = Blog.create(newHashMap("id", 3, "content", "wow"));
@@ -54,7 +54,7 @@ public class BlogTest extends BaseServiceWithIocTest {
         blog = Blog.create(newHashMap("id", 3, "content", "wow"));
         Assert.assertTrue(blog.valid() == false);
 
-        Assert.assertTrue(blog.validateResults.get(0).equals("content is not uniq"));
+        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("content is not uniq"));
 
         Blog.deleteAll();
 
