@@ -23,7 +23,7 @@ public class ValidatorLoader implements Loader {
         defaultMaps.put("presence", "net.csdn.validate.impl.Presence");
         defaultMaps.put("uniqueness", "net.csdn.validate.impl.Uniqueness");
         defaultMaps.put("length", "net.csdn.validate.impl.Length");
-        Map<String, String> validators = settings.getByPrefix("validator").getAsMap();
+        Map<String, String> validators = settings.getByPrefix("validator.").getAsMap();
         for (Map.Entry<String, String> entry : validators.entrySet()) {
             defaultMaps.put(entry.getKey(), entry.getValue());
         }

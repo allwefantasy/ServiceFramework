@@ -1,4 +1,4 @@
-rootLogger: INFO,file
+rootLogger: INFO,console,file
 
 logger:
    hadoo: INFO,hadoo

@@ -35,8 +35,10 @@ public class Presence extends BaseValidateParse {
                     if (value == null || ((String) value).isEmpty()) {
                         validateResultList.add(validateResult(msg, targetFieldName));
                     }
-                } else if (value == null) {
-                    validateResultList.add(validateResult(msg, targetFieldName));
+                } else {
+                    if (value == null) {
+                        validateResultList.add(validateResult(msg, targetFieldName));
+                    }
                 }
             }
         });

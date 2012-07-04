@@ -1,17 +1,21 @@
 package net.csdn.jpa.enhancer;
 
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.NotFoundException;
+import javassist.*;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
+import net.csdn.ServiceFramwork;
+import net.csdn.annotation.NotMapping;
+import net.csdn.annotation.Validate;
+import net.csdn.bootstrap.Bootstrap;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
 
 import java.lang.reflect.Modifier;
 import java.sql.*;
+import java.util.List;
 import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.newArrayList;
@@ -25,6 +29,7 @@ import static net.csdn.common.logging.support.MessageFormat.format;
 public class PropertyEnhancer implements BitEnhancer {
 
     private Settings settings;
+    private CSLogger logger = Loggers.getLogger(getClass());
 
     public PropertyEnhancer(Settings settings) {
         this.settings = settings;
@@ -55,10 +60,19 @@ public class PropertyEnhancer implements BitEnhancer {
         //连接数据库，自动获取所有信息，然后添加属性
         Connection conn = null;
         String entitySimpleName = ctClass.getSimpleName();
-        String entityName = ctClass.getName();
+        List<String> skipFields = newArrayList();
+        if (ctClass.hasAnnotation(NotMapping.class)) {
+            try {
+                NotMapping notMapping = (NotMapping) ctClass.getAnnotation(NotMapping.class);
+                for (String str : notMapping.value()) {
+                    skipFields.add(str);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
-
             Map<String, Settings> groups = settings.getGroups("datasources");
             Settings mysqlSetting = groups.get("mysql");
             String url = "jdbc:mysql://{}:{}/{}?useUnicode=true&characterEncoding=utf8";
@@ -70,6 +84,7 @@ public class PropertyEnhancer implements BitEnhancer {
             int columnCount = rsme.getColumnCount();
             for (int i = 1; i < columnCount; i++) {
                 String fieldName = rsme.getColumnName(i);
+                if (skipFields.contains(fieldName)) continue;
                 //对定义过的属性略过
                 boolean pass = true;
                 try {
@@ -79,14 +94,18 @@ public class PropertyEnhancer implements BitEnhancer {
                 }
                 if (pass) continue;
 
-                CtField ctField = CtField.make(" public " + sqlTypeToJavaType(rsme.getColumnTypeName(i)) + " " + fieldName + " ;", ctClass);
+                CtField ctField = CtField.make(" private " + sqlTypeToJavaType(rsme.getColumnTypeName(i)) + " " + fieldName + " ;", ctClass);
 
                 if (fieldName.equals("id")) {
                     ConstPool constPool = ctClass.getClassFile().getConstPool();
                     AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
                     javassist.bytecode.annotation.Annotation annot = new javassist.bytecode.annotation.Annotation("javax.persistence.Id", constPool);
+                    javassist.bytecode.annotation.Annotation auto = new javassist.bytecode.annotation.Annotation("javax.persistence.GeneratedValue", constPool);
                     attr.addAnnotation(annot);
+                    attr.addAnnotation(auto);
                     ctField.getFieldInfo().addAttribute(attr);
+
+
                 }
 
                 ctClass.addField(ctField);
@@ -109,13 +128,18 @@ public class PropertyEnhancer implements BitEnhancer {
         return Modifier.isFinal(ctField.getModifiers());
     }
 
+    boolean isStatic(CtField ctField) {
+        return Modifier.isStatic(ctField.getModifiers());
+    }
+
     private void autoInjectGetSet(CtClass ctClass) throws Exception {
 
 
         //hibernate 可能需要 setter/getter 方法，好吧 我们为它添加这些方法
 
         for (CtField ctField : ctClass.getDeclaredFields()) {
-
+            if (isFinal(ctField) || isStatic(ctField) || ctField.hasAnnotation(Validate.class))
+                continue;
             // Property name
             String propertyName = ctField.getName().substring(0, 1).toUpperCase() + ctField.getName().substring(1);
             String getter = "get" + propertyName;
@@ -128,24 +152,21 @@ public class PropertyEnhancer implements BitEnhancer {
                 }
             } catch (NotFoundException noGetter) {
 
-                // Créé le getter
                 String code = "public " + ctField.getType().getName() + " " + getter + "() { return this." + ctField.getName() + "; }";
                 CtMethod getMethod = CtMethod.make(code, ctClass);
                 getMethod.setModifiers(getMethod.getModifiers() | AccessFlag.SYNTHETIC);
                 ctClass.addMethod(getMethod);
             }
 
-            if (!isFinal(ctField)) {
-                try {
-                    CtMethod ctMethod = ctClass.getDeclaredMethod(setter);
-                    if (ctMethod.getParameterTypes().length != 1 || !ctMethod.getParameterTypes()[0].equals(ctField.getType()) || Modifier.isStatic(ctMethod.getModifiers())) {
-                        throw new NotFoundException("it's not a setter !");
-                    }
-                } catch (NotFoundException noSetter) {
-                    CtMethod setMethod = CtMethod.make("public void " + setter + "(" + ctField.getType().getName() + " value) { this." + ctField.getName() + " = value; }", ctClass);
-                    setMethod.setModifiers(setMethod.getModifiers() | AccessFlag.SYNTHETIC);
-                    ctClass.addMethod(setMethod);
+            try {
+                CtMethod ctMethod = ctClass.getDeclaredMethod(setter);
+                if (ctMethod.getParameterTypes().length != 1 || !ctMethod.getParameterTypes()[0].equals(ctField.getType()) || Modifier.isStatic(ctMethod.getModifiers())) {
+                    throw new NotFoundException("it's not a setter !");
                 }
+            } catch (NotFoundException noSetter) {
+                CtMethod setMethod = CtMethod.make("public void " + setter + "(" + ctField.getType().getName() + " value) { this." + ctField.getName() + " = value; }", ctClass);
+                setMethod.setModifiers(setMethod.getModifiers() | AccessFlag.SYNTHETIC);
+                ctClass.addMethod(setMethod);
             }
 
         }

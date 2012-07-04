@@ -1,5 +1,6 @@
 package net.csdn.jpa.model;
 
+import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.exception.JPAQueryException;
 
 import javax.persistence.Query;
@@ -13,8 +14,6 @@ import java.util.Map;
  * Time: 下午9:53
  */
 public class GenericModel extends JPABase {
-
-
 
 
     //----------------------------------------------------------------------------------
@@ -129,6 +128,7 @@ public class GenericModel extends JPABase {
     public static int deleteAll() {
         throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
     }
+
 
     public static class JPAQuery {
 

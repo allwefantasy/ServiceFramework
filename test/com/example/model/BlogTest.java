@@ -20,85 +20,106 @@ public class BlogTest extends BaseServiceWithIocTest {
 
 
     @Test
+    public void testParam() throws Exception {
+        Article article = Article.create(newHashMap("content", "天国", "blog.user_name", "wow"));
+        Assert.assertTrue(article
+                .attr("blog", Blog.class)
+                .attr("user_name", String.class)
+                .equals("wow"));
+    }
+
+    @Test
+    public void testCasa2() throws Exception {
+        Blog blog = Blog.create(newHashMap("user_name", "jjj"));
+        blog.save();
+
+        /*
+        blog.m("articles") 相当于调用:
+            public Article articles() {
+                Article article = new Article();
+                article.attr("blog", this);
+                articles.add(article);
+                return article;
+            }
+         */
+        Article article = blog.m("articles").add(newHashMap("content", "性能设计")).save();
+
+
+        Assert.assertTrue(article.attr("content", String.class).equals("性能设计"));
+
+        Blog.deleteAll();
+        Article.deleteAll();
+
+
+    }
+
+    @Test
+    public void testCasa() throws Exception {
+        Blog blog = Blog.create(newHashMap("user_name", "wow"));
+        blog.save();
+        Article article = Article.create(newHashMap("content", "我是天才哇"));
+        article.attr("blog", blog);
+        article.save();
+
+//        List<Blog> blogs = Blog.where("user_name='wow'").fetch();
+//        blog = blogs.get(0);
+//        Assert.assertTrue(blog.articles.get(0).attr("content", String.class).equals("我是天才哇"));
+
+        List<Article> articles = Article.findAll();
+        article = articles.get(0);
+        Assert.assertTrue(article.attr("blog", Blog.class).attr("user_name", String.class).equals("wow"));
+
+
+        Blog.deleteAll();
+        Article.deleteAll();
+
+    }
+
+    @Test
     public void testLengthValidate() throws Exception {
-        Blog blog = Blog.create(newHashMap("id", 3, "content", "wow"));
+        Blog blog = Blog.create(newHashMap("user_name", "wow"));
         Assert.assertTrue(blog.valid() == true);
-        blog = Blog.create(newHashMap("id", 3, "content", "wowwowwowwow"));
+
+        blog = Blog.create(newHashMap("user_name", "wowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwow"));
         Assert.assertTrue(blog.valid() == false);
-        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("content文字太长"));
+        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("user_name文字太长"));
 
 
-        blog = Blog.create(newHashMap("id", 3, "content", "w"));
+        blog = Blog.create(newHashMap("user_name", "w"));
         Assert.assertTrue(blog.valid() == false);
-        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("content文字太短"));
+        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("user_name文字太短"));
     }
 
     @Test
     public void testPresenceValidate() throws Exception {
-        Blog blog = Blog.create(newHashMap("id", 1));
-        Assert.assertTrue(blog.valid() == false);
-        List<ValidateResult> validateResults = blog.validateResults;
+        Article article = Article.create(newHashMap("content", ""));
+        Assert.assertTrue(article.valid() == false);
+        List<ValidateResult> validateResults = article.validateResults;
         Assert.assertTrue(validateResults.size() == 1);
         Assert.assertTrue(validateResults.get(0).getMessage().equals("content不能为空"));
 
-        blog = Blog.create(newHashMap("id", 1, "content", "----"));
-        Assert.assertTrue(blog.valid() == true);
+        article = Article.create(newHashMap("content", "----"));
+        Assert.assertTrue(article.valid() == true);
 
     }
 
-    @Test
-    public void testNumericalityValidate() throws Exception {
-        Blog blog = Blog.create(newHashMap("id", 5, "content", "wow"));
-        Assert.assertTrue(blog.valid() == false);
-
-        blog = Blog.create(newHashMap("id", 2, "content", "wow"));
-        Assert.assertTrue(blog.valid() == false);
-
-        blog = Blog.create(newHashMap("id", 3, "content", "wow"));
-        Assert.assertTrue(blog.valid() == true);
-
-    }
 
     @Test
     public void testUniquenessValidate() throws Exception {
-        Blog blog = Blog.create(newHashMap("id", 1, "content", "wow"));
+        Blog blog = Blog.create(newHashMap("user_name", "wow"));
         Assert.assertTrue(blog.valid() == true);
 
         blog.save();
 
-        blog = Blog.create(newHashMap("id", 3, "content", "wow"));
+        blog = Blog.create(newHashMap("user_name", "wow"));
         Assert.assertTrue(blog.valid() == false);
 
-        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("content is not uniq"));
+        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("user_name is not uniq"));
 
         Blog.deleteAll();
 
     }
 
-    @Test
-    public void testName() throws Exception {
-        Blog.deleteAll();
-
-        long count = Blog.count();
-        Assert.assertTrue(count == 0);
-
-        Blog blog = Blog.create(newHashMap("id", 1, "content", "wow"));
-        blog.save();
-
-        Blog blogFromDb = Blog.findById(1);
-        Assert.assertTrue("wow".equals(blogFromDb.attr("content", String.class)));
-
-        blog.delete();
-
-        Blog.create(newHashMap("id", 3, "content", "wow")).save();
-        Blog.create(newHashMap("id", 4, "content", "wow")).save();
-        List<Blog> blogList = Blog.where("id>2").fetch();
-        Assert.assertTrue(blogList.size() == 2);
-
-        Blog.deleteAll();
-
-
-    }
 
     @Override
     @After

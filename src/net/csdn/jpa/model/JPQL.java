@@ -2,6 +2,7 @@ package net.csdn.jpa.model;
 
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
+import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.context.JPAContext;
 import net.csdn.jpa.model.GenericModel.JPAQuery;
 import org.apache.commons.beanutils.BeanUtils;
@@ -162,11 +163,11 @@ public class JPQL {
         return (JPABase) results.get(0);
     }
 
-    public JPABase create(Class clzz, Map<Object, Object> params) throws Exception {
+    public JPABase create(Class clzz, Map<String, String> params) throws Exception {
         Object o = clzz.newInstance();
-        for (Map.Entry<Object, Object> entry : params.entrySet()) {
-            BeanUtils.setProperty(o, entry.getKey().toString(), entry.getValue());
-        }
+        ParamBinding paramBinding = new ParamBinding();
+        paramBinding.parse(params);
+        paramBinding.toModel(o);
         return ((GenericModel) o);
     }
 

@@ -23,7 +23,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void hadoo(String msg, Object... params) {
         if (isHadooEnabled()) {
-            internalHadoo(MessageFormat.format(prefix, msg, params));
+            internalHadoo(MessageFormat.format( msg, params));
         }
     }
 
@@ -32,7 +32,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void hadoo(String msg, Throwable cause, Object... params) {
         if (isTraceEnabled()) {
-            internalHadoo(MessageFormat.format(prefix, msg, params), cause);
+            internalHadoo(MessageFormat.format( msg, params), cause);
         }
     }
 
@@ -42,7 +42,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void trace(String msg, Object... params) {
         if (isTraceEnabled()) {
-            internalTrace(MessageFormat.format(prefix, msg, params));
+            internalTrace(MessageFormat.format( msg, params));
         }
     }
 
@@ -51,7 +51,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void trace(String msg, Throwable cause, Object... params) {
         if (isTraceEnabled()) {
-            internalTrace(MessageFormat.format(prefix, msg, params), cause);
+            internalTrace(MessageFormat.format( msg, params), cause);
         }
     }
 
@@ -61,7 +61,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void debug(String msg, Object... params) {
         if (isDebugEnabled()) {
-            internalDebug(MessageFormat.format(prefix, msg, params));
+            internalDebug(MessageFormat.format( msg, params));
         }
     }
 
@@ -70,7 +70,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void debug(String msg, Throwable cause, Object... params) {
         if (isDebugEnabled()) {
-            internalDebug(MessageFormat.format(prefix, msg, params), cause);
+            internalDebug(MessageFormat.format( msg, params), cause);
         }
     }
 
@@ -80,7 +80,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void info(String msg, Object... params) {
         if (isInfoEnabled()) {
-            internalInfo(MessageFormat.format(prefix, msg, params));
+            internalInfo(MessageFormat.format( msg, params));
         }
     }
 
@@ -89,7 +89,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void info(String msg, Throwable cause, Object... params) {
         if (isInfoEnabled()) {
-            internalInfo(MessageFormat.format(prefix, msg, params), cause);
+            internalInfo(MessageFormat.format( msg, params), cause);
         }
     }
 
@@ -99,7 +99,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void warn(String msg, Object... params) {
         if (isWarnEnabled()) {
-            internalWarn(MessageFormat.format(prefix, msg, params));
+            internalWarn(MessageFormat.format( msg, params));
         }
     }
 
@@ -108,7 +108,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void warn(String msg, Throwable cause, Object... params) {
         if (isWarnEnabled()) {
-            internalWarn(MessageFormat.format(prefix, msg, params), cause);
+            internalWarn(MessageFormat.format( msg, params), cause);
         }
     }
 
@@ -118,7 +118,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void error(String msg, Object... params) {
         if (isErrorEnabled()) {
-            internalError(MessageFormat.format(prefix, msg, params));
+            internalError(MessageFormat.format( msg, params));
         }
     }
 
@@ -127,7 +127,7 @@ public abstract class AbstractCSLogger implements CSLogger {
     @Override
     public void error(String msg, Throwable cause, Object... params) {
         if (isErrorEnabled()) {
-            internalError(MessageFormat.format(prefix, msg, params), cause);
+            internalError(MessageFormat.format( msg, params), cause);
         }
     }
 

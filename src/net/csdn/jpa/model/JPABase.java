@@ -1,5 +1,6 @@
 package net.csdn.jpa.model;
 
+import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.context.JPAContext;
@@ -7,12 +8,16 @@ import net.csdn.validate.ValidateParse;
 import net.csdn.validate.ValidateResult;
 import net.csdn.validate.impl.*;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.MethodUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Transient;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.newArrayList;
 
@@ -37,7 +42,9 @@ public class JPABase implements Model {
     //强类型 没办法呀
     public <T> T attr(String fieldName, Class<T> clzz) {
         try {
-            return clzz.cast(BeanUtils.getProperty(this, fieldName));
+            Field field = (this.getClass().getDeclaredField(fieldName));
+            field.setAccessible(true);
+            return clzz.cast(field.get(this));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -54,10 +61,28 @@ public class JPABase implements Model {
         return this;
     }
 
+    public <T extends JPABase> T m(String methodName, Object... objs) {
+
+        try {
+            return (T) MethodUtils.invokeMethod(this, methodName, objs);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
-    public void save() {
+    public <T extends Model> T save() {
         em().persist(this);
         em().flush();
+        return (T) this;
+    }
+
+    public <T extends JPABase> T add(Map params) {
+        ParamBinding paramBinding = new ParamBinding();
+        paramBinding.parse(params);
+        paramBinding.toModel(this);
+        return (T) this;
     }
 
     @Transient

@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
  */
 public interface Model {
 
-    public void save();
+    public <T extends Model> T save();
 
     public void delete();
 

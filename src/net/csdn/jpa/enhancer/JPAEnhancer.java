@@ -34,13 +34,13 @@ public class JPAEnhancer extends Enhancer {
     public JPAEnhancer(Settings settings) {
         this.settings = settings;
         bitEnhancers.add(new PropertyEnhancer(settings));
-        bitEnhancers.add(new ValidatorEnhancer(settings));
         bitEnhancers.add(new ClassMethodEnhancer(settings));
+        bitEnhancers.add(new InstanceMethodEnhancer(settings));
     }
 
     public void enhanceThisClass(DataInputStream dataInputStream) throws Exception {
-        CtClass ctClass = classPool.makeClass(dataInputStream);
 
+        CtClass ctClass = classPool.makeClassIfNew(dataInputStream);
         if (!ctClass.subtypeOf(classPool.get("net.csdn.jpa.model.JPABase"))) {
             return;
         }

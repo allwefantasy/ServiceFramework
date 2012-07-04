@@ -28,22 +28,27 @@ public class Length extends BaseValidateParse {
                 Integer minimum = (Integer) length.get(ValidateHelper.Length.minimum);
                 Integer maximum = (Integer) length.get(ValidateHelper.Length.maximum);
                 String value = (String) getModelField(clzz, targetFieldName).get(target);
-                if (minimum != null) {
-                    if (value == null || value.isEmpty()) {
-                        String too_short_msg = (String) length.get(ValidateHelper.Length.too_short);
-                        msg = too_short_msg == null ? notice : too_short_msg;
-                        validateResultList.add(validateResult(msg, targetFieldName));
-                    } else if (value.length() < minimum) {
+                if (value == null || value.isEmpty()) {
+                    if (minimum != null) {
                         String too_short_msg = (String) length.get(ValidateHelper.Length.too_short);
                         msg = too_short_msg == null ? notice : too_short_msg;
                         validateResultList.add(validateResult(msg, targetFieldName));
                     }
-                }
 
-                if (maximum != null && value.length() > maximum) {
-                    String too_long_msg = (String) length.get(ValidateHelper.Length.too_long);
-                    msg = too_long_msg == null ? notice : too_long_msg;
-                    validateResultList.add(validateResult(msg, targetFieldName));
+                } else {
+                    if (minimum != null) {
+                        if (value.length() < minimum) {
+                            String too_short_msg = (String) length.get(ValidateHelper.Length.too_short);
+                            msg = too_short_msg == null ? notice : too_short_msg;
+                            validateResultList.add(validateResult(msg, targetFieldName));
+                        }
+                    }
+
+                    if (maximum != null && value.length() > maximum) {
+                        String too_long_msg = (String) length.get(ValidateHelper.Length.too_long);
+                        msg = too_long_msg == null ? notice : too_long_msg;
+                        validateResultList.add(validateResult(msg, targetFieldName));
+                    }
                 }
 
             }
