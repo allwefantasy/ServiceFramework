@@ -27,18 +27,19 @@ public class LengthParse extends BaseValidateParse {
                 Map length = (Map) info;
                 Integer minimum = (Integer) length.get(ValidateHelper.Length.minimum);
                 Integer maximum = (Integer) length.get(ValidateHelper.Length.maximum);
-                if (minimum == null) minimum = 0;
                 String value = (String) getModelField(clzz, targetFieldName).get(target);
-                if (value == null || value.isEmpty()) {
-                    String too_short_msg = (String) length.get(ValidateHelper.Length.too_short);
-                    msg = too_short_msg == null ? notice : too_short_msg;
-                    validateResultList.add(validateResult(msg, targetFieldName));
+                if (minimum != null) {
+                    if (value == null || value.isEmpty()) {
+                        String too_short_msg = (String) length.get(ValidateHelper.Length.too_short);
+                        msg = too_short_msg == null ? notice : too_short_msg;
+                        validateResultList.add(validateResult(msg, targetFieldName));
+                    } else if (value.length() < minimum) {
+                        String too_short_msg = (String) length.get(ValidateHelper.Length.too_short);
+                        msg = too_short_msg == null ? notice : too_short_msg;
+                        validateResultList.add(validateResult(msg, targetFieldName));
+                    }
                 }
-                if (value.length() < minimum) {
-                    String too_short_msg = (String) length.get(ValidateHelper.Length.too_short);
-                    msg = too_short_msg == null ? notice : too_short_msg;
-                    validateResultList.add(validateResult(msg, targetFieldName));
-                }
+
                 if (maximum != null && value.length() > maximum) {
                     String too_long_msg = (String) length.get(ValidateHelper.Length.too_long);
                     msg = too_long_msg == null ? notice : too_long_msg;
