@@ -1,4 +1,5 @@
 ###############datasource config##################
+#mysql,mongodb,redis等数据源配置方式
 datasources:
     mysql:
        host: 127.0.0.1
@@ -32,7 +33,7 @@ http:
 ###############validator config##################
 #如果需要添加验证器，只要配置好类全名即可
 #替换验证器实现，则替换相应的类名即可
-#warning: 验证器需要线程安全
+#warning: 自定义验证器实现需要线程安全
 
 validator:
    format:        net.csdn.validate.impl.Format

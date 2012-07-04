@@ -40,7 +40,7 @@ public class Blog extends GenericModel {
 
 
     @Validate
-    private static Map $content/*需要验证的字段名 以$开始*/ =
+    private final static Map $content/*需要验证的字段名 以$开始*/ =
             newHashMap(
 
                     /*------------length:长度--------------------------*/
@@ -55,14 +55,14 @@ public class Blog extends GenericModel {
                     presence,
                     newHashMap(message, "{}不能为空"),
 
-                    /*---------------------------------------------*/
+                    /*------------------唯一性验证---------------------------*/
                     uniqueness,
                     true
             );
 
 
     @Validate
-    private static Map $id/*需要验证的字段名 以$开始*/ =
+    private final static Map $id/*需要验证的字段名 以$开始*/ =
             newHashMap(
 
                     /*------------numericality:类型验证---------------*/
