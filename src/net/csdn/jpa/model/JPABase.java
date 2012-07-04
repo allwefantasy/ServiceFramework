@@ -5,7 +5,9 @@ import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.context.JPAContext;
 import net.csdn.validate.ValidateParse;
 import net.csdn.validate.ValidateResult;
-import net.csdn.validate.impl.PresentParse;
+import net.csdn.validate.impl.NumericalityParse;
+import net.csdn.validate.impl.PresenceParse;
+import net.csdn.validate.impl.UniquenessParse;
 import org.apache.commons.beanutils.BeanUtils;
 
 import javax.persistence.EntityManager;
@@ -23,7 +25,7 @@ import static net.csdn.common.collections.WowCollections.newArrayList;
  */
 public class JPABase implements Model {
 
-    protected List validateParses = newArrayList(new PresentParse());
+    protected List validateParses = newArrayList(new PresenceParse(), new NumericalityParse(), new UniquenessParse());
 
     public static JPAContext getJPAContext() {
         return getJPAConfig().getJPAContext();

@@ -7,6 +7,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
  * User: WilliamZhu
@@ -26,6 +29,14 @@ public abstract class BaseValidateParse implements ValidateParse {
         return validateFields;
     }
 
+    protected ValidateResult validateResult(String msg, String targetFieldName) {
+        return new ValidateResult(msg, targetFieldName);
+    }
+
+    protected String messageWithDefault(Map info, String message) {
+        String temp = (String) info.get(ValidateHelper.message);
+        return temp == null ? message : temp;
+    }
 
     protected Field getModelField(Class clzz, String name) {
         try {
@@ -33,6 +44,23 @@ public abstract class BaseValidateParse implements ValidateParse {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+
+    protected void iterateValidateInfo(Class clzz, String target, ValidateIterator validateIterator) {
+        try {
+            List<Field> fields = getValidateFields(clzz);
+            for (Field field : fields) {
+                field.setAccessible(true);
+                Map info = (Map) ((Map) field.get(null));
+                if (info == null) continue;
+                if (info.get(target) == null) continue;
+                Object wow = info.get(target);
+                validateIterator.iterate(field.getName().substring(1), field, wow);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

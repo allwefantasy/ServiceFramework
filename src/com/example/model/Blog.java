@@ -8,11 +8,10 @@ import javax.persistence.Entity;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.newArrayList;
 import static net.csdn.common.collections.WowCollections.newHashMap;
 import static net.csdn.validate.ValidateHelper.*;
 import static net.csdn.validate.ValidateHelper.Length.*;
-import static net.csdn.validate.ValidateHelper.Presence.message;
+import static net.csdn.validate.ValidateHelper.Numericality.greater_than;
 
 /**
  * User: WilliamZhu
@@ -49,22 +48,26 @@ public class Blog extends GenericModel {
 
                     /*-----------presence:不能为null或者空--------------------*/
                     presence,
-                    newHashMap(message, "{}不能为空")
+                    newHashMap(message, "{}不能为空"),
+
+                    /*---------------------------------------------*/
+                    uniqueness,
+                    true
             );
 
-//    @Validate
-//    private static Map $id/*需要验证的字段名 以$开始*/ =
-//            newHashMap(
-//
-//                    /*------------类型验证，必须为int类型---------------*/
-//                    "numericality",
-//                    newHashMap(
-//                            "only_integer", true
-//                    ),
-//                    /*------------不能为null或者空---------------------*/
-//                    "present",
-//                    newHashMap("message", "{}不能为空")
-//            );
+    @Validate
+    private static Map $id/*需要验证的字段名 以$开始*/ =
+            newHashMap(
+
+                    /*------------numericality:类型验证，必须为int类型---------------*/
+                    numericality,
+                    newHashMap(
+                            greater_than, 4
+                    ),
+                    /*------------presence:不能为null或者空---------------------*/
+                    presence,
+                    newHashMap(message, "{}不能为空")
+            );
 
 
 }

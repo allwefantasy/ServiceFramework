@@ -109,7 +109,8 @@ public class JPQL {
     }
 
     public JPABase findById(Class clzz, Object id) throws Exception {
-        return (JPABase) em().find(clzz, id);
+        JPABase model = (JPABase) em().find(clzz, id);
+        return model;
     }
 
     public List findBy(String entity, String query, Object[] params) {

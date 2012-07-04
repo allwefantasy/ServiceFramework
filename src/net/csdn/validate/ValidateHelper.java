@@ -8,9 +8,18 @@ package net.csdn.validate;
 public class ValidateHelper {
     public static String length = "length";
     public static String presence = "presence";
+    public static String numericality = "numericality";
+    public static String message = "message";
+    public static String uniqueness = "uniqueness";
 
-    public static class Presence {
-        public static String message = "message";
+    public static class Numericality {
+        public static String greater_than = "greater_than";
+        public static String greater_than_or_equal_to = "greater_than_or_equal_to";
+        public static String equal_to = "equal_to";
+        public static String less_than = "less_than";
+        public static String less_than_or_equal_to = "less_than_or_equal_to";
+        public static String odd = "odd";
+        public static String even = "even";
     }
 
     public static class Length {

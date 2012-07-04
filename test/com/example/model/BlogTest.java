@@ -3,6 +3,7 @@ package com.example.model;
 import net.csdn.BaseServiceWithIocTest;
 import net.csdn.jpa.JPA;
 import net.csdn.validate.ValidateResult;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ import static net.csdn.common.collections.WowCollections.newHashMap;
 public class BlogTest extends BaseServiceWithIocTest {
 
     @Test
-    public void testValidate() throws Exception {
+    public void testPresenceValidate() throws Exception {
         Blog blog = Blog.create(newHashMap("id", 1));
         Assert.assertTrue(blog.valid() == false);
         List<ValidateResult> validateResults = blog.validateResults;
@@ -27,6 +28,24 @@ public class BlogTest extends BaseServiceWithIocTest {
 
         blog = Blog.create(newHashMap("id", 1, "content", "----"));
         Assert.assertTrue(blog.valid() == true);
+
+    }
+
+
+    @Test
+    public void testUniquenessValidate() throws Exception {
+        Blog blog = Blog.create(newHashMap("id", 1, "content", "wow"));
+        Assert.assertTrue(blog.valid() == true);
+
+        blog.save();
+
+        blog = Blog.create(newHashMap("id", 2, "content", "wow"));
+        Assert.assertTrue(blog.valid() == false);
+
+        Assert.assertTrue(blog.validateResults.get(0).equals("content is not uniq"));
+
+        Blog.deleteAll();
+
     }
 
     @Test
@@ -51,8 +70,13 @@ public class BlogTest extends BaseServiceWithIocTest {
 
         Blog.deleteAll();
 
+
+    }
+
+    @Override
+    @After
+    public void tearDown() throws Exception {
+        super.tearDown();
         JPA.getJPAConfig().getJPAContext().closeTx(false);
-
-
     }
 }
