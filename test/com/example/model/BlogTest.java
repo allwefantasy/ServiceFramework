@@ -18,6 +18,21 @@ import static net.csdn.common.collections.WowCollections.newHashMap;
  */
 public class BlogTest extends BaseServiceWithIocTest {
 
+
+    @Test
+    public void testLengthValidate() throws Exception {
+        Blog blog = Blog.create(newHashMap("id", 3, "content", "wow"));
+        Assert.assertTrue(blog.valid() == true);
+        blog = Blog.create(newHashMap("id", 3, "content", "wowwowwowwow"));
+        Assert.assertTrue(blog.valid() == false);
+        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("content文字太长"));
+
+
+        blog = Blog.create(newHashMap("id", 3, "content", "w"));
+        Assert.assertTrue(blog.valid() == false);
+        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("content文字太短"));
+    }
+
     @Test
     public void testPresenceValidate() throws Exception {
         Blog blog = Blog.create(newHashMap("id", 1));

@@ -43,10 +43,10 @@ public class Blog extends GenericModel {
                     /*------------length:长度--------------------------*/
                     length,
                     newHashMap(
-                            minimum, 300,
-                            maximum, 400,
-                            too_short, "文字太短",
-                            too_long, "文字太长"),
+                            minimum, 2,
+                            maximum, 10,
+                            too_short, "{}文字太短",
+                            too_long, "{}文字太长"),
 
                     /*-----------presence:不能为null或者空--------------------*/
                     presence,
