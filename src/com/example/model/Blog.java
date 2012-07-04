@@ -12,6 +12,8 @@ import static net.csdn.common.collections.WowCollections.newHashMap;
 import static net.csdn.validate.ValidateHelper.*;
 import static net.csdn.validate.ValidateHelper.Length.*;
 import static net.csdn.validate.ValidateHelper.Numericality.greater_than;
+import static net.csdn.validate.ValidateHelper.Numericality.less_than;
+import static net.csdn.validate.ValidateHelper.Numericality.odd;
 
 /**
  * User: WilliamZhu
@@ -55,14 +57,16 @@ public class Blog extends GenericModel {
                     true
             );
 
+
     @Validate
     private static Map $id/*需要验证的字段名 以$开始*/ =
             newHashMap(
 
-                    /*------------numericality:类型验证，必须为int类型---------------*/
+                    /*------------numericality:类型验证---------------*/
                     numericality,
                     newHashMap(
-                            greater_than, 4
+                            less_than, 4,
+                            odd, true
                     ),
                     /*------------presence:不能为null或者空---------------------*/
                     presence,

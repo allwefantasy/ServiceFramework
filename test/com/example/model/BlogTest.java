@@ -31,6 +31,18 @@ public class BlogTest extends BaseServiceWithIocTest {
 
     }
 
+    @Test
+    public void testNumericalityValidate() throws Exception {
+        Blog blog = Blog.create(newHashMap("id", 5, "content", "wow"));
+        Assert.assertTrue(blog.valid() == false);
+
+        blog = Blog.create(newHashMap("id", 2, "c ontent", "wow"));
+        Assert.assertTrue(blog.valid() == false);
+
+        blog = Blog.create(newHashMap("id", 3, "content", "wow"));
+        Assert.assertTrue(blog.valid() == true);
+
+    }
 
     @Test
     public void testUniquenessValidate() throws Exception {
@@ -39,7 +51,7 @@ public class BlogTest extends BaseServiceWithIocTest {
 
         blog.save();
 
-        blog = Blog.create(newHashMap("id", 2, "content", "wow"));
+        blog = Blog.create(newHashMap("id", 3, "content", "wow"));
         Assert.assertTrue(blog.valid() == false);
 
         Assert.assertTrue(blog.validateResults.get(0).equals("content is not uniq"));

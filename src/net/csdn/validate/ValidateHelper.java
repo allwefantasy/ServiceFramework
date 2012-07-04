@@ -20,6 +20,36 @@ public class ValidateHelper {
         public static String less_than_or_equal_to = "less_than_or_equal_to";
         public static String odd = "odd";
         public static String even = "even";
+
+        public static boolean odd(Integer d1) {
+            return d1 % 2 != 0;
+        }
+
+        public static boolean even(Integer d1) {
+            return d1 % 2 == 0;
+        }
+
+        public static boolean greater_than(Comparable d1, Comparable d2) {
+            return d1.compareTo(d2) > 0;
+        }
+
+        public static boolean greater_than_or_equal_to(Comparable d1, Comparable d2) {
+            return d1.compareTo(d2) > 0 || d1.compareTo(d2) == 0;
+        }
+
+        public static boolean equal_to(Comparable d1, Comparable d2) {
+            return d1.compareTo(d2) == 0;
+        }
+
+        public static boolean less_than(Comparable d1, Comparable d2) {
+            return d1.compareTo(d2) < 0;
+        }
+
+        public static boolean less_than_or_equal_to(Comparable d1, Comparable d2) {
+            return d1.compareTo(d2) < 0 || d1.compareTo(d2) == 0;
+        }
+
+
     }
 
     public static class Length {
