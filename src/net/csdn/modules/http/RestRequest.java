@@ -6,7 +6,7 @@ import net.csdn.common.unit.TimeValue;
 import java.util.Map;
 
 /**
-* User: WilliamZhu
+* BlogInfo: WilliamZhu
 * Date: 12-6-12
 * Time: 下午10:25
 */

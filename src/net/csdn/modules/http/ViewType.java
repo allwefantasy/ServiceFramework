@@ -1,7 +1,7 @@
 package net.csdn.modules.http;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-2
  * Time: 下午12:55
  */

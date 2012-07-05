@@ -29,7 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-5-29
  * Time: 下午5:10
  */

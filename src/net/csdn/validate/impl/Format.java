@@ -11,7 +11,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-4
  * Time: 下午12:59
  */

@@ -3,7 +3,7 @@ package net.csdn.common.logging;
 import net.csdn.common.logging.log4j.Log4jFactory;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午3:43
  */

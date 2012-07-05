@@ -7,7 +7,7 @@ import net.csdn.modules.scan.DefaultScanService;
 import net.csdn.modules.scan.ScanService;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-2
  * Time: 上午11:35
  */

@@ -11,7 +11,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午3:28
  */

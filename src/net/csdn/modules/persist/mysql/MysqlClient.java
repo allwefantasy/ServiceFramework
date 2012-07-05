@@ -12,7 +12,7 @@ import java.util.*;
 import static net.csdn.common.collections.WowCollections.join;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-1
  * Time: 下午9:09
  */

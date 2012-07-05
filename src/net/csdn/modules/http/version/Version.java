@@ -1,7 +1,7 @@
 package net.csdn.modules.http.version;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 12-3-20
  * Time: 下午1:51
  */

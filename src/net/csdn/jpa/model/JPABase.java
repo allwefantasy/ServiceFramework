@@ -22,7 +22,7 @@ import java.util.Map;
 import static net.csdn.common.collections.WowCollections.newArrayList;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-26
  * Time: 下午9:53
  */

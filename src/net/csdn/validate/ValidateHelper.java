@@ -1,7 +1,7 @@
 package net.csdn.validate;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-3
  * Time: 下午6:24
  */
@@ -12,6 +12,11 @@ public class ValidateHelper {
     public static String message = "message";
     public static String uniqueness = "uniqueness";
     public static String format = "format";
+    public static String associated = "associated";
+
+    public static class Associated {
+
+    }
 
 
     public static class Format {

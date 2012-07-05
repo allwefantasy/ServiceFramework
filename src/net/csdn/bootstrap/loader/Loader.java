@@ -3,7 +3,7 @@ package net.csdn.bootstrap.loader;
 import net.csdn.common.settings.Settings;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-2
  * Time: 上午11:29
  */

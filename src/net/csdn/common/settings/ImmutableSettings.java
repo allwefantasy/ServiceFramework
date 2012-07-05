@@ -29,7 +29,7 @@ import static net.csdn.common.unit.SizeValue.parseSizeValue;
 import static net.csdn.common.unit.TimeValue.parseTimeValue;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午3:56
  */

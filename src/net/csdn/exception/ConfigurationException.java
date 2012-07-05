@@ -1,7 +1,7 @@
 package net.csdn.exception;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-13
  * Time: 下午7:50
  */

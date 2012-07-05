@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-5
  * Time: 下午4:49
  */

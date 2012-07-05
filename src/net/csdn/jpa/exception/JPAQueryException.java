@@ -1,7 +1,7 @@
 package net.csdn.jpa.exception;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-26
  * Time: 下午9:57
  */

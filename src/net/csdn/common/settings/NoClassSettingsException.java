@@ -3,7 +3,7 @@ package net.csdn.common.settings;
 import net.csdn.exception.SettingsException;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午4:37
  */

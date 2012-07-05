@@ -5,7 +5,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午3:24
  */

@@ -3,7 +3,7 @@ package net.csdn.common.collections;
 import java.io.*;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 12-4-17
  * Time: 下午1:23
  */

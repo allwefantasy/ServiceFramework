@@ -4,7 +4,7 @@ import com.example.service.hello.impl.CoolHelloService;
 import net.csdn.annotation.Service;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-1
  * Time: 下午8:24
  */

@@ -1,7 +1,7 @@
 package net.csdn.modules.http;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午2:26
  */
@@ -288,7 +288,7 @@ public enum RestStatus {
      * automatically. However, this specification does not define any standard for such automatic selection.
      * <p/>
      * <p>Note: HTTP/1.1 servers are allowed to return responses which are not acceptable according to the accept
-     * headers sent in the request. In some cases, this may even be preferable to sending a 406 response. User
+     * headers sent in the request. In some cases, this may even be preferable to sending a 406 response. BlogInfo
      * agents are encouraged to inspect the headers of an incoming response to determine if it is acceptable.
      * <p/>
      * <p>If the response could be unacceptable, a user agent SHOULD temporarily stop receipt of more data and query

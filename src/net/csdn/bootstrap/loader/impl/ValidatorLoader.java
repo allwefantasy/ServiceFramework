@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-4
  * Time: 下午1:26
  */
@@ -23,6 +23,7 @@ public class ValidatorLoader implements Loader {
         defaultMaps.put("presence", "net.csdn.validate.impl.Presence");
         defaultMaps.put("uniqueness", "net.csdn.validate.impl.Uniqueness");
         defaultMaps.put("length", "net.csdn.validate.impl.Length");
+        defaultMaps.put("associated", "net.csdn.validate.impl.Associated");
         Map<String, String> validators = settings.getByPrefix("validator.").getAsMap();
         for (Map.Entry<String, String> entry : validators.entrySet()) {
             defaultMaps.put(entry.getKey(), entry.getValue());

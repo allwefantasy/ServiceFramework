@@ -3,7 +3,7 @@ package net.csdn.enhancer;
 import javassist.CtClass;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-2
  * Time: 下午8:38
  */

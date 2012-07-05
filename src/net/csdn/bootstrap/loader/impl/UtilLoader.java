@@ -18,7 +18,7 @@ import java.util.List;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-2
  * Time: 上午11:32
  */

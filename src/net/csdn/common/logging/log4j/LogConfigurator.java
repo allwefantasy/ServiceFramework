@@ -13,7 +13,7 @@ import java.util.Properties;
 import static net.csdn.common.settings.ImmutableSettings.settingsBuilder;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午2:11
  */

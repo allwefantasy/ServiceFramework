@@ -6,7 +6,7 @@ import net.sf.json.JSONObject;
 import java.util.Map;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-7
  * Time: 上午11:22
  */

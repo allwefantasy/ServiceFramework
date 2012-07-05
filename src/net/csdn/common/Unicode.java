@@ -5,7 +5,7 @@ import net.csdn.common.thread.ThreadLocals;
 import java.util.Arrays;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-5
  * Time: 下午10:18
  */

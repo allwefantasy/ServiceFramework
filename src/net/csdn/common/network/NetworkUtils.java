@@ -9,7 +9,7 @@ import java.net.*;
 import java.util.*;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-12-6
  * Time: 上午10:29
  * 主要获取本机内网IP.避免需要手动在配置文件配置本机IP内网地址。

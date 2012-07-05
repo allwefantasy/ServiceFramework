@@ -8,7 +8,7 @@ import java.util.Map;
 import static net.csdn.common.collect.MapBuilder.newMapBuilder;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-6
  * Time: 下午2:15
  */

@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-26
  * Time: 下午9:46
  * 因为无法通过IOC管理jpa生成的对象(当然可以通过AOP解决,避免复杂，我们这里采用静态工厂,这个会在系统启动的时候设置值)

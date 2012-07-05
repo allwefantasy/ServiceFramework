@@ -15,7 +15,7 @@ import static net.csdn.validate.ValidateHelper.message;
 import static net.csdn.validate.ValidateHelper.presence;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-3
  * Time: 下午6:22
  */

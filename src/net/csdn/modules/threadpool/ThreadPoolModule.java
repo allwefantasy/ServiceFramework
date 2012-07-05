@@ -1,5 +1,5 @@
 package net.csdn.modules.threadpool;/**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-5-31
  * Time: 上午11:22
  */

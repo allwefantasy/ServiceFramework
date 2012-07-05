@@ -8,7 +8,7 @@ import java.util.Properties;
 import java.util.Set;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-2
  * Time: 上午11:32
  */

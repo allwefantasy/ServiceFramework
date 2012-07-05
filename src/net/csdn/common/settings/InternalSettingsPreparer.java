@@ -7,7 +7,7 @@ import static net.csdn.common.Strings.cleanPath;
 import static net.csdn.common.settings.ImmutableSettings.settingsBuilder;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-2
  * Time: 上午10:00
  */

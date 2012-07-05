@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 import java.util.*;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-5-17
  * Time: 下午3:27
  */

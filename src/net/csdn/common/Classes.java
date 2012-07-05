@@ -3,7 +3,7 @@ package net.csdn.common;
 import java.lang.reflect.Modifier;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 上午11:39
  */

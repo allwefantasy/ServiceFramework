@@ -8,7 +8,7 @@ import net.csdn.modules.persist.mysql.DataSourceManager;
 import net.csdn.modules.persist.mysql.MysqlClient;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-1
  * Time: 下午9:29
  */

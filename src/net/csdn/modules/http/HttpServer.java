@@ -29,7 +29,7 @@ import static net.csdn.common.logging.support.MessageFormat.format;
 
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-2
  * Time: 下午1:29
  */

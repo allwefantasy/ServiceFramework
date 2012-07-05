@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import net.csdn.common.settings.Settings;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-1
  * Time: 下午9:46
  */

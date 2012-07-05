@@ -12,7 +12,7 @@ import java.util.Map;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-3
  * Time: 下午7:18
  */
@@ -40,7 +40,9 @@ public abstract class BaseValidateParse implements ValidateParse {
 
     protected Field getModelField(Class clzz, String name) {
         try {
-            return clzz.getField(name);
+            Field field = clzz.getDeclaredField(name);
+            field.setAccessible(true);
+            return field;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

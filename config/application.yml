@@ -41,3 +41,4 @@ validator:
    presence:      net.csdn.validate.impl.Presence
    uniqueness:    net.csdn.validate.impl.Uniqueness
    length:        net.csdn.validate.impl.Length
+   associated:    net.csdn.validate.impl.Associated

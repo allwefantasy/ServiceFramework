@@ -3,7 +3,7 @@ package net.csdn.jpa.model;
 import java.lang.reflect.Field;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-26
  * Time: 下午9:42
  */

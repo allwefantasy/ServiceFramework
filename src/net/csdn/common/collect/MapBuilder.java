@@ -8,7 +8,7 @@ import java.util.Map;
 import static com.google.common.collect.Maps.newHashMap;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午2:15
  */

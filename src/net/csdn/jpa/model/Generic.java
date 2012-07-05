@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-26
  * Time: 下午9:53
  */
-public class GenericModel extends JPABase {
+public class Generic extends JPABase {
 
 
     //----------------------------------------------------------------------------------

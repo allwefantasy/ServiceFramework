@@ -13,7 +13,7 @@ import java.util.Map;
 import static net.csdn.common.collections.WowCollections.newHashMap;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-4
  * Time: 上午7:10
  */
@@ -29,7 +29,9 @@ public class Uniqueness extends BaseValidateParse {
                 public void iterate(String targetFieldName, Field field, Object info) throws Exception {
                     String msg = notice;
                     if (info instanceof Map) msg = messageWithDefault((Map) info, notice);
-                    Object value = clzz.getField(targetFieldName).get(target);
+                    Field tempField = clzz.getDeclaredField(targetFieldName);
+                    tempField.setAccessible(true);
+                    Object value = tempField.get(target);
                     String whereCondition = targetFieldName + "=:hold";
                     List models = ((JPQL) clzz.getDeclaredMethod("where", String.class, Map.class).invoke(null, whereCondition, newHashMap("hold", value))).fetch();
                     if (models.size() > 0) {

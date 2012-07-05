@@ -1,7 +1,7 @@
 package net.csdn.bootstrap;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-8-31
  * Time: 下午5:35
  */

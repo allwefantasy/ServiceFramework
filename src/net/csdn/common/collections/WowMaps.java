@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 12-4-16
  * Time: 下午3:11
  */

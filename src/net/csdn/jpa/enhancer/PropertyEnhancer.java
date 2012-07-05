@@ -22,7 +22,7 @@ import static net.csdn.common.collections.WowCollections.newArrayList;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-2
  * Time: 下午8:41
  */
@@ -82,7 +82,7 @@ public class PropertyEnhancer implements BitEnhancer {
             ResultSet rs = ps.executeQuery();
             ResultSetMetaData rsme = rs.getMetaData();
             int columnCount = rsme.getColumnCount();
-            for (int i = 1; i < columnCount; i++) {
+            for (int i = 1; i <= columnCount; i++) {
                 String fieldName = rsme.getColumnName(i);
                 if (skipFields.contains(fieldName)) continue;
                 //对定义过的属性略过

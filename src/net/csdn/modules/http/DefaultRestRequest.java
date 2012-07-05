@@ -16,7 +16,7 @@ import static net.csdn.common.unit.ByteSizeValue.parseBytesSizeValue;
 import static net.csdn.common.unit.TimeValue.parseTimeValue;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-12
  * Time: 下午10:27
  */

@@ -7,7 +7,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.PersistenceException;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-26
  * Time: 下午9:21
  * 任何一个线程都都会含有一个JPAContext

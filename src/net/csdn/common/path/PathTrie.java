@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 import static net.csdn.common.collect.MapBuilder.newMapBuilder;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-2
  * Time: 下午4:39
  */

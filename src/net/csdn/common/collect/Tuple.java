@@ -1,7 +1,7 @@
 package net.csdn.common.collect;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-2
  * Time: 上午10:01
  */

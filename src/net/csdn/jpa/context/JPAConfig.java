@@ -6,7 +6,7 @@ import javax.persistence.Persistence;
 import java.util.Map;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-26
  * Time: 下午9:19
  */

@@ -11,7 +11,7 @@ import java.util.Map;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-6-1
  * Time: 下午9:11
  */

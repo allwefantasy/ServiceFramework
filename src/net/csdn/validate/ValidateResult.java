@@ -1,7 +1,7 @@
 package net.csdn.validate;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-3
  * Time: 下午6:52
  */

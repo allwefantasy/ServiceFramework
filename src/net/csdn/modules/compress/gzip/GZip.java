@@ -6,7 +6,7 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 12-4-5
  * Time: 下午12:10
  */

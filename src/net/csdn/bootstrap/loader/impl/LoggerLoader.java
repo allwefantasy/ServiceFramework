@@ -6,7 +6,7 @@ import net.csdn.common.logging.log4j.LogConfigurator;
 import net.csdn.common.settings.Settings;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-2
  * Time: 上午11:37
  */

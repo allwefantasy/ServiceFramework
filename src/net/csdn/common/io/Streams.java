@@ -5,7 +5,7 @@ import com.google.common.base.Preconditions;
 import java.io.*;
 
 /**
- * User: william
+ * BlogInfo: william
  * Date: 11-9-1
  * Time: 下午4:07
  */

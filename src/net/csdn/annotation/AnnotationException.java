@@ -1,7 +1,7 @@
 package net.csdn.annotation;
 
 /**
- * User: WilliamZhu
+ * BlogInfo: WilliamZhu
  * Date: 12-7-1
  * Time: 上午8:54
  */
