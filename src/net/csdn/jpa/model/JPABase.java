@@ -6,7 +6,6 @@ import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.context.JPAContext;
 import net.csdn.validate.ValidateParse;
 import net.csdn.validate.ValidateResult;
-import net.csdn.validate.impl.*;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.MethodUtils;
 
@@ -14,7 +13,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.Transient;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +24,7 @@ import static net.csdn.common.collections.WowCollections.newArrayList;
  * Date: 12-6-26
  * Time: 下午9:53
  */
-public class JPABase implements Model {
+public class JPABase implements GenericModel {
 
     public final static List validateParses = newArrayList();
 
@@ -72,7 +70,7 @@ public class JPABase implements Model {
     }
 
     @Override
-    public <T extends Model> T save() {
+    public <T extends GenericModel> T save() {
         em().persist(this);
         em().flush();
         return (T) this;
@@ -82,6 +80,9 @@ public class JPABase implements Model {
         ParamBinding paramBinding = new ParamBinding();
         paramBinding.parse(params);
         paramBinding.toModel(this);
+        if (valid()) {
+            save();
+        }
         return (T) this;
     }
 

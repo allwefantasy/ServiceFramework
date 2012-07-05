@@ -45,6 +45,13 @@ public class BlogTest extends BaseServiceWithIocTest {
                 .equals("wow"));
     }
 
+
+    @Test
+    public void testBlogInfoAndBlog() throws Exception {
+        Blog blog = Blog.create(newHashMap("user_name", "jjj", "blog_info.info", ""));
+        blog.save();
+    }
+
     @Test
     public void testCasa2() throws Exception {
         Blog blog = Blog.create(newHashMap("user_name", "jjj"));
@@ -60,11 +67,18 @@ public class BlogTest extends BaseServiceWithIocTest {
             }
          */
         //manyToOne
-        Article article = blog.m("articles").add(newHashMap("content", "性能设计")).save();
+        Article article = blog.m("articles").add(newHashMap("content", "性能设计"));
 
-
+        Assert.assertTrue(article.validateResults.size() == 0);
+        Assert.assertTrue(article.attr("id", Integer.class) != null);
         Assert.assertTrue(article.attr("content", String.class).equals("性能设计"));
 
+        Article.deleteAll();
+
+        article = blog.m("articles").add(newHashMap("content", ""));
+
+        Assert.assertTrue(article.validateResults.size() > 0);
+        Assert.assertTrue(article.attr("id", Integer.class) == null);
 
         //oneToOne
         blog = Blog.create(newHashMap("user_name", "jjj", "blog_info.info", "wow"));

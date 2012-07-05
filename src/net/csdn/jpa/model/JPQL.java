@@ -4,7 +4,7 @@ import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.context.JPAContext;
-import net.csdn.jpa.model.Generic.JPAQuery;
+import net.csdn.jpa.model.Model.JPAQuery;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -167,7 +167,7 @@ public class JPQL {
         ParamBinding paramBinding = new ParamBinding();
         paramBinding.parse(params);
         paramBinding.toModel(o);
-        return ((Generic) o);
+        return ((Model) o);
     }
 
 

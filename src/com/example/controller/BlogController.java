@@ -1,12 +1,15 @@
 package com.example.controller;
 
+import com.example.model.Article;
 import com.example.model.Blog;
 import com.example.service.hello.HelloService;
 import com.google.inject.Inject;
 import net.csdn.annotation.At;
 import net.csdn.exception.RecordNotFoundException;
 import net.csdn.modules.http.ApplicationController;
+import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.ViewType;
+import net.csdn.validate.ValidateResult;
 
 import java.util.List;
 
@@ -32,16 +35,11 @@ public class BlogController extends ApplicationController {
         render(helloService.sayHello());
     }
 
-    //简单的web+数据库 请求
-    //处理json请求
-    @At(path = {"/blog"}, types = {POST})
-    public void saveJson() {
-
-        Blog blog = Blog.create(paramAsJSON());
-
-        blog.save();
-
-        render(format(OK, "博客创建成功"));
+    @At(path = {"/article/create"}, types = {POST})
+    public void createArticle() {
+        Blog blog = Blog.findById(param("id"));
+        Article article = blog.m("articles").add(params());
+        render(article);
     }
 
     //普通表单请求处理示例
@@ -49,8 +47,9 @@ public class BlogController extends ApplicationController {
     public void saveForm() {
 
         Blog blog = Blog.create(params());
-
-        blog.save();
+        if (blog.valid()) {
+            blog.save();
+        }
 
         render(format(OK, "博客创建成功"));
     }
@@ -66,6 +65,18 @@ public class BlogController extends ApplicationController {
     public void index() {
         List<Blog> blogs = Blog.where("id>:id", newHashMap("id", 1)).offset(1).limit(15).order("id desc").fetch();
         render(blogs);
+    }
+
+    //简单的web+数据库 请求
+    //处理json请求
+    @At(path = {"/blog"}, types = {POST})
+    public void saveJson() {
+
+        Blog blog = Blog.create(paramAsJSON());
+
+        blog.save();
+
+        render(format(OK, "博客创建成功"));
     }
 
 }

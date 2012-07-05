@@ -1,7 +1,7 @@
 package com.example.model;
 
 import net.csdn.annotation.Validate;
-import net.csdn.jpa.model.Generic;
+import net.csdn.jpa.model.Model;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -17,7 +17,7 @@ import static net.csdn.validate.ValidateHelper.*;
  * Time: 上午8:03
  */
 @Entity
-public class BlogInfo extends Generic {
+public class BlogInfo extends Model {
 
     @Validate
     private final static Map $info/*需要验证的字段名 以$开始*/ =
@@ -26,6 +26,6 @@ public class BlogInfo extends Generic {
                     presence, newHashMap(message, "{}不能为空")
             );
 
-    @OneToOne(cascade = {CascadeType.ALL}, mappedBy = "blog_info")
+    @OneToOne(mappedBy = "blog_info")
     private Blog blog;
 }

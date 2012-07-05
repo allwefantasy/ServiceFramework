@@ -43,15 +43,15 @@ public class ClassMethodEnhancer implements BitEnhancer {
         ctClass.addMethod(findById);
 
 // find
-        CtMethod find = CtMethod.make("public static net.csdn.jpa.model.Generic.JPAQuery find(String query, Object[] params) { return  getJPAContext().jpql().find(\"" + entityName + "\", query, params); }", ctClass);
+        CtMethod find = CtMethod.make("public static net.csdn.jpa.model.Model.JPAQuery find(String query, Object[] params) { return  getJPAContext().jpql().find(\"" + entityName + "\", query, params); }", ctClass);
         ctClass.addMethod(find);
 
 // find
-        CtMethod find2 = CtMethod.make("public static net.csdn.jpa.model.Generic.JPAQuery find() { return  getJPAContext().jpql().find(\"" + entityName + "\"); }", ctClass);
+        CtMethod find2 = CtMethod.make("public static net.csdn.jpa.model.Model.JPAQuery find() { return  getJPAContext().jpql().find(\"" + entityName + "\"); }", ctClass);
         ctClass.addMethod(find2);
 
 // all
-        CtMethod all = CtMethod.make("public static net.csdn.jpa.model.Generic.JPAQuery all() { return  getJPAContext().jpql().all(\"" + entityName + "\"); }", ctClass);
+        CtMethod all = CtMethod.make("public static net.csdn.jpa.model.Model.JPAQuery all() { return  getJPAContext().jpql().all(\"" + entityName + "\"); }", ctClass);
         ctClass.addMethod(all);
 
 // delete

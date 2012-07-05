@@ -3,7 +3,7 @@ package com.example.model;
 import net.csdn.annotation.Hint;
 import net.csdn.annotation.NotMapping;
 import net.csdn.annotation.Validate;
-import net.csdn.jpa.model.Generic;
+import net.csdn.jpa.model.Model;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -22,8 +22,7 @@ import static net.csdn.validate.ValidateHelper.Length.*;
  */
 @Entity
 @NotMapping({"blog_info_id"})
-public class Blog extends Generic {
-
+public class Blog extends Model {
 
     @Validate
     private final static Map $articles = newHashMap(
@@ -32,7 +31,6 @@ public class Blog extends Generic {
                     "blog_info"
             )
     );
-
     @Validate
     private final static Map $user_name/*需要验证的字段名 以$开始*/ =
             newHashMap(
@@ -50,12 +48,11 @@ public class Blog extends Generic {
                     true
             );
 
-
     @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL)
     @Hint(Article.class)
     private List<Article> articles = new ArrayList<Article>();
 
-    @OneToOne(cascade = {CascadeType.ALL})
+    @OneToOne(cascade = {CascadeType.PERSIST})
     private BlogInfo blog_info;
     /*
     这个方法会自动生成。如果你定义了的话，则使用你定义的 ，调用方式：
