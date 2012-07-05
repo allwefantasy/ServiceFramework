@@ -9,6 +9,7 @@ import net.csdn.exception.RecordNotFoundException;
 import net.csdn.modules.http.ApplicationController;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.ViewType;
+import net.csdn.modules.http.support.HttpStatus;
 import net.csdn.validate.ValidateResult;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import static net.csdn.common.collections.WowCollections.newHashMap;
 import static net.csdn.common.logging.support.MessageFormat.format;
 import static net.csdn.modules.http.RestRequest.Method.GET;
 import static net.csdn.modules.http.RestRequest.Method.POST;
+import static net.csdn.modules.http.support.HttpStatus.HttpStatusBadRequest;
 
 /**
  * BlogInfo: WilliamZhu
@@ -35,22 +37,26 @@ public class BlogController extends ApplicationController {
         render(helloService.sayHello());
     }
 
-    @At(path = {"/article/create"}, types = {POST})
+    @At(path = {"/blog/articles/create"}, types = {POST})
     public void createArticle() {
         Blog blog = Blog.findById(param("id"));
-        Article article = blog.m("articles").add(params());
+        Article article = blog.m("articles").add(newHashMap("content", param("content")));
+        if (article.validateResults.size() != 0) {
+            render(HttpStatusBadRequest, article.validateResults);
+        }
         render(article);
     }
 
-    //普通表单请求处理示例
-    @At(path = {"/blog/{id}"}, types = {POST})
-    public void saveForm() {
 
-        Blog blog = Blog.create(params());
+    @At(path = {"/blog"}, types = {POST})
+    public void createBlog() {
+
+        Blog blog = Blog.create(paramAsJSON());
         if (blog.valid()) {
             blog.save();
+        } else {
+            render(HttpStatusBadRequest, blog.validateResults);
         }
-
         render(format(OK, "博客创建成功"));
     }
 
@@ -61,22 +67,17 @@ public class BlogController extends ApplicationController {
         render(blog, ViewType.xml);
     }
 
-    @At(path = {"/blog"}, types = {GET})
-    public void index() {
-        List<Blog> blogs = Blog.where("id>:id", newHashMap("id", 1)).offset(1).limit(15).order("id desc").fetch();
-        render(blogs);
+
+    @At(path = {"/blog/articles"}, types = {GET})
+    public void articles() {
+        Blog blog = Blog.findById(paramAsInt("id"));
+        List<Article> articles = Article.where("blog=:blog", newHashMap("blog", blog))
+                .offset(paramAsInt("from", 1))
+                .limit(paramAsInt("size", 15))
+                .order("id desc")
+                .fetch();
+        render(articles);
     }
 
-    //简单的web+数据库 请求
-    //处理json请求
-    @At(path = {"/blog"}, types = {POST})
-    public void saveJson() {
-
-        Blog blog = Blog.create(paramAsJSON());
-
-        blog.save();
-
-        render(format(OK, "博客创建成功"));
-    }
 
 }

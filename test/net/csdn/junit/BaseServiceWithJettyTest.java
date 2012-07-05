@@ -1,4 +1,4 @@
-package net.csdn;
+package net.csdn.junit;
 
 import net.csdn.bootstrap.Bootstrap;
 import org.junit.After;

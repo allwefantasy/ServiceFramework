@@ -1,8 +1,7 @@
 package com.example.model;
 
-import net.csdn.BaseServiceWithIocTest;
+import net.csdn.junit.BaseServiceWithIocTest;
 import net.csdn.jpa.JPA;
-import net.csdn.validate.ValidateResult;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -84,10 +83,6 @@ public class BlogTest extends BaseServiceWithIocTest {
         blog = Blog.create(newHashMap("user_name", "jjj", "blog_info.info", "wow"));
         blog.save();
 
-        Blog.deleteAll();
-        Article.deleteAll();
-        BlogInfo.deleteAll();
-
 
     }
 
@@ -107,9 +102,6 @@ public class BlogTest extends BaseServiceWithIocTest {
         article = articles.get(0);
         Assert.assertTrue(article.attr("blog", Blog.class).attr("user_name", String.class).equals("wow"));
 
-
-        Blog.deleteAll();
-        Article.deleteAll();
 
     }
 
@@ -154,7 +146,6 @@ public class BlogTest extends BaseServiceWithIocTest {
 
         Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("user_name is not uniq"));
 
-        Blog.deleteAll();
 
     }
 

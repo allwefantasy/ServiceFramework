@@ -4,21 +4,30 @@ import javassist.*;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
+import javassist.bytecode.annotation.MemberValue;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.NotMapping;
 import net.csdn.annotation.Validate;
 import net.csdn.bootstrap.Bootstrap;
+import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
+import net.csdn.jpa.type.DBType;
 
+import javax.persistence.Column;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.sql.*;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.newArrayList;
+import static net.csdn.common.collections.WowCollections.newHashMap;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
@@ -41,19 +50,16 @@ public class PropertyEnhancer implements BitEnhancer {
         autoInjectGetSet(ctClass);
     }
 
-    /*
-   涵盖一些基本的类型转换
-    */
-    private String sqlTypeToJavaType(String sqlType) {
-        if (newArrayList("CHAR", "VARCHAR", "TEXT").contains(sqlType)) {
-            return "String";
+    private static void createAnnotation(AnnotationsAttribute attribute, Class<? extends Annotation> annotationType, Map<String, MemberValue> members) {
+        javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation(annotationType.getName(), attribute.getConstPool());
+        for (Map.Entry<String, MemberValue> member : members.entrySet()) {
+            annotation.addMemberValue(member.getKey(), member.getValue());
         }
-        if ("INT".equals(sqlType)) return "Integer";
-        if ("BIGINT".equals(sqlType)) return "Long";
-        if ("FLOAT".equals(sqlType)) return "Float";
-        if (newArrayList("DATE", "DATETIME", "TIMESTAMP").contains(sqlType)) return "java.util.Date";
-        return "String";
+        attribute.addAnnotation(annotation);
+    }
 
+    private static void createAnnotation(AnnotationsAttribute attribute, Class<? extends Annotation> annotationType) {
+        createAnnotation(attribute, annotationType, new HashMap<String, MemberValue>());
     }
 
     private void autoInjectProperty(CtClass ctClass) {
@@ -71,16 +77,12 @@ public class PropertyEnhancer implements BitEnhancer {
                 e.printStackTrace();
             }
         }
+
         try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
-            Map<String, Settings> groups = settings.getGroups("datasources");
-            Settings mysqlSetting = groups.get("mysql");
-            String url = "jdbc:mysql://{}:{}/{}?useUnicode=true&characterEncoding=utf8";
-            url = format(url, mysqlSetting.get("host", "127.0.0.1"), mysqlSetting.get("port", "3306"), mysqlSetting.get("database", "csdn_search_client"));
-            conn = DriverManager.getConnection(url, mysqlSetting.get("username"), mysqlSetting.get("password"));
-            PreparedStatement ps = conn.prepareStatement("select * from " + entitySimpleName + " limit 1");
-            ResultSet rs = ps.executeQuery();
-            ResultSetMetaData rsme = rs.getMetaData();
+            DBType dbType = ServiceFramwork.injector.getInstance(DBType.class);
+            Tuple<ResultSetMetaData, Connection> resultSetMetaDataConnectionTuple = dbType.metaData(entitySimpleName);
+            conn = resultSetMetaDataConnectionTuple.v2();
+            ResultSetMetaData rsme = resultSetMetaDataConnectionTuple.v1();
             int columnCount = rsme.getColumnCount();
             for (int i = 1; i <= columnCount; i++) {
                 String fieldName = rsme.getColumnName(i);
@@ -94,18 +96,23 @@ public class PropertyEnhancer implements BitEnhancer {
                 }
                 if (pass) continue;
 
-                CtField ctField = CtField.make(" private " + sqlTypeToJavaType(rsme.getColumnTypeName(i)) + " " + fieldName + " ;", ctClass);
+                ConstPool constPool = ctClass.getClassFile().getConstPool();
+                AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
+                CtField ctField = CtField.make(" private " + dbType.typeToJava(rsme.getColumnTypeName(i)).v2() + " " + fieldName + " ;", ctClass);
 
-                if (fieldName.equals("id")) {
-                    ConstPool constPool = ctClass.getClassFile().getConstPool();
-                    AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-                    javassist.bytecode.annotation.Annotation annot = new javassist.bytecode.annotation.Annotation("javax.persistence.Id", constPool);
-                    javassist.bytecode.annotation.Annotation auto = new javassist.bytecode.annotation.Annotation("javax.persistence.GeneratedValue", constPool);
-                    attr.addAnnotation(annot);
-                    attr.addAnnotation(auto);
+                String fieldType = rsme.getColumnTypeName(i);
+                Tuple<Class, Map> tuple = dbType.dateType(fieldType, constPool);
+                if (tuple != null) {
+                    createAnnotation(attr, tuple.v1(), tuple.v2());
+                }
+
+                if (rsme.isAutoIncrement(i) || rsme.getColumnTypeName(i).equals("id")) {
+                    createAnnotation(attr, javax.persistence.Id.class, newHashMap());
+                    createAnnotation(attr, javax.persistence.GeneratedValue.class, newHashMap());
+                }
+
+                if (attr.getAnnotations().length > 0) {
                     ctField.getFieldInfo().addAttribute(attr);
-
-
                 }
 
                 ctClass.addField(ctField);

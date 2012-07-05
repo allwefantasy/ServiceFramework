@@ -32,6 +32,7 @@ public class Associated extends BaseValidateParse {
                         Iterator iterator = objs.iterator();
                         while (iterator.hasNext()) {
                             JPABase member = (JPABase) iterator.next();
+                            if (member == null) continue;
                             if (member.valid()) {
                                 validateResultList.addAll(member.validateResults);
                             }
@@ -39,6 +40,7 @@ public class Associated extends BaseValidateParse {
                         }
                     } else/*单个对象*/ {
                         JPABase member = (JPABase) obj;
+                        if (member == null) continue;
                         if (!member.valid()) {
                             validateResultList.addAll(member.validateResults);
                         }

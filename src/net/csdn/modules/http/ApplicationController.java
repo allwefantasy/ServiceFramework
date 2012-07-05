@@ -3,13 +3,20 @@ package net.csdn.modules.http;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
 import net.csdn.exception.ArgumentErrorException;
+import net.csdn.modules.mock.MockRestRequest;
+import net.csdn.modules.mock.MockRestResponse;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.xml.XMLSerializer;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
+
+import static net.csdn.common.collections.WowCollections.newHashMap;
 
 /**
  * BlogInfo: william
@@ -63,15 +70,22 @@ public abstract class ApplicationController {
 
 
     public String toJson(Object obj) {
+        return _toJson(obj).toString();
+    }
 
+    public JSON _toJson(Object obj) {
+        JsonConfig config = new JsonConfig();
+        config.setIgnoreDefaultExcludes(false);
+        config.setCycleDetectionStrategy(CycleDetectionStrategy.NOPROP);
+        config.registerJsonValueProcessor(Date.class, new DateJsonValueProcessor());
         if (obj instanceof Collection) {
-            return JSONArray.fromObject(obj).toString();
+            return JSONArray.fromObject(obj, config);
         }
-        return JSONObject.fromObject(obj).toString();
+        return JSONObject.fromObject(obj, config);
     }
 
     public String toXML(Object obj) {
-        JSON json = obj instanceof Collection ? JSONArray.fromObject(obj) : JSONObject.fromObject(obj);
+        JSON json = _toJson(obj);
         XMLSerializer xmlSerializer = new XMLSerializer();
         return xmlSerializer.write(json);
     }
@@ -196,6 +210,16 @@ public abstract class ApplicationController {
 
     public String[] paramAsStringArray(String key, String[] defaultValue) {
         return request.paramAsStringArray(key, defaultValue);
+    }
+
+    public ApplicationController mockRequest(Map<String, String> params, RestRequest.Method method, String xmlOrJsonData) {
+        this.request = new MockRestRequest(params, method, xmlOrJsonData);
+        this.restResponse = new MockRestResponse();
+        return this;
+    }
+
+    public RestResponse mockResponse() {
+        return restResponse;
     }
 
 }

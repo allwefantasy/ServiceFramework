@@ -1,6 +1,5 @@
 package net.csdn.bootstrap;
 
-import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.bootstrap.loader.impl.*;

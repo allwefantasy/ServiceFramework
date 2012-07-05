@@ -1,4 +1,4 @@
-package net.csdn;
+package net.csdn.junit;
 
 /**
  * BlogInfo: WilliamZhu

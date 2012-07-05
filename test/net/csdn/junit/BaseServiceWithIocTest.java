@@ -1,6 +1,7 @@
-package net.csdn;
+package net.csdn.junit;
 
 import com.google.inject.Injector;
+import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.Bootstrap;
 import org.junit.After;
 import org.junit.Before;
