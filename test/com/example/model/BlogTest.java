@@ -10,6 +10,7 @@ import org.junit.Test;
 import java.util.List;
 
 import static net.csdn.common.collections.WowCollections.newHashMap;
+import static org.junit.Assert.assertTrue;
 
 /**
  * BlogInfo: WilliamZhu
@@ -30,15 +31,15 @@ public class BlogTest extends BaseServiceWithIocTest {
     public void testAssociated() throws Exception {
         Blog blog = Blog.create(newHashMap("user_name", "jjj", "blog_info.info", ""));
 
-        Assert.assertTrue(blog.valid() == false);
-        Assert.assertTrue(blog.validateResults.size() == 1);
+        assertTrue(blog.valid() == false);
+        assertTrue(blog.validateResults.size() == 1);
 
     }
 
     @Test
     public void testParam() throws Exception {
         Article article = Article.create(newHashMap("content", "天国", "blog.user_name", "wow"));
-        Assert.assertTrue(article
+        assertTrue(article
                 .attr("blog", Blog.class)
                 .attr("user_name", String.class)
                 .equals("wow"));
@@ -68,16 +69,16 @@ public class BlogTest extends BaseServiceWithIocTest {
         //manyToOne
         Article article = blog.m("articles").add(newHashMap("content", "性能设计"));
 
-        Assert.assertTrue(article.validateResults.size() == 0);
-        Assert.assertTrue(article.attr("id", Integer.class) != null);
-        Assert.assertTrue(article.attr("content", String.class).equals("性能设计"));
+        assertTrue(article.validateResults.size() == 0);
+        assertTrue(article.attr("id", Integer.class) != null);
+        assertTrue(article.attr("content", String.class).equals("性能设计"));
 
         Article.deleteAll();
 
         article = blog.m("articles").add(newHashMap("content", ""));
 
-        Assert.assertTrue(article.validateResults.size() > 0);
-        Assert.assertTrue(article.attr("id", Integer.class) == null);
+        assertTrue(article.validateResults.size() > 0);
+        assertTrue(article.attr("id", Integer.class) == null);
 
         //oneToOne
         blog = Blog.create(newHashMap("user_name", "jjj", "blog_info.info", "wow"));
@@ -100,7 +101,7 @@ public class BlogTest extends BaseServiceWithIocTest {
 
         List<Article> articles = Article.findAll();
         article = articles.get(0);
-        Assert.assertTrue(article.attr("blog", Blog.class).attr("user_name", String.class).equals("wow"));
+        assertTrue(article.attr("blog", Blog.class).attr("user_name", String.class).equals("wow"));
 
 
     }
@@ -108,16 +109,16 @@ public class BlogTest extends BaseServiceWithIocTest {
     @Test
     public void testLengthValidate() throws Exception {
         Blog blog = Blog.create(newHashMap("user_name", "wow"));
-        Assert.assertTrue(blog.valid() == true);
+        assertTrue(blog.valid() == true);
 
         blog = Blog.create(newHashMap("user_name", "wowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwowwow"));
-        Assert.assertTrue(blog.valid() == false);
-        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("user_name文字太长"));
+        assertTrue(blog.valid() == false);
+        assertTrue(blog.validateResults.get(0).getMessage().equals("user_name文字太长"));
 
 
         blog = Blog.create(newHashMap("user_name", "w"));
-        Assert.assertTrue(blog.valid() == false);
-        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("user_name文字太短"));
+        assertTrue(blog.valid() == false);
+        assertTrue(blog.validateResults.get(0).getMessage().equals("user_name文字太短"));
     }
 
     @Test
@@ -137,14 +138,14 @@ public class BlogTest extends BaseServiceWithIocTest {
     @Test
     public void testUniquenessValidate() throws Exception {
         Blog blog = Blog.create(newHashMap("user_name", "wow"));
-        Assert.assertTrue(blog.valid() == true);
+        assertTrue(blog.valid() == true);
 
         blog.save();
 
         blog = Blog.create(newHashMap("user_name", "wow"));
-        Assert.assertTrue(blog.valid() == false);
+        assertTrue(blog.valid() == false);
 
-        Assert.assertTrue(blog.validateResults.get(0).getMessage().equals("user_name is not uniq"));
+        assertTrue(blog.validateResults.get(0).getMessage().equals("user_name is not uniq"));
 
 
     }

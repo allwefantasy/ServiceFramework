@@ -21,21 +21,14 @@ import static net.csdn.validate.ValidateHelper.Length.*;
  * Time: 下午2:25
  */
 @Entity
-@NotMapping({"blog_info_id"})
 public class Blog extends Model {
 
+
     @Validate
-    private final static Map $articles = newHashMap(
-            associated,
-            newArrayList(
-                    "blog_info"
-            )
-    );
+    private final static Map $validate = newHashMap(associated, newArrayList("blog_info"));
     @Validate
     private final static Map $user_name/*需要验证的字段名 以$开始*/ =
             newHashMap(
-
-                    /*------------user_name 长度限制--------------------------*/
                     length,
                     newHashMap(
                             minimum, 2,
@@ -43,10 +36,10 @@ public class Blog extends Model {
                             too_short, "{}文字太短",
                             too_long, "{}文字太长"),
 
-                    /*------------------唯一性验证---------------------------*/
                     uniqueness,
                     true
             );
+
 
     @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL)
     @Hint(Article.class)
@@ -54,14 +47,4 @@ public class Blog extends Model {
 
     @OneToOne(cascade = {CascadeType.PERSIST})
     private BlogInfo blog_info;
-    /*
-    这个方法会自动生成。如果你定义了的话，则使用你定义的 ，调用方式：
-    JPABase model = blog.m("articles")
-    */
-//    public Article articles() {
-//        Article article = new Article();
-//        article.attr("blog", this);
-//        articles.add(article);
-//        return article;
-//    }
 }

@@ -13,7 +13,6 @@ import static net.csdn.validate.ValidateHelper.*;
 
 
 @Entity
-@NotMapping({"blog_id"})
 public class Article extends Model {
 
 

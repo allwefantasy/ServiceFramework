@@ -16,7 +16,6 @@ import java.util.List;
 import static net.csdn.common.settings.ImmutableSettings.Builder.EMPTY_SETTINGS;
 
 /**
- * BlogInfo: william
  * Date: 11-8-31
  * Time: 下午5:34
  */

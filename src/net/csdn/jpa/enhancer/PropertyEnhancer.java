@@ -16,10 +16,9 @@ import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
 import net.csdn.jpa.type.DBType;
 
-import javax.persistence.Column;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.*;
 import java.util.HashMap;
@@ -62,11 +61,8 @@ public class PropertyEnhancer implements BitEnhancer {
         createAnnotation(attribute, annotationType, new HashMap<String, MemberValue>());
     }
 
-    private void autoInjectProperty(CtClass ctClass) {
-        //连接数据库，自动获取所有信息，然后添加属性
-        Connection conn = null;
-        String entitySimpleName = ctClass.getSimpleName();
-        List<String> skipFields = newArrayList();
+
+    private void notMapping(CtClass ctClass, List<String> skipFields) {
         if (ctClass.hasAnnotation(NotMapping.class)) {
             try {
                 NotMapping notMapping = (NotMapping) ctClass.getAnnotation(NotMapping.class);
@@ -77,6 +73,44 @@ public class PropertyEnhancer implements BitEnhancer {
                 e.printStackTrace();
             }
         }
+        autoNotMapping(ctClass, skipFields);
+    }
+
+    //自动过滤掉
+    private void autoNotMapping(CtClass ctClass, List<String> skipFields) {
+        CtField[] fields = ctClass.getDeclaredFields();
+        for (CtField ctField : fields) {
+            guessNotMappingName(ctField, ManyToOne.class, skipFields);
+            guessNotMappingName(ctField, OneToOne.class, skipFields);
+        }
+    }
+
+    private void guessNotMappingName(CtField ctField, Class clzz, List<String> skipFields) {
+        if (ctField.hasAnnotation(clzz)) {
+            Method mappedBy = null;
+            try {
+                Object wow = ctField.getAnnotation(clzz);
+                mappedBy = wow.getClass().getMethod("mappedBy");
+                String value = (String) mappedBy.invoke(wow);
+                if (value == null || value.isEmpty()) {
+                    skipFields.add(ctField.getName() + "_id");
+                }
+            } catch (Exception e) {
+                if (mappedBy == null) {
+                    skipFields.add(ctField.getName() + "_id");
+                }
+            }
+        }
+    }
+
+
+    private void autoInjectProperty(CtClass ctClass) {
+        //连接数据库，自动获取所有信息，然后添加属性
+        Connection conn = null;
+        String entitySimpleName = ctClass.getSimpleName();
+        List<String> skipFields = newArrayList();
+
+        notMapping(ctClass, skipFields);
 
         try {
             DBType dbType = ServiceFramwork.injector.getInstance(DBType.class);

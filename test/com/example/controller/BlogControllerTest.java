@@ -65,7 +65,6 @@ public class BlogControllerTest extends BaseServiceWithIocTest {
         blogController.articles();
         RestResponse restResponse = blogController.mockResponse();
         Assert.assertTrue(restResponse.content() != null);
-        System.out.println(restResponse.content());
     }
 
     @Override
