@@ -1,16 +1,19 @@
 package net.csdn.modules.http;
 
 import net.csdn.ServiceFramwork;
+import net.csdn.annotation.AroundFilter;
 import net.csdn.annotation.BeforeFilter;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.PathTrie;
 import net.csdn.exception.ArgumentErrorException;
+import net.csdn.exception.ExceptionHandler;
 import net.csdn.exception.RecordNotFoundException;
 import net.csdn.filter.FilterHelper;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +79,7 @@ public class RestController {
 
         //check beforeFilter
         Field[] fields = handlerKey.v1().getDeclaredFields();
+        boolean containsAroundFilter = false;
         for (Field temp : fields) {
             if (temp.isAnnotationPresent(BeforeFilter.class)) {
                 temp.setAccessible(true);
@@ -98,13 +102,61 @@ public class RestController {
                 }
 
             }
+            if (temp.isAnnotationPresent(AroundFilter.class)) {
+                temp.setAccessible(true);
+                Map beforeFilter = (Map) temp.get(null);
+
+                String beforeMethod = temp.getName().substring(1);
+                boolean shouldInvoke = false;
+                if (beforeFilter.containsKey(FilterHelper.AroundFilter.only)) {
+                    List<String> list = (List) beforeFilter.get(FilterHelper.AroundFilter.only);
+                    shouldInvoke = list.contains(handlerKey.v2().getName());
+                } else if (beforeFilter.containsKey(FilterHelper.AroundFilter.except)) {
+                    List<String> list = (List) beforeFilter.get(FilterHelper.AroundFilter.except);
+                    shouldInvoke = !list.contains(handlerKey.v2().getName());
+                } else {
+                    shouldInvoke = true;
+                }
+                if (shouldInvoke) {
+                    Method aroundMethodFilter = handlerKey.v1().getDeclaredMethod(beforeMethod, Action.class);
+                    aroundMethodFilter.setAccessible(true);
+                    aroundMethodFilter.invoke(applicationController, new Action(handlerKey.v2(), applicationController));
+                }
+                containsAroundFilter = shouldInvoke;
+            }
         }
 
         //invoke real
-        handlerKey.v2().invoke(applicationController);
+        if (!containsAroundFilter)
+            handlerKey.v2().invoke(applicationController);
 
     }
 
+    public class Action {
+        private Method method;
+        private ApplicationController applicationController;
+
+        public Action(Method method, ApplicationController applicationController) {
+            this.method = method;
+            this.applicationController = applicationController;
+        }
+
+        public void invoke() {
+            try {
+                method.invoke(applicationController);
+            } catch (Exception e) {
+                try {
+                    ExceptionHandler.renderHandle(e);
+                } catch (Exception e1) {
+                    try {
+                        throw e1;
+                    } catch (Exception e2) {
+
+                    }
+                }
+            }
+        }
+    }
 
     private Tuple<Class<ApplicationController>, Method> getHandler(RestRequest request) {
         String path = getPath(request);

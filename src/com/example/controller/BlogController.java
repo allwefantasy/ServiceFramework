@@ -4,6 +4,7 @@ import com.example.model.Article;
 import com.example.model.Blog;
 import com.example.service.blog.BlogService;
 import com.google.inject.Inject;
+import net.csdn.annotation.AroundFilter;
 import net.csdn.annotation.At;
 import net.csdn.annotation.BeforeFilter;
 import net.csdn.common.logging.CSLogger;
@@ -11,6 +12,7 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.exception.RecordNotFoundException;
 import net.csdn.filter.FilterHelper;
 import net.csdn.modules.http.ApplicationController;
+import net.csdn.modules.http.RestController;
 import net.csdn.modules.http.ViewType;
 
 import java.util.ArrayList;
@@ -43,6 +45,9 @@ public class BlogController extends ApplicationController {
 
     @BeforeFilter
     private final static Map $filter3 = newHashMap();
+
+    @AroundFilter
+    private final static Map $filter4 = newHashMap();
 
 
     //需要Service的Action
@@ -101,6 +106,13 @@ public class BlogController extends ApplicationController {
 
     private void filter3() {
         logger.info("filter3");
+
+    }
+
+    private void filter4(RestController.Action action) {
+        logger.info("before action");
+        action.invoke();
+        logger.info("after action");
 
     }
 

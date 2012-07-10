@@ -4,10 +4,7 @@ import com.google.inject.Inject;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
-import net.csdn.exception.ArgumentErrorException;
-import net.csdn.exception.RecordExistedException;
-import net.csdn.exception.RecordNotFoundException;
-import net.csdn.exception.RenderFinish;
+import net.csdn.exception.*;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.support.HttpStatus;
 import net.sf.json.JSONException;
@@ -151,15 +148,7 @@ public class HttpServer {
                     try {
                         controller.dispatchRequest(restRequest, this);
                     } catch (Exception e) {
-                        if (e instanceof InvocationTargetException) {
-                            InvocationTargetException invocationTargetException = (InvocationTargetException) e;
-                            if (invocationTargetException.getTargetException() instanceof RenderFinish) {
-                                return;
-                            }
-                        } else {
-                            throw e;
-                        }
-                        if (!(e instanceof RenderFinish)) throw e;
+                        ExceptionHandler.renderHandle(e);
                     }
                 }
             }
