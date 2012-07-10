@@ -69,14 +69,27 @@ public class RestController {
         }
         ApplicationController applicationController = ServiceFramwork.injector.getInstance(handlerKey.v1());
 
+        enhanceApplicationController(applicationController, request, restResponse);
+
+        //check beforeFilter
+        boolean containsAroundFilter = filter(handlerKey, applicationController);
+
+        //invoke real
+        if (!containsAroundFilter)
+            handlerKey.v2().invoke(applicationController);
+
+    }
+
+    private void enhanceApplicationController(ApplicationController applicationController, final RestRequest request, RestResponse restResponse) throws Exception {
         Field field = ApplicationController.class.getDeclaredField("request");
         field.setAccessible(true);
         field.set(applicationController, request);
         field = ApplicationController.class.getDeclaredField("restResponse");
         field.setAccessible(true);
         field.set(applicationController, restResponse);
+    }
 
-
+    private boolean filter(Tuple<Class<ApplicationController>, Method> handlerKey, ApplicationController applicationController) throws Exception {
         //check beforeFilter
         Field[] fields = handlerKey.v1().getDeclaredFields();
         boolean containsAroundFilter = false;
@@ -90,11 +103,13 @@ public class RestController {
                 if (beforeFilter.containsKey(FilterHelper.BeforeFilter.only)) {
                     List<String> list = (List) beforeFilter.get(FilterHelper.BeforeFilter.only);
                     shouldInvoke = list.contains(handlerKey.v2().getName());
-                }
-                if (beforeFilter.containsKey(FilterHelper.BeforeFilter.except)) {
+                } else if(beforeFilter.containsKey(FilterHelper.BeforeFilter.except)) {
                     List<String> list = (List) beforeFilter.get(FilterHelper.BeforeFilter.except);
                     shouldInvoke = !list.contains(handlerKey.v2().getName());
+                }else{
+                    shouldInvoke = true;
                 }
+
                 if (shouldInvoke) {
                     Method beforeMethodFilter = handlerKey.v1().getDeclaredMethod(beforeMethod);
                     beforeMethodFilter.setAccessible(true);
@@ -125,11 +140,7 @@ public class RestController {
                 containsAroundFilter = shouldInvoke;
             }
         }
-
-        //invoke real
-        if (!containsAroundFilter)
-            handlerKey.v2().invoke(applicationController);
-
+        return containsAroundFilter;
     }
 
     public class Action {
