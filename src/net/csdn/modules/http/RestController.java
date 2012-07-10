@@ -1,15 +1,19 @@
 package net.csdn.modules.http;
 
 import net.csdn.ServiceFramwork;
+import net.csdn.annotation.BeforeFilter;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.PathTrie;
 import net.csdn.exception.ArgumentErrorException;
 import net.csdn.exception.RecordNotFoundException;
+import net.csdn.filter.FilterHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
 
 import static net.csdn.common.logging.support.MessageFormat.format;
 
@@ -68,9 +72,39 @@ public class RestController {
         field = ApplicationController.class.getDeclaredField("restResponse");
         field.setAccessible(true);
         field.set(applicationController, restResponse);
+
+
+        //check beforeFilter
+        Field[] fields = handlerKey.v1().getDeclaredFields();
+        for (Field temp : fields) {
+            if (temp.isAnnotationPresent(BeforeFilter.class)) {
+                temp.setAccessible(true);
+                Map beforeFilter = (Map) temp.get(null);
+
+                String beforeMethod = temp.getName().substring(1);
+                boolean shouldInvoke = false;
+                if (beforeFilter.containsKey(FilterHelper.BeforeFilter.only)) {
+                    List<String> list = (List) beforeFilter.get(FilterHelper.BeforeFilter.only);
+                    shouldInvoke = list.contains(handlerKey.v2().getName());
+                }
+                if (beforeFilter.containsKey(FilterHelper.BeforeFilter.except)) {
+                    List<String> list = (List) beforeFilter.get(FilterHelper.BeforeFilter.except);
+                    shouldInvoke = !list.contains(handlerKey.v2().getName());
+                }
+                if (shouldInvoke) {
+                    Method beforeMethodFilter = handlerKey.v1().getDeclaredMethod(beforeMethod);
+                    beforeMethodFilter.setAccessible(true);
+                    beforeMethodFilter.invoke(applicationController);
+                }
+
+            }
+        }
+
+        //invoke real
         handlerKey.v2().invoke(applicationController);
 
     }
+
 
     private Tuple<Class<ApplicationController>, Method> getHandler(RestRequest request) {
         String path = getPath(request);

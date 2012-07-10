@@ -15,6 +15,11 @@ public class ServiceFramwork {
     public static Injector injector;
     public static ScanService scanService = new DefaultScanService();
     public static ClassPool classPool;
+    public static Mode mode = Mode.development;
+
+    public static enum Mode {
+        development, production, test
+    }
 
     static {
         classPool = new ClassPool();

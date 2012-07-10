@@ -5,7 +5,7 @@ package net.csdn.junit;
  * Date: 12-6-20
  * Time: 上午10:39
  */
-public class BaseServiceWithData extends BaseServiceWithJettyTest {
+public class Data extends JettyTest {
     protected String mapping() {
         return "{\"csdn\" : {\n" +
                 "        \"_source\" : { \"enabled\" : false },\n" +

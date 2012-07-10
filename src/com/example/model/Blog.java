@@ -26,25 +26,15 @@ public class Blog extends Model {
 
     @Validate
     private final static Map $validate = newHashMap(associated, newArrayList("blog_info"));
-    @Validate
-    private final static Map $user_name/*需要验证的字段名 以$开始*/ =
-            newHashMap(
-                    length,
-                    newHashMap(
-                            minimum, 2,
-                            maximum, 16,
-                            too_short, "{}文字太短",
-                            too_long, "{}文字太长"),
-
-                    uniqueness,
-                    true
-            );
-
 
     @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL)
     @Hint(Article.class)
     private List<Article> articles = new ArrayList<Article>();
 
+
     @OneToOne(cascade = {CascadeType.PERSIST})
     private BlogInfo blog_info;
+
+    @OneToOne
+    private User user;
 }

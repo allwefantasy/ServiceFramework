@@ -1,9 +1,8 @@
 package com.example.model;
 
-import net.csdn.junit.BaseServiceWithIocTest;
+import net.csdn.junit.IocTest;
 import net.csdn.jpa.JPA;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertTrue;
  * Date: 12-7-1
  * Time: 下午2:26
  */
-public class BlogTest extends BaseServiceWithIocTest {
+public class BlogTest extends IocTest {
     @Override
     @Before
     public void setUp() throws Exception {

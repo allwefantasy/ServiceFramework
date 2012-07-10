@@ -26,6 +26,7 @@ public class BlogInfo extends Model {
                     presence, newHashMap(message, "{}不能为空")
             );
 
+
     @OneToOne(mappedBy = "blog_info")
     private Blog blog;
 }

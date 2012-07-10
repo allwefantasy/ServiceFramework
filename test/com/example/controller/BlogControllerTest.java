@@ -3,7 +3,7 @@ package com.example.controller;
 import com.example.model.Article;
 import com.example.model.Blog;
 import net.csdn.jpa.JPA;
-import net.csdn.junit.BaseServiceWithIocTest;
+import net.csdn.junit.IocTest;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.RestResponse;
 import org.junit.After;
@@ -18,7 +18,7 @@ import static net.csdn.common.collections.WowCollections.newHashMap;
  * Date: 12-7-5
  * Time: 下午5:00
  */
-public class BlogControllerTest extends BaseServiceWithIocTest {
+public class BlogControllerTest extends IocTest {
     @Override
     @Before
     public void setUp() throws Exception {
@@ -27,25 +27,6 @@ public class BlogControllerTest extends BaseServiceWithIocTest {
         Article.deleteAll();
     }
 
-    @Test
-    public void testHello() throws Exception {
-
-    }
-
-    @Test
-    public void testCreateArticle() throws Exception {
-
-    }
-
-    @Test
-    public void testCreateBlog() throws Exception {
-
-    }
-
-    @Test
-    public void testFind() throws Exception {
-
-    }
 
     @Test
     public void testArticles() throws Exception {
@@ -62,7 +43,8 @@ public class BlogControllerTest extends BaseServiceWithIocTest {
         BlogController blogController = new BlogController();
         blogController.mockRequest(newHashMap("id", blog.attr("id", Integer.class).toString()), RestRequest.Method.GET, null);
 
-        blogController.articles();
+        blogController.m("articles");
+
         RestResponse restResponse = blogController.mockResponse();
         Assert.assertTrue(restResponse.content() != null);
     }

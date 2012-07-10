@@ -14,12 +14,13 @@ import java.lang.reflect.Method;
  * Date: 12-6-17
  * Time: 下午10:21
  */
-public class BaseServiceWithIocTest {
+public class IocTest {
     protected static Injector injector;
-
+    protected static ServiceFramwork.Mode mode = ServiceFramwork.mode;
 
     @Before
     public void setUp() throws Exception {
+        ServiceFramwork.mode = ServiceFramwork.Mode.test;
         //加载Guice容器
         Method method = Bootstrap.class.getDeclaredMethod("configureSystem");
         method.setAccessible(true);
@@ -29,6 +30,7 @@ public class BaseServiceWithIocTest {
 
     @After
     public void tearDown() throws Exception {
+        ServiceFramwork.mode = mode;
     }
 
     /*

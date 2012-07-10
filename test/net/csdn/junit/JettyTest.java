@@ -9,7 +9,7 @@ import org.junit.Before;
  * Date: 12-6-17
  * Time: 下午10:27
  */
-public class BaseServiceWithJettyTest extends BaseServiceWithIocTest {
+public class JettyTest extends IocTest {
 
     @Before
     public void setUp() throws Exception {
