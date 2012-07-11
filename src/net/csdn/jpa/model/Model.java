@@ -1,7 +1,9 @@
 package net.csdn.jpa.model;
 
+import net.csdn.ServiceFramwork;
 import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.exception.JPAQueryException;
+import net.csdn.modules.persist.mysql.MysqlClient;
 
 import javax.persistence.Query;
 import java.util.Arrays;
@@ -15,6 +17,11 @@ import java.util.Map;
  */
 public class Model extends JPABase {
 
+
+    public static List<Map> findBySql(String sql, Object... params) {
+        //TODO:竟然在这里使用了  ServiceFramwork.injector 疯掉了....  去掉，去掉....
+        return ServiceFramwork.injector.getInstance(MysqlClient.class).query(sql, params);
+    }
 
     //----------------------------------------------------------------------------------
     public static JPQL where(String cc) {
