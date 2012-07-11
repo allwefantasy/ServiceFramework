@@ -26,6 +26,7 @@ public class JPQL {
     private Map<String, Object> bindings = new HashMap();
     private static String EMPTY_STRING = " ";
     private String entity = "";
+    private String defaultName = "";
 
     public JPQL(JPAContext jpaContext) {
         this.jpaContext = jpaContext;
@@ -34,6 +35,7 @@ public class JPQL {
     public JPQL(JPAContext jpaContext, String entity) {
         this.jpaContext = jpaContext;
         this.entity = entity;
+        this.defaultName = entity.toLowerCase();
     }
 
 
@@ -43,14 +45,23 @@ public class JPQL {
 
     //下面这些方法都是模拟active_record的链式操作
     public JPQL where(String condition, Map params) {
-        this.where = "where" + EMPTY_STRING + condition;
+        this.where = "where" + EMPTY_STRING + parseWhere(condition);
         this.bindings = params;
         return this;
     }
 
     public JPQL where(String condition) {
-        this.where = "where" + EMPTY_STRING + condition;
+        this.where = "where" + EMPTY_STRING + parseWhere(condition);
         return this;
+    }
+
+    private String parseWhere(String condition) {
+        String newCondition = "";
+        String[] ands = condition.split("and|AND");
+        for (String and : ands) {
+            newCondition += (EMPTY_STRING + defaultName + "." + and);
+        }
+        return newCondition;
     }
 
     public JPQL select(String select) {
@@ -59,13 +70,16 @@ public class JPQL {
     }
 
     public JPQL joins(String joins) {
-
-        this.joins = joins;
+        if (joins.contains("join")) {
+            this.joins = joins;
+        } else {
+            this.joins = "join " + joins;
+        }
         return this;
     }
 
     public JPQL order(String order) {
-        this.order = "order by " + EMPTY_STRING + order;
+        this.order = "order by " + EMPTY_STRING + defaultName + "." + order;
         return this;
     }
 
@@ -80,7 +94,8 @@ public class JPQL {
     }
 
     public List fetch() {
-        sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + EMPTY_STRING + where + EMPTY_STRING + joins + EMPTY_STRING + order + EMPTY_STRING;
+        sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
+        logger.info(sql);
         //limit 1.取一条
         Query query = em().createQuery(sql);
 

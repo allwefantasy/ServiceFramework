@@ -95,6 +95,12 @@ public class BlogController extends ApplicationController {
         render(articles);
     }
 
+    @At(path = {"/blog/articles2"}, types = {GET})
+    public void articles2() {
+        List<Blog> blogs = Blog.where("id=:id", newHashMap("id", paramAsInt("id"))).joins("join Article articles").fetch();
+        render(blogs);
+    }
+
     private void filter1() {
         logger.info("filter1");
         render("createBlog,find will not execute");

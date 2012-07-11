@@ -44,6 +44,11 @@ public class BlogTest extends IocTest {
                 .equals("wow"));
     }
 
+    @Test
+    public void testSql(){
+         Blog.where("id=:id", newHashMap("id", 1)).joins("join blog.articles").fetch();
+         Blog.joins("join blog.articles").fetch();
+    }
 
     @Test
     public void testBlogInfoAndBlog() throws Exception {

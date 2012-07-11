@@ -27,6 +27,26 @@ public class BlogControllerTest extends IocTest {
         Article.deleteAll();
     }
 
+    @Test
+    public void testArticles2() throws Exception {
+
+        //数据准备
+        final Blog blog = Blog.create(newHashMap("user_name", "jack"));
+        blog.save();
+        //准备一百篇博文
+        for (int i = 0; i < 100; i++) {
+            blog.m("articles").add(newHashMap("content", "天国" + i));
+        }
+
+        //为controller填充请求参数
+        BlogController blogController = new BlogController();
+        blogController.mockRequest(newHashMap("id", blog.attr("id", Integer.class).toString()), RestRequest.Method.GET, null);
+
+        blogController.m("articles2");
+
+        RestResponse restResponse = blogController.mockResponse();
+        Assert.assertTrue(restResponse.content() != null);
+    }
 
     @Test
     public void testArticles() throws Exception {

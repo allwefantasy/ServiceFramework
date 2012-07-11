@@ -23,7 +23,6 @@ import static net.csdn.validate.ValidateHelper.Length.*;
 @Entity
 public class Blog extends Model {
 
-
     @Validate
     private final static Map $validate = newHashMap(associated, newArrayList("blog_info"));
 
