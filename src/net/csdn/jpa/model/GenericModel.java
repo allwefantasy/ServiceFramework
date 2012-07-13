@@ -9,13 +9,13 @@ import java.lang.reflect.Field;
  */
 public interface GenericModel {
 
-    public <T extends GenericModel> T save();
+    public boolean save();
 
     public void delete();
 
-    public void update();
+    public boolean update();
 
-    public void refresh();
+    public boolean refresh();
 
     public Object key();
 

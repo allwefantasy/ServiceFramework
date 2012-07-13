@@ -49,7 +49,7 @@ public class BlogController extends ApplicationController {
     @At(path = {"/blog"}, types = {POST})
     public void createBlog() {
         Blog blog = Blog.create(paramAsJSON());
-        if (!blog.valid()) {
+        if (!blog.save()) {
             render(HttpStatusBadRequest, blog.validateResults);
         }
         render(format(OK, "博客创建成功"));
@@ -59,7 +59,7 @@ public class BlogController extends ApplicationController {
     @At(path = {"/blog/comments"}, types = {POST})
     public void createComment() {
         BlogComment blogComment = blog.m("blog_comments").add(map("content", param("content")));
-        if (!blogComment.valid()) {
+        if (!blogComment.save()) {
             render(HttpStatusBadRequest, blogComment.validateResults);
         }
         render(format(OK, "文章添加成功"));

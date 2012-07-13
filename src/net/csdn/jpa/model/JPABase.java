@@ -70,19 +70,22 @@ public class JPABase implements GenericModel {
     }
 
     @Override
-    public <T extends GenericModel> T save() {
-        em().persist(this);
-        em().flush();
-        return (T) this;
+    public boolean save() {
+        if (valid()) {
+            em().persist(this);
+            em().flush();
+            return true;
+        } else {
+            return false;
+        }
+
+
     }
 
     public <T extends JPABase> T add(Map params) {
         ParamBinding paramBinding = new ParamBinding();
         paramBinding.parse(params);
         paramBinding.toModel(this);
-        if (valid()) {
-            save();
-        }
         return (T) this;
     }
 
@@ -102,9 +105,14 @@ public class JPABase implements GenericModel {
     }
 
     @Override
-    public void refresh() {
-        em().refresh(this);
-        em().flush();
+    public boolean refresh() {
+        if (valid()) {
+            em().refresh(this);
+            em().flush();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -114,9 +122,14 @@ public class JPABase implements GenericModel {
     }
 
     @Override
-    public void update() {
-        em().refresh(this);
-        em().flush();
+    public boolean update() {
+        if (valid()) {
+            em().merge(this);
+            em().flush();
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
