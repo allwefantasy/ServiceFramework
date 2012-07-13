@@ -101,6 +101,16 @@ public class HttpServer {
                     return this.content;
                 }
 
+                @Override
+                public Object originContent() {
+                    return null;
+                }
+
+                @Override
+                public RestResponse originContent(Object obj) {
+                    return null;
+                }
+
 
                 public void send() throws IOException {
                     if (content != null) {

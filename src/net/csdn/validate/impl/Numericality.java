@@ -5,19 +5,10 @@ import net.csdn.validate.ValidateHelper;
 import net.csdn.validate.ValidateResult;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import static net.csdn.common.collections.WowCollections.newArrayList;
-import static net.csdn.common.collections.WowMaps.newHashMap;
-import static net.csdn.common.logging.support.MessageFormat.format;
-import static net.csdn.validate.ValidateHelper.Numericality.*;
-import static net.csdn.validate.ValidateHelper.message;
+import static net.csdn.common.collections.WowCollections.list;
 
 /**
  * BlogInfo: WilliamZhu

@@ -1,7 +1,6 @@
 package net.csdn.jpa.model;
 
 import net.csdn.ServiceFramwork;
-import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.exception.JPAQueryException;
 import net.csdn.modules.persist.mysql.MysqlClient;
 
@@ -31,6 +30,7 @@ public class Model extends JPABase {
     public static JPQL where(String cc, Map params) {
         throw new UnsupportedOperationException("ooooooops...not implemented yet....");
     }
+
 
     public static JPQL select(String cc) {
         throw new UnsupportedOperationException("ooooooops...not implemented yet....");

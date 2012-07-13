@@ -13,8 +13,8 @@ import net.csdn.modules.scan.ScanService;
  */
 public class ServiceFramwork {
     public static Injector injector;
-    public static ScanService scanService = new DefaultScanService();
-    public static ClassPool classPool;
+    public final static ScanService scanService = new DefaultScanService();
+    public final static ClassPool classPool;
     public static Mode mode = Mode.development;
 
     public static enum Mode {

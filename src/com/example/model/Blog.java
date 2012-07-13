@@ -1,8 +1,8 @@
 package com.example.model;
 
-import net.csdn.annotation.Hint;
-import net.csdn.annotation.NotMapping;
+import net.csdn.annotation.Scope;
 import net.csdn.annotation.Validate;
+import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
 
 import javax.persistence.*;
@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.newArrayList;
-import static net.csdn.common.collections.WowCollections.newHashMap;
+import static net.csdn.common.collections.WowCollections.map;
 import static net.csdn.validate.ValidateHelper.*;
-import static net.csdn.validate.ValidateHelper.Length.*;
 
 /**
  * BlogInfo: WilliamZhu
@@ -23,17 +21,33 @@ import static net.csdn.validate.ValidateHelper.Length.*;
 @Entity
 public class Blog extends Model {
 
+
+    /*-------Named Scope-------*/
+    @Scope
+    public final static JPQL activeBlogs = where("status=:status", map("status", Status.active.value));
+
+    /*-------help methods--------*/
+    public enum Status {
+        active(1), locked(0), draft(2), trashed(3), deleted(4);
+        public int value;
+
+        Status(int value) {
+            this.value = value;
+        }
+    }
+
+    /*-------validator--------*/
     @Validate
-    private final static Map $validate = newHashMap(associated, newArrayList("blog_info"));
-
-    @OneToMany(mappedBy = "blog", cascade = CascadeType.ALL)
-    @Hint(Article.class)
-    private List<Article> articles = new ArrayList<Article>();
+    private final static Map $title = map(presence, map("message", "{}字段不能为空"));
 
 
-    @OneToOne(cascade = {CascadeType.PERSIST})
-    private BlogInfo blog_info;
+    /*-------associated--------*/
 
-    @OneToOne
-    private User user;
+    @OneToMany(mappedBy = "blog")
+    private List<BlogComment> blog_comments = new ArrayList<BlogComment>();
+
+
+    @OneToOne(cascade = CascadeType.ALL)
+    private BlogBody blog_body;
+
 }

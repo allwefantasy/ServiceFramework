@@ -1,6 +1,5 @@
 package net.csdn.modules.http;
 
-import net.csdn.ServiceFramwork;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.unit.ByteSizeValue;
@@ -9,6 +8,7 @@ import net.csdn.exception.ArgumentErrorException;
 import net.csdn.exception.RenderFinish;
 import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
+import net.csdn.reflect.ReflectHelper;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -20,8 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
-
-import static net.csdn.common.collections.WowCollections.newHashMap;
 
 /**
  * BlogInfo: william
@@ -37,6 +35,7 @@ public abstract class ApplicationController {
     public static String FAIL = "{\"ok\":false,\"message\":\"{}\"}";
 
     public void render(int status, String content) {
+        restResponse.originContent(content);
         restResponse.write(status, content);
         throw new RenderFinish();
     }
@@ -44,40 +43,47 @@ public abstract class ApplicationController {
 
     //默认json
     public void render(int status, Object result) {
+        restResponse.originContent(result);
         restResponse.write(status, toJson(result));
         throw new RenderFinish();
     }
 
     public void render(int status, String content, ViewType viewType) {
+        restResponse.originContent(content);
         restResponse.write(status, content, viewType);
         throw new RenderFinish();
     }
 
 
     public void render(int status, Object result, ViewType viewType) {
+        restResponse.originContent(result);
         restResponse.write(status, viewType == ViewType.xml ? toXML(result) : toJson(result), viewType);
         throw new RenderFinish();
     }
 
 
     public void render(String content) {
+        restResponse.originContent(content);
         restResponse.write(content);
         throw new RenderFinish();
     }
 
 
     public void render(Object result) {
+        restResponse.originContent(result);
         restResponse.write(toJson(result));
     }
 
 
     public void render(String content, ViewType viewType) {
+        restResponse.originContent(content);
         restResponse.write(content, viewType);
         throw new RenderFinish();
     }
 
 
     public void render(Object result, ViewType viewType) {
+        restResponse.originContent(result);
         restResponse.write(viewType == ViewType.xml ? toXML(result) : toJson(result), viewType);
         throw new RenderFinish();
     }
@@ -228,13 +234,15 @@ public abstract class ApplicationController {
 
     public void m(String method) {
         try {
-            this.getClass().getMethod(method).invoke(this);
+            ReflectHelper.method(this, method);
         } catch (Exception e) {
             if (e instanceof InvocationTargetException) {
                 InvocationTargetException invocationTargetException = (InvocationTargetException) e;
                 if (invocationTargetException.getTargetException() instanceof RenderFinish) {
                     logger.info("invoke " + method + " done");
                 }
+            } else if (e instanceof RenderFinish) {
+
             } else {
                 e.printStackTrace();
             }

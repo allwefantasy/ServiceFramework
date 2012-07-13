@@ -11,6 +11,7 @@ import net.csdn.exception.ArgumentErrorException;
 import net.csdn.exception.ExceptionHandler;
 import net.csdn.exception.RecordNotFoundException;
 import net.csdn.filter.FilterHelper;
+import net.csdn.reflect.ReflectHelper;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -81,12 +82,8 @@ public class RestController {
     }
 
     private void enhanceApplicationController(ApplicationController applicationController, final RestRequest request, RestResponse restResponse) throws Exception {
-        Field field = ApplicationController.class.getDeclaredField("request");
-        field.setAccessible(true);
-        field.set(applicationController, request);
-        field = ApplicationController.class.getDeclaredField("restResponse");
-        field.setAccessible(true);
-        field.set(applicationController, restResponse);
+        ReflectHelper.field(applicationController, "request", request);
+        ReflectHelper.field(applicationController, "restResponse", restResponse);
     }
 
     private boolean filter(Tuple<Class<ApplicationController>, Method> handlerKey, ApplicationController applicationController) throws Exception {
@@ -103,10 +100,10 @@ public class RestController {
                 if (beforeFilter.containsKey(FilterHelper.BeforeFilter.only)) {
                     List<String> list = (List) beforeFilter.get(FilterHelper.BeforeFilter.only);
                     shouldInvoke = list.contains(handlerKey.v2().getName());
-                } else if(beforeFilter.containsKey(FilterHelper.BeforeFilter.except)) {
+                } else if (beforeFilter.containsKey(FilterHelper.BeforeFilter.except)) {
                     List<String> list = (List) beforeFilter.get(FilterHelper.BeforeFilter.except);
                     shouldInvoke = !list.contains(handlerKey.v2().getName());
-                }else{
+                } else {
                     shouldInvoke = true;
                 }
 

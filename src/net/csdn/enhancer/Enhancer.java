@@ -26,7 +26,7 @@ public abstract class Enhancer {
     }
 
 
-    public abstract void enhanceThisClass(DataInputStream dataInputStream) throws Exception;
+    public abstract CtClass enhanceThisClass(DataInputStream dataInputStream) throws Exception;
 
     protected boolean hasAnnotation(CtClass ctClass, String annotation) throws ClassNotFoundException {
         for (Object object : ctClass.getAvailableAnnotations()) {

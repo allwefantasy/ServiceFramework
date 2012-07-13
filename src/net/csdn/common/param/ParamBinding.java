@@ -6,7 +6,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.newHashMap;
+import static net.csdn.common.collections.WowCollections.map;
 
 /**
  * BlogInfo: WilliamZhu
@@ -67,7 +67,7 @@ public class ParamBinding {
                 rootValues.put(keys[0], entry.getValue());
             } else {
                 if (_children.get(keys[0]) == null) {
-                    _children.put(keys[0], newHashMap(keys[1], entry.getValue()));
+                    _children.put(keys[0], map(keys[1], entry.getValue()));
                 } else {
                     _children.get(keys[0]).put(keys[1], entry.getValue());
                     _children.put(keys[0], _children.get(keys[0]));

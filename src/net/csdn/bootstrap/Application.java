@@ -1,5 +1,13 @@
 package net.csdn.bootstrap;
 
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.Loader;
+import javassist.Translator;
+import net.csdn.ServiceFramwork;
+
+import java.lang.reflect.Method;
+
 /**
  * BlogInfo: william
  * Date: 11-8-31
@@ -7,6 +15,15 @@ package net.csdn.bootstrap;
  */
 public class Application {
     public static void main(String[] args) {
-        Bootstrap.main(args);
+        try {
+            CtClass ctClass = ServiceFramwork.classPool.get("net.csdn.bootstrap.Bootstrap");
+            Method method = ctClass.toClass().getMethod("main", new Class[]{args.getClass()});
+            method.invoke(null, new Object[]{args});
+        } catch (Exception e) {
+            e.printStackTrace();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+
     }
 }

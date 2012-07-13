@@ -13,6 +13,7 @@ import java.io.IOException;
  */
 public class MockRestResponse implements RestResponse {
     private String content;
+    private Object object;
     private byte[] contentByte;
     private int status = HttpStatus.HttpStatusOK;
     private String content_type = "application/json; charset=UTF-8";
@@ -49,6 +50,17 @@ public class MockRestResponse implements RestResponse {
 
     public String content() {
         return this.content;
+    }
+
+    @Override
+    public Object originContent() {
+        return object;
+    }
+
+    @Override
+    public RestResponse originContent(Object obj) {
+        this.object = obj;
+        return this;
     }
 
 

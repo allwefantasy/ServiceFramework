@@ -6,12 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * BlogInfo: WilliamZhu
- * Date: 12-7-4
- * Time: 下午9:31
+ * User: WilliamZhu
+ * Date: 12-7-12
+ * Time: 下午3:36
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface Hint {
-    public String value();
+public @interface Scope {
 }

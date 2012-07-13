@@ -2,19 +2,16 @@ package net.csdn.jpa.type.impl;
 
 import com.google.inject.Inject;
 import javassist.bytecode.ConstPool;
-import javassist.bytecode.annotation.AnnotationMemberValue;
 import javassist.bytecode.annotation.EnumMemberValue;
-import javassist.bytecode.annotation.MemberValue;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.type.DBType;
 
 import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 import java.sql.*;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.newHashMap;
+import static net.csdn.common.collections.WowCollections.map;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
@@ -28,7 +25,7 @@ public class MysqlType implements DBType {
 
     @Inject
     private Settings settings;
-    private final static Map<String, String> typeToJava = newHashMap(
+    private final static Map<String, String> typeToJava = map(
             "CHAR", "String",
             "VARCHAR", "String",
             "Text", "String",
@@ -51,15 +48,15 @@ public class MysqlType implements DBType {
         emb.setType("javax.persistence.TemporalType");
         if (type.equals("DATE")) {
             emb.setValue("DATE");
-            return new Tuple<Class, Map>(Temporal.class, newHashMap("value", emb));
+            return new Tuple<Class, Map>(Temporal.class, map("value", emb));
         }
         if (type.equals("DATETIME")) {
-            emb.setValue("TIME");
-            return new Tuple<Class, Map>(Temporal.class, newHashMap("value", emb));
+            emb.setValue("DATE");
+            return new Tuple<Class, Map>(Temporal.class, map("value", emb));
         }
         if (type.equals("TIMESTAMP")) {
             emb.setValue("TIMESTAMP");
-            return new Tuple<Class, Map>(Temporal.class, newHashMap("value", emb));
+            return new Tuple<Class, Map>(Temporal.class, map("value", emb));
         }
         return null;
     }

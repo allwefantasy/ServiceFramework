@@ -3,6 +3,7 @@ package net.csdn.jpa.model;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.param.ParamBinding;
+import net.csdn.jpa.JPA;
 import net.csdn.jpa.context.JPAContext;
 import net.csdn.jpa.model.Model.JPAQuery;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public class JPQL {
     private CSLogger logger = Loggers.getLogger(getClass());
-    private final JPAContext jpaContext;
+    private JPAContext jpaContext;
     private String sql = "";
 
     private String where = "";
@@ -38,22 +39,29 @@ public class JPQL {
         this.defaultName = entity.toLowerCase();
     }
 
-
+    //如果关闭，那么使用新开一个(通常写测试类会往第二个分支走)
     public EntityManager em() {
+        if (jpaContext.em() != null && jpaContext.em().isOpen()) {
+            return jpaContext.em();
+        } else {
+            jpaContext = JPA.getJPAConfig().getJPAContext();
+        }
         return jpaContext.em();
     }
 
     //下面这些方法都是模拟active_record的链式操作
     public JPQL where(String condition, Map params) {
-        this.where = "where" + EMPTY_STRING + parseWhere(condition);
+
+        this.where = (where.isEmpty() ? "where" : " AND ") + EMPTY_STRING + parseWhere(condition);
         this.bindings = params;
         return this;
     }
 
     public JPQL where(String condition) {
-        this.where = "where" + EMPTY_STRING + parseWhere(condition);
+        this.where = (where.isEmpty() ? "where" : " AND ") + EMPTY_STRING + parseWhere(condition);
         return this;
     }
+
 
     private String parseWhere(String condition) {
         String newCondition = "";

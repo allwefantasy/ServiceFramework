@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.newArrayList;
+import static net.csdn.common.collections.WowCollections.list;
 
 /**
  * BlogInfo: WilliamZhu
@@ -26,7 +26,7 @@ import static net.csdn.common.collections.WowCollections.newArrayList;
  */
 public class JPABase implements GenericModel {
 
-    public final static List validateParses = newArrayList();
+    public final static List validateParses = list();
 
     public static JPAContext getJPAContext() {
         return getJPAConfig().getJPAContext();
@@ -90,15 +90,21 @@ public class JPABase implements GenericModel {
     public final List<ValidateResult> validateResults = new ArrayList<ValidateResult>();
 
     public boolean valid() {
+        if (validateResults.size() > 0) return false;
         for (Object validateParse : validateParses) {
             ((ValidateParse) validateParse).parse(this, this.validateResults);
         }
-        if (validateResults.size() > 0) return false;
-        return true;
+        return validateResults.size() == 0;
     }
 
     public EntityManager em() {
         return getJPAContext().em();
+    }
+
+    @Override
+    public void refresh() {
+        em().refresh(this);
+        em().flush();
     }
 
     @Override

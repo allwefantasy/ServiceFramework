@@ -1,6 +1,5 @@
 package net.csdn.validate.impl;
 
-import net.csdn.jpa.JPA;
 import net.csdn.jpa.model.JPQL;
 import net.csdn.validate.BaseValidateParse;
 import net.csdn.validate.ValidateHelper;
@@ -10,7 +9,7 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.newHashMap;
+import static net.csdn.common.collections.WowCollections.map;
 
 /**
  * BlogInfo: WilliamZhu
@@ -33,7 +32,7 @@ public class Uniqueness extends BaseValidateParse {
                     tempField.setAccessible(true);
                     Object value = tempField.get(target);
                     String whereCondition = targetFieldName + "=:hold";
-                    List models = ((JPQL) clzz.getDeclaredMethod("where", String.class, Map.class).invoke(null, whereCondition, newHashMap("hold", value))).fetch();
+                    List models = ((JPQL) clzz.getDeclaredMethod("where", String.class, Map.class).invoke(null, whereCondition, map("hold", value))).fetch();
                     if (models.size() > 0) {
                         validateResultList.add(validateResult(msg, targetFieldName));
                     }

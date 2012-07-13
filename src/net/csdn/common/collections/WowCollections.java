@@ -21,7 +21,7 @@ public class WowCollections {
         return sets;
     }
 
-    public static Map newHashMap(Object... arrays) {
+    public static Map map(Object... arrays) {
         Map maps = new HashMap();
         if (arrays.length % 2 != 0) throw new ArgumentErrorException("arrays 长度 必须为偶数");
         for (int i = 0; i < arrays.length; i++) {
@@ -31,7 +31,7 @@ public class WowCollections {
     }
 
 
-    public static <T> List<T> newArrayList(T... arrays) {
+    public static <T> List<T> list(T... arrays) {
         List<T> list = new ArrayList<T>(arrays.length);
         for (T t : arrays) {
             list.add(t);
@@ -125,7 +125,7 @@ public class WowCollections {
         return sets;
     }
 
-    public static List list(Object[] array) {
+    public static List toList(Object[] array) {
         List lists = new ArrayList();
         for (Object obj : array) {
             lists.add(obj);
@@ -143,7 +143,7 @@ public class WowCollections {
     }
 
     public static List jsonArrayToList(JSONArray jsonArray) {
-        return list(jsonArray.toArray());
+        return toList(jsonArray.toArray());
 
     }
 

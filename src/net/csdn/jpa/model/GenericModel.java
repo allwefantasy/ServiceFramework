@@ -15,21 +15,8 @@ public interface GenericModel {
 
     public void update();
 
+    public void refresh();
+
     public Object key();
-
-
-    public static class Property {
-
-        public String name;
-        public Class<?> type;
-        public Field field;
-        public boolean isSearchable;
-        public boolean isMultiple;
-        public boolean isRelation;
-        public boolean isGenerated;
-        public Class<?> relationType;
-
-    }
-
 
 }

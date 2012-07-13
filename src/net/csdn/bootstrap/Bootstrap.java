@@ -1,5 +1,6 @@
 package net.csdn.bootstrap;
 
+import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.bootstrap.loader.impl.*;
@@ -68,26 +69,30 @@ public class Bootstrap {
         JPA.setSettings(tuple.v1());
     }
 
-//    public static void isLoaded(String name) {
-//        java.lang.reflect.Method m = null;
-//        try {
-//            m = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[]{String.class});
-//            m.setAccessible(true);
-//            ClassLoader cl = ClassLoader.getSystemClassLoader();
-//            Object test1 = m.invoke(cl, name);
-//            System.out.println(name + "=>" + (test1 != null));
-//
-//            cl = Thread.currentThread().getContextClassLoader();
-//            test1 = m.invoke(cl, name);
-//            System.out.println(name + "+=>" + (test1 != null));
-//            CtClass ctClass = ServiceFramwork.classPool.get(name);
-//            System.out.println(ctClass);
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//
-//    }
+    public static void isLoaded(String name) {
+        java.lang.reflect.Method m = null;
+        try {
+            m = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[]{String.class});
+            m.setAccessible(true);
+            ClassLoader cl = ClassLoader.getSystemClassLoader();
+            Object test1 = m.invoke(cl, name);
+            System.out.println(name + "=>" + (test1 != null));
+
+            cl = Thread.currentThread().getContextClassLoader();
+            test1 = m.invoke(cl, name);
+            System.out.println(name + "+=>" + (test1 != null));
+            if(test1 != null){
+
+            }
+            CtClass ctClass = ServiceFramwork.classPool.get(name);
+            System.out.println(cl);
+            System.out.println(ctClass);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+    }
 
 }

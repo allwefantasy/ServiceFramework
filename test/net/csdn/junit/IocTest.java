@@ -1,8 +1,10 @@
 package net.csdn.junit;
 
 import com.google.inject.Injector;
+import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.Bootstrap;
+import net.csdn.jpa.JPA;
 import org.junit.After;
 import org.junit.Before;
 
@@ -21,8 +23,9 @@ public class IocTest {
     @Before
     public void setUp() throws Exception {
         ServiceFramwork.mode = ServiceFramwork.Mode.test;
+        CtClass ctClass = ServiceFramwork.classPool.get("net.csdn.bootstrap.Bootstrap");
         //加载Guice容器
-        Method method = Bootstrap.class.getDeclaredMethod("configureSystem");
+        Method method = ctClass.toClass().getDeclaredMethod("configureSystem");
         method.setAccessible(true);
         method.invoke(null);
         injector = ServiceFramwork.injector;
@@ -33,10 +36,14 @@ public class IocTest {
         ServiceFramwork.mode = mode;
     }
 
+    public void dbCommit() {
+        JPA.getJPAConfig().getJPAContext().closeTx(false);
+    }
+
     /*
-       因为很多Service是private的。有时候我们需要替换掉一些Service对象。比如HttpTransportService.
-       这样可以避免去访问真实的服务。否则，你可以继承BaseServiceWithJettyTest
-     */
+      因为很多Service是private的。有时候我们需要替换掉一些Service对象。比如HttpTransportService.
+      这样可以避免去访问真实的服务。否则，你可以继承BaseServiceWithJettyTest
+    */
     protected void setService(Object targetObj, String fieldName, Object fieldValue) {
         try {
             Field field = targetObj.getClass().getDeclaredField(fieldName);

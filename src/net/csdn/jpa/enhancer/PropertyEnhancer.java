@@ -4,11 +4,10 @@ import javassist.*;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
-import javassist.bytecode.annotation.MemberValue;
+import javassist.bytecode.annotation.BooleanMemberValue;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.NotMapping;
 import net.csdn.annotation.Validate;
-import net.csdn.bootstrap.Bootstrap;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
@@ -17,17 +16,15 @@ import net.csdn.enhancer.BitEnhancer;
 import net.csdn.jpa.type.DBType;
 
 import javax.persistence.*;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.sql.*;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.newArrayList;
-import static net.csdn.common.collections.WowCollections.newHashMap;
-import static net.csdn.common.logging.support.MessageFormat.format;
+import static net.csdn.common.collections.WowCollections.list;
+import static net.csdn.common.collections.WowCollections.map;
+import static net.csdn.enhancer.EnhancerHelper.createAnnotation;
 
 /**
  * BlogInfo: WilliamZhu
@@ -47,18 +44,6 @@ public class PropertyEnhancer implements BitEnhancer {
     public void enhance(CtClass ctClass) throws Exception {
         autoInjectProperty(ctClass);
         autoInjectGetSet(ctClass);
-    }
-
-    private static void createAnnotation(AnnotationsAttribute attribute, Class<? extends Annotation> annotationType, Map<String, MemberValue> members) {
-        javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation(annotationType.getName(), attribute.getConstPool());
-        for (Map.Entry<String, MemberValue> member : members.entrySet()) {
-            annotation.addMemberValue(member.getKey(), member.getValue());
-        }
-        attribute.addAnnotation(annotation);
-    }
-
-    private static void createAnnotation(AnnotationsAttribute attribute, Class<? extends Annotation> annotationType) {
-        createAnnotation(attribute, annotationType, new HashMap<String, MemberValue>());
     }
 
 
@@ -108,7 +93,7 @@ public class PropertyEnhancer implements BitEnhancer {
         //连接数据库，自动获取所有信息，然后添加属性
         Connection conn = null;
         String entitySimpleName = ctClass.getSimpleName();
-        List<String> skipFields = newArrayList();
+        List<String> skipFields = list();
 
         notMapping(ctClass, skipFields);
 
@@ -141,8 +126,10 @@ public class PropertyEnhancer implements BitEnhancer {
                 }
 
                 if (rsme.isAutoIncrement(i) || rsme.getColumnTypeName(i).equals("id")) {
-                    createAnnotation(attr, javax.persistence.Id.class, newHashMap());
-                    createAnnotation(attr, javax.persistence.GeneratedValue.class, newHashMap());
+                    createAnnotation(attr, javax.persistence.Id.class, map());
+                    createAnnotation(attr, javax.persistence.GeneratedValue.class, map());
+                } else {
+                    createAnnotation(attr, Column.class, map("nullable", new BooleanMemberValue(true, constPool)));
                 }
 
                 if (attr.getAnnotations().length > 0) {

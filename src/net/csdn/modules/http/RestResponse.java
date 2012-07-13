@@ -18,4 +18,8 @@ public interface RestResponse {
     public void write(byte[] content);
 
     public String content();
+
+    public Object originContent();
+
+    public RestResponse originContent(Object obj);
 }
