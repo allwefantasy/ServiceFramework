@@ -91,7 +91,7 @@ public class BlogController extends ApplicationController {
 
     @At(path = {"/blog/comments2"}, types = {GET})
     public void comments2() {
-        List<Blog> blogs = Blog.where("id=:id", map("id", paramAsInt("id"))).joins(" blog.blog_comments").fetch();
+        List<Blog> blogs = Blog.where("id=:id", map("id", paramAsInt("id"))).joins("blog_comments").fetch();
         if (blogs.size() == 0) {
             render(HttpStatusNotFound, format(FAIL, format("没有找到ID为[{}]的博文", param("id"))));
         }
