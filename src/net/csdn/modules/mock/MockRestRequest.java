@@ -6,6 +6,7 @@ import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.RestUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -108,12 +109,11 @@ public class MockRestRequest implements RestRequest {
     }
 
     @Override
-    public String param(String... keys) {
+    public String paramMultiKey(String... keys) {
         for (String key : keys) {
             String temp = param(key);
-            if (temp != null && temp.isEmpty()) {
+            if (!StringUtils.isEmpty(temp))
                 return temp;
-            }
         }
         return null;
     }

@@ -21,6 +21,25 @@ public class WowCollections {
         return sets;
     }
 
+
+    public static Map selectMap(Map map, String... keys) {
+        Map temp = new HashMap();
+        for (String key : keys) {
+            temp.put(key, map.get(key));
+        }
+        return temp;
+    }
+
+    public static Map selectMapWithAliasName(Map map, String... keys) {
+        Map temp = new HashMap();
+        for (int i = 0; i < keys.length; i++) {
+            String oldKey = keys[i];
+            String newKey = keys[++i];
+            temp.put(newKey, map.get(oldKey));
+        }
+        return temp;
+    }
+
     public static Map map(Object... arrays) {
         Map maps = new HashMap();
         if (arrays.length % 2 != 0) throw new ArgumentErrorException("arrays 长度 必须为偶数");
@@ -99,6 +118,16 @@ public class WowCollections {
         StringBuffer stringBuffer = new StringBuffer();
         while (ite.hasNext()) {
             stringBuffer.append(wrapper + ite.next() + wrapper + split);
+        }
+        stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+        return stringBuffer.toString();
+    }
+
+    public static String join(Object[] collection, String split, String wrapper) {
+        if (collection.length == 0) return null;
+        StringBuffer stringBuffer = new StringBuffer();
+        for (Object obj : collection) {
+            stringBuffer.append(wrapper + obj + wrapper + split);
         }
         stringBuffer.deleteCharAt(stringBuffer.length() - 1);
         return stringBuffer.toString();

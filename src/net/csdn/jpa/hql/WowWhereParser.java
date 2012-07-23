@@ -33,7 +33,8 @@ public class WowWhereParser {
     public void parse(String wheres) {
         StringTokenizer tokens = new StringTokenizer(wheres, HQL_SEPARATORS, true);
         while (tokens.hasMoreElements()) {
-            whereConditions.add(this.token(tokens.nextToken()));
+            String token = tokens.nextToken();
+            whereConditions.add(this.token(token));
         }
     }
 

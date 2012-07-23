@@ -5,6 +5,7 @@ import net.csdn.common.Unicode;
 import net.csdn.common.io.Streams;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
+import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -126,12 +127,11 @@ public class DefaultRestRequest implements RestRequest {
     }
 
     @Override
-    public String param(String... keys) {
+    public String paramMultiKey(String... keys) {
         for (String key : keys) {
             String temp = param(key);
-            if (temp != null && temp.isEmpty()) {
+            if (!StringUtils.isEmpty(temp))
                 return temp;
-            }
         }
         return null;
     }

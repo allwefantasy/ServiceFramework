@@ -31,6 +31,7 @@ public class IocTest {
         injector = ServiceFramwork.injector;
     }
 
+
     @After
     public void tearDown() throws Exception {
         ServiceFramwork.mode = mode;

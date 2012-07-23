@@ -8,7 +8,9 @@ import net.csdn.bootstrap.Bootstrap;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.Enhancer;
+import net.csdn.jpa.JPA;
 import net.csdn.jpa.enhancer.JPAEnhancer;
+import net.csdn.jpa.model.Model;
 import net.csdn.modules.scan.ScanService;
 
 import java.io.DataInputStream;
@@ -39,7 +41,8 @@ public class ModelLoader implements Loader {
         });
         for (CtClass ctClass : classList) {
             try {
-                ctClass.toClass();
+                Class<Model> clzz = ctClass.toClass();
+                JPA.models.put(clzz.getSimpleName(), clzz);
             } catch (CannotCompileException e) {
                 e.printStackTrace();
             }

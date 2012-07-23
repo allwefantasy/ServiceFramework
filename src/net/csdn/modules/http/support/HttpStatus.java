@@ -14,5 +14,13 @@ public class HttpStatus {
 
     public static int HttpStatusServerDown = 503;
 
+    public static int HTTP_200 = 200;
+    public static int HTTP_400 = 400;
+    public static int HTTP_401 = 401;
+    public static int HTTP_404 = 404;
+    public static int HTTP_500 = 500;
+
+    public static int HTTP_503 = 503;
+
 
 }

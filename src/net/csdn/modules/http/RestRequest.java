@@ -6,10 +6,10 @@ import net.csdn.common.unit.TimeValue;
 import java.util.Map;
 
 /**
-* BlogInfo: WilliamZhu
-* Date: 12-6-12
-* Time: 下午10:25
-*/
+ * BlogInfo: WilliamZhu
+ * Date: 12-6-12
+ * Time: 下午10:25
+ */
 public interface RestRequest {
 
     enum Method {
@@ -54,7 +54,9 @@ public interface RestRequest {
 
     String param(String key);
 
-    String param(String... keys);
+    String param(String key, String defaultValue);
+
+    String paramMultiKey(String... keys);
 
     String[] paramAsStringArray(String key, String[] defaultValue);
 

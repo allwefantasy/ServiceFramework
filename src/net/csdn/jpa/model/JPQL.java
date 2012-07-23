@@ -9,6 +9,7 @@ import net.csdn.jpa.hql.WowJoinParser;
 import net.csdn.jpa.hql.WowWhereParser;
 import net.csdn.jpa.model.Model.JPAQuery;
 import net.csdn.reflect.ReflectHelper;
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.ejb.metamodel.AbstractAttribute;
 import org.hibernate.ejb.metamodel.AbstractManagedType;
 
@@ -67,7 +68,7 @@ public class JPQL {
     }
 
     public JPQL where(String condition) {
-        this.where = (where.isEmpty() ? "where" : " AND ") + EMPTY_STRING + "(" + parseWhere(condition) + ")";
+        this.where = (StringUtils.isEmpty(where) ? "where" : where + " and ") + EMPTY_STRING + "(" + parseWhere(condition) + ")";
         return this;
     }
 
@@ -148,6 +149,36 @@ public class JPQL {
     public JPQL offset(int offset) {
         this.offset = offset;
         return this;
+    }
+
+    public Long count_fetch() {
+        sql = "select count(*)" + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
+        logger.info(sql);
+        //limit 1.取一条
+        Query query = em().createQuery(sql);
+
+        for (String obj : bindings.keySet()) {
+            query.setParameter(obj, bindings.get(obj));
+        }
+        return (Long) query.getResultList().get(0);
+    }
+
+    public <T> T single_fetch() {
+        sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
+        logger.info(sql);
+        //limit 1.取一条
+        Query query = em().createQuery(sql);
+
+        for (String obj : bindings.keySet()) {
+            query.setParameter(obj, bindings.get(obj));
+        }
+        query.setFirstResult(offset);
+        if (limit != -1) query.setMaxResults(limit);
+        List<T> models = query.getResultList();
+        if (models == null || models.size() == 0) {
+            return null;
+        }
+        return models.get(0);
     }
 
     public List fetch() {

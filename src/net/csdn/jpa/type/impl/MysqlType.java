@@ -32,6 +32,7 @@ public class MysqlType implements DBType {
             "INT", "Integer",
             "BIGINT", "Long",
             "FlOAT", "Float",
+            "DOUBLE", "Double",
             "DATE", "java.util.Date",
             "DATETIME", "java.util.Date",
             "TIMESTAMP", "java.util.Date"

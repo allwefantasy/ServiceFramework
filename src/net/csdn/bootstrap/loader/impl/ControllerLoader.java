@@ -1,5 +1,6 @@
 package net.csdn.bootstrap.loader.impl;
 
+import com.example.controller.TagController;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import javassist.ClassPool;
@@ -47,12 +48,19 @@ public class ControllerLoader implements Loader {
         ServiceFramwork.injector = ServiceFramwork.injector.createChildInjector(moduleList);
     }
 
+    public static void main(String[] args) {
+        System.out.println(TagController.class.getSuperclass() == ApplicationController.class);
+    }
+
     private static Module bindAction(final Class clzz) {
         return new AbstractModule() {
             @Override
             protected void configure() {
                 if (clzz == null) return;
                 try {
+                    if (clzz.getSuperclass() != ApplicationController.class) {
+                        return;
+                    }
                     Method[] methods = clzz.getDeclaredMethods();
 
                     for (Method method : methods) {

@@ -30,22 +30,22 @@ pre code {
 Hibernate 的Hql是个很酷的选择。
 但是依然有缺点:
 
-1. 和Sql类似，但是又有自己的特点。比如不适用表名而是用类名，join语法也是根据配置的orm关系进行智能判断，
-  这种细小的差别常常让只有sql基础的人感到困惑。
-2. Hql和Sql如此相似使得他获得足够的灵活性覆盖大部分Sql的功能，但也引入了sql所具有的一切缺点,譬如不同的人可能写出不同的sql语句,Sql 本身具有一定的复杂性。
+1. hql与sql相似却又有不同之处。这种细微差别会导致不熟悉hql语法的人困惑。而且，Hql提供的一些高级语法容易让人陷入性能陷阱，虽然它们看起来很酷
+2. hql具有sql所具有所有缺点。hql语句很容易被程序员肢解到程序的各个角落，天哪，看了半天都不知道完整的hql语句会是什么样子的。
 
-所以解决方案就是，提供一个新的语法形式。做到：
+解决方案：
 
-1. 屏蔽Hql 语法。使用原生的Sql 方式，但是能使用Hql提供的高级功能以及ORM功能。
-2. 规范会原生的Sql使用方式
+1. 简化hql语法，使得hql更加像sql.譬如hql通常需要别名，为什么我可以id=1非要写成blog.id=1呢？
+2. 提供一个统一的调用方式，使得sql语句规范化
 
 整个设计过程基本原则是：
+
 1. 尽量少给用户选择
-2. 用一个方案覆盖80%的问题。
+2. 用一个方案覆盖80%的问题(简化后的hql)
 3. 用另一个可选方案覆盖另外20%的问题(就是使用原生的Sql)
 
 
-这其实就是Ruby 语言中 Arel所提倡的方式。   
+note: 这其实就是Ruby 语言中 Arel所提倡的方式。   
 举个例子:  
 
 ```
@@ -67,10 +67,21 @@ Post.find(
 Comment.select("post")
        .where("subject like ?","%hop%")
        .join("post")
-       .order("id desc")
-       .offset(0),
-       .limit(10)
        .fetch();
 ```
 
-有效的利用了代码提示，比如select,where 等方法.关键是结构非常的清晰。并且可以轻易实现named_scope
+有效的利用了代码提示，比如select,where 等方法.关键是结构非常的清晰。并且可以轻易实现named_scope.
+以博客为例，我们可以在 Blog模型类中定义这么一个方法:
+
+```
+ public final static JPQL activeBlogs() {
+        return where("status=:status", map("status", Status.active.value));
+    }
+```
+
+之后就可以这样调用:     
+
+```
+Blog.activeBlogs().where("title=:title",map("title","yes")).fetch();
+```
+这样就可以获取标题为yes,并且是激活的博客。

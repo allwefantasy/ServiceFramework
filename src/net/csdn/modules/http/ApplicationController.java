@@ -1,11 +1,16 @@
 package net.csdn.modules.http;
 
+import net.csdn.ServiceFramwork;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
+import net.csdn.common.settings.Settings;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
 import net.csdn.exception.ArgumentErrorException;
+import net.csdn.exception.ExceptionHandler;
 import net.csdn.exception.RenderFinish;
+import net.csdn.jpa.JPA;
+import net.csdn.jpa.model.Model;
 import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
 import net.csdn.reflect.ReflectHelper;
@@ -15,6 +20,7 @@ import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.xml.XMLSerializer;
+import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -40,6 +46,9 @@ public abstract class ApplicationController {
         throw new RenderFinish();
     }
 
+    public Class<Model> const_model_get(String type) {
+        return JPA.models.get(type);
+    }
 
     //默认json
     public void render(int status, Object result) {
@@ -116,6 +125,14 @@ public abstract class ApplicationController {
     }
 
 
+    public JSONObject paramAsJSON(String key) {
+        return JSONObject.fromObject(param(key));
+    }
+
+    public JSONArray paramAsJSONArray(String key) {
+        return JSONArray.fromObject(param(key));
+    }
+
     public JSONObject paramAsJSON() {
         JSON json = _contentAsJSON();
         if (json.isArray()) {
@@ -185,14 +202,17 @@ public abstract class ApplicationController {
         return request.params().get(key);
     }
 
-    public String param(String... keys) {
-        return request.param(keys);
+    public String paramMultiKey(String... keys) {
+        return request.paramMultiKey(keys);
     }
 
     public String param(String key, String defaultValue) {
         return request.param(key, defaultValue);
     }
 
+    public boolean isEmpty(String abc) {
+        return StringUtils.isEmpty(abc);
+    }
 
     public float paramAsFloat(String key, float defaultValue) {
         return request.paramAsFloat(key, defaultValue);
@@ -234,18 +254,9 @@ public abstract class ApplicationController {
 
     public void m(String method) {
         try {
-            ReflectHelper.method(this, method);
+            ReflectHelper.method2(this, method);
         } catch (Exception e) {
-            if (e instanceof InvocationTargetException) {
-                InvocationTargetException invocationTargetException = (InvocationTargetException) e;
-                if (invocationTargetException.getTargetException() instanceof RenderFinish) {
-                    logger.info("invoke " + method + " done");
-                }
-            } else if (e instanceof RenderFinish) {
-
-            } else {
-                e.printStackTrace();
-            }
+            e.printStackTrace();
         }
     }
 

@@ -38,8 +38,8 @@ public class InstanceMethodEnhancer implements BitEnhancer {
     public void enhance(CtClass ctClass) throws Exception {
         CtField[] fields = ctClass.getDeclaredFields();
         for (CtField ctField : fields) {
-            AnnotationsAttribute annotationsAttribute = (AnnotationsAttribute) ctField.getFieldInfo2().getAttribute(AnnotationsAttribute.visibleTag);
-            ConstPool constPool = annotationsAttribute.getConstPool();
+            //AnnotationsAttribute annotationsAttribute = (AnnotationsAttribute) ctField.getFieldInfo2().getAttribute(AnnotationsAttribute.visibleTag);
+            //ConstPool constPool = annotationsAttribute.getConstPool();
             if (ctField.hasAnnotation(OneToMany.class)) {
                 OneToMany oneToMany = (OneToMany) ctField.getAnnotation(OneToMany.class);
 

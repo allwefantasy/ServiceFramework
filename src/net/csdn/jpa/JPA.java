@@ -3,6 +3,7 @@ package net.csdn.jpa;
 import net.csdn.common.settings.Settings;
 import net.csdn.env.Environment;
 import net.csdn.jpa.context.JPAConfig;
+import net.csdn.jpa.model.Model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +21,8 @@ public class JPA {
 
     private static Settings settings;
     private static Environment environment;
+
+    public final static Map<String, Class<Model>> models = new HashMap<String, Class<Model>>();
 
     public static JPAConfig getJPAConfig() {
         if (jpaConfig == null) {
@@ -61,7 +64,7 @@ public class JPA {
         properties.put("hibernate.c3p0.timeout", "300hibernate.c3p0.timeout");
         properties.put("hibernate.c3p0.max_statements", "50");
         properties.put("hibernate.c3p0.idle_test_period", "3000");
-    //    properties.put("hibernate.query.factory_class", "org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory");
+        //    properties.put("hibernate.query.factory_class", "org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory");
         return properties;
     }
 }
