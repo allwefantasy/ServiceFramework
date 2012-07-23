@@ -23,8 +23,9 @@ public class Blog extends Model {
 
 
     /*-------Named Scope-------*/
-    @Scope
-    public final static JPQL activeBlogs = where("status=:status", map("status", Status.active.value));
+    public final static JPQL activeBlogs() {
+        return where("status=:status", map("status", Status.active.value));
+    }
 
     /*-------help methods--------*/
     public enum Status {

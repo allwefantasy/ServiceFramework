@@ -27,6 +27,12 @@ public class ReflectHelper {
         return field.get(obj);
     }
 
+    public static Object field2(Object obj, String fieldName) throws Exception {
+        Field field = obj.getClass().getField(fieldName);
+        field.setAccessible(true);
+        return field.get(obj);
+    }
+
 
     public static Object method(Object obj, String methodName) {
         try {

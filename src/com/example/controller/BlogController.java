@@ -73,7 +73,7 @@ public class BlogController extends ApplicationController {
 
     @At(path = {"/blogs"}, types = {GET})
     public void blogs() {
-        List<Blog> blogs = Blog.activeBlogs.offset(0).limit(15).fetch();
+        List<Blog> blogs = Blog.activeBlogs().offset(0).limit(15).fetch();
         render(blogs);
     }
 

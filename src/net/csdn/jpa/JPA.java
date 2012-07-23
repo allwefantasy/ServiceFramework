@@ -61,6 +61,7 @@ public class JPA {
         properties.put("hibernate.c3p0.timeout", "300hibernate.c3p0.timeout");
         properties.put("hibernate.c3p0.max_statements", "50");
         properties.put("hibernate.c3p0.idle_test_period", "3000");
+    //    properties.put("hibernate.query.factory_class", "org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory");
         return properties;
     }
 }

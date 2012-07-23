@@ -5,13 +5,21 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.context.JPAContext;
+import net.csdn.jpa.hql.WowJoinParser;
+import net.csdn.jpa.hql.WowWhereParser;
 import net.csdn.jpa.model.Model.JPAQuery;
+import net.csdn.reflect.ReflectHelper;
+import org.hibernate.ejb.metamodel.AbstractAttribute;
+import org.hibernate.ejb.metamodel.AbstractManagedType;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.persistence.metamodel.EntityType;
+import javax.persistence.metamodel.Metamodel;
+import java.lang.reflect.Field;
+import java.util.*;
+
+import static net.csdn.common.collections.WowCollections.newHashSet;
 
 public class JPQL {
     private CSLogger logger = Loggers.getLogger(getClass());
@@ -28,6 +36,7 @@ public class JPQL {
     private static String EMPTY_STRING = " ";
     private String entity = "";
     private String defaultName = "";
+    private Set<String> columns;
 
     public JPQL(JPAContext jpaContext) {
         this.jpaContext = jpaContext;
@@ -37,6 +46,7 @@ public class JPQL {
         this.jpaContext = jpaContext;
         this.entity = entity;
         this.defaultName = entity.toLowerCase();
+        this.columns = getColumns();
     }
 
     //如果关闭，那么使用新开一个(通常写测试类会往第二个分支走)
@@ -51,25 +61,64 @@ public class JPQL {
 
     //下面这些方法都是模拟active_record的链式操作
     public JPQL where(String condition, Map params) {
-
-        this.where = (where.isEmpty() ? "where" : " AND ") + EMPTY_STRING + parseWhere(condition);
+        where(condition);
         this.bindings = params;
         return this;
     }
 
     public JPQL where(String condition) {
-        this.where = (where.isEmpty() ? "where" : " AND ") + EMPTY_STRING + parseWhere(condition);
+        this.where = (where.isEmpty() ? "where" : " AND ") + EMPTY_STRING + "(" + parseWhere(condition) + ")";
+        return this;
+    }
+
+    public JPQL from(String modelAndAlias) {
+        modelAndAlias = modelAndAlias.trim();
+        String[] modelAndAliasArray = modelAndAlias.split("\\s+");
+        if (modelAndAliasArray.length == 1) {
+            defaultName = entity.toLowerCase();
+            entity = modelAndAlias;
+        } else {
+            defaultName = modelAndAliasArray[1];
+            entity = modelAndAliasArray[0];
+        }
         return this;
     }
 
 
     private String parseWhere(String condition) {
-        String newCondition = "";
-        String[] ands = condition.split("and|AND");
-        for (String and : ands) {
-            newCondition += (EMPTY_STRING + defaultName + "." + and);
+
+        WowWhereParser wowWhereParser = new WowWhereParser(columns, defaultName);
+        wowWhereParser.parse(condition);
+        return wowWhereParser.toHql();
+    }
+
+    private String parseJoin(String joins) {
+        WowJoinParser wowJoinParser = new WowJoinParser(columns, defaultName);
+        wowJoinParser.parse(joins);
+        return wowJoinParser.toHql();
+    }
+
+    private Set<String> getColumns() {
+        Metamodel metamodel = em().getMetamodel();
+        Iterator entities = metamodel.getEntities().iterator();
+        Set<String> columns = new HashSet<String>();
+        while (entities.hasNext()) {
+            EntityType entityType = (EntityType) entities.next();
+
+            if (entity.equals(entityType.getName())) {
+                Map<String, Object> declaredAttributes = null;
+                try {
+                    Set<AbstractAttribute> attributes = entityType.getAttributes();
+                    for (AbstractAttribute attribute : attributes) {
+                        columns.add(attribute.getName());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
         }
-        return newCondition;
+        return columns;
     }
 
     public JPQL select(String select) {
@@ -79,9 +128,9 @@ public class JPQL {
 
     public JPQL joins(String joins) {
         if (joins.contains("join")) {
-            this.joins = joins;
+            this.joins = parseJoin(joins);
         } else {
-            this.joins = "join " + joins;
+            this.joins = "join " + parseJoin(joins);
         }
         return this;
     }

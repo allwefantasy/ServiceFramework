@@ -51,12 +51,25 @@ public class WowCollections {
 
     public static String join(Collection collection, String split) {
         if (collection.size() == 0) return null;
+        if (split.isEmpty()) {
+            return join(collection);
+        }
         Iterator ite = collection.iterator();
         StringBuffer stringBuffer = new StringBuffer();
         while (ite.hasNext()) {
             stringBuffer.append(ite.next() + split);
         }
         stringBuffer.deleteCharAt(stringBuffer.length() - 1);
+        return stringBuffer.toString();
+    }
+
+    public static String join(Collection collection) {
+        if (collection.size() == 0) return null;
+        Iterator ite = collection.iterator();
+        StringBuffer stringBuffer = new StringBuffer();
+        while (ite.hasNext()) {
+            stringBuffer.append(ite.next());
+        }
         return stringBuffer.toString();
     }
 
@@ -124,6 +137,7 @@ public class WowCollections {
         }
         return sets;
     }
+
 
     public static List toList(Object[] array) {
         List lists = new ArrayList();

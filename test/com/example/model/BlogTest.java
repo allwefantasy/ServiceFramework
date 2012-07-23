@@ -25,7 +25,7 @@ public class BlogTest extends IocTest {
 
     @Test
     public void testAssociated() throws Exception {
-        Blog blog = Blog.create(map("user_name", "jjj", "blog_info.info", ""));
+        Blog blog = Blog.create(map("user_name", "jjj", "blog_body.content", ""));
 
         assertTrue(blog.valid() == false);
         assertTrue(blog.validateResults.size() == 1);
@@ -42,9 +42,12 @@ public class BlogTest extends IocTest {
     }
 
     @Test
+    public void testFind()throws Exception{
+    }
+
+    @Test
     public void testSql(){
-         Blog.where("id=:id", map("id", 1)).joins("join blog.articles").fetch();
-         Blog.joins("join blog.articles").fetch();
+         Blog.where("id=:id", map("id", 1)).joins("join blog_comments").fetch();
     }
 
     @Test
