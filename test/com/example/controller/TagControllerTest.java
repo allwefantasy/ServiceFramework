@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.model.BlogTag;
 import com.example.model.Tag;
+import com.example.model.TagGroup;
 import com.example.model.TagSynonym;
 import net.csdn.exception.RenderFinish;
 import net.csdn.junit.IocTest;
@@ -51,18 +52,22 @@ public class TagControllerTest extends IocTest {
         Assert.assertTrue(blogTags.size() == 2);
     }
 
+
     @Test
     public void testSearch() throws Exception {
+
+        //准备一些数据
+        prepareData();
+
         TagController tagController = injector.getInstance(TagController.class);
         tagController.mockRequest(map(
-                "type","BlogTag",
+                "type", "BlogTag",
                 "tags", "java,google",
                 "channelIds", "1,2,3",
                 "blockedTagsNames", "google",
                 "orderFields", "created_at"
         ), RestRequest.Method.POST, null);
 
-        //过滤器
         //过滤器
         tagController.m("checkParam");
         try {
@@ -76,6 +81,40 @@ public class TagControllerTest extends IocTest {
         //Assert.assertTrue(renderResult.get("total")==1);
     }
 
+    public void prepareData() {
+        //  List<Map> content = list(map("name","java,google","blog_tags",17,"created_at","2007022711")) ;
+        //创建tag和关联表
+        BlogTag.deleteAll();
+        Tag.deleteAll();
+        TagSynonym.deleteAll();
+
+        BlogTag blogTag = BlogTag.create(map("object_id", 17, "created_at", 2007022711l));
+        blogTag.attr("tag", Tag.create(map("name", "java")));
+        blogTag.save();
+
+        blogTag = BlogTag.create(map("object_id", 17, "created_at", 2007022711l));
+        blogTag.attr("tag", Tag.create(map("name", "google")));
+        blogTag.save();
+
+        //添加一个同义词组
+        TagSynonym tagSynonym = TagSynonym.create(map("name", "java"));
+
+        List<Tag> tags = Tag.where("name in ('java','google')").fetch();
+        for (Tag tag : tags) {
+            tagSynonym.attr("tags", List.class).add(tag);
+            tag.attr("tag_synonym", tagSynonym);
+        }
+        tagSynonym.save();
+
+        //添加一个组
+        TagGroup tagGroup = TagGroup.create(map("name", "天才组"));
+        for (Tag tag : tags) {
+            tagGroup.attr("tags", List.class).add(tag);
+            tag.attr("tag_groups", List.class).add(tagGroup);
+        }
+        tagGroup.save();
+
+    }
 
     @After
     public void tearDown() throws Exception {

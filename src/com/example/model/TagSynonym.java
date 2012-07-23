@@ -1,7 +1,6 @@
 package com.example.model;
 
 import net.csdn.jpa.model.Model;
-import org.hibernate.annotations.Cascade;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;

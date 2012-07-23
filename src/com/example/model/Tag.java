@@ -30,6 +30,16 @@ public class Tag extends Model {
     private final static Map $name = map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复"));
 
 
+    @ManyToOne
+    private TagSynonym tag_synonym;
+
+    @OneToMany(mappedBy = "tag")
+    private List<BlogTag> blog_tags = new ArrayList<BlogTag>();
+
+    @ManyToMany
+    private List<TagGroup> tag_groups = new ArrayList<TagGroup>();
+
+
     public static String synonym(String wow_names) {
         String[] names = wow_names.split(",");
         //可以改为Set?
@@ -37,7 +47,7 @@ public class Tag extends Model {
         for (String name : names) {
             Tag tag = Tag.where("name=:name", map("name", name)).single_fetch();
             if (tag == null) continue;
-            List<Tag> tags = Tag.where("tag_synonym=:tag_synonym").fetch();
+            List<Tag> tags = Tag.where("tag_synonym=:tag_synonym",map("tag_synonym",tag.tag_synonym)).fetch();
             for (Tag tag1 : tags) {
                 String tagName = tag1.attr("name", String.class);
                 if (!temp.contains(tagName))
@@ -47,14 +57,5 @@ public class Tag extends Model {
         }
         return join(temp, ",", "'");
     }
-
-    @ManyToOne
-    private TagSynonym tag_synonym;
-
-    @OneToMany(mappedBy = "tag")
-    private List<BlogTag> blog_tags = new ArrayList<BlogTag>();
-
-    @ManyToMany
-    private List<TagGroup> tag_groups = new ArrayList<TagGroup>();
 
 }

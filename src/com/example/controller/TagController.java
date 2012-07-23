@@ -35,7 +35,7 @@ public class TagController extends ApplicationController {
      * jsonDate
      * json格式对象.其中有body title ....
      * tags
-     * 这个文章说包含的tag.
+     * 这个文章所包含的tag.
      */
     @At(path = "/doc/{type}/insert", types = POST)
     public void save() {
@@ -90,6 +90,10 @@ public class TagController extends ApplicationController {
         List<Model> models = jpql.offset(paramAsInt("start", 0)).limit(paramAsInt("size", 15)).fetch();
         render(map("total", count, "data", models));
     }
+
+
+
+
 
     private String[] tags;
 
