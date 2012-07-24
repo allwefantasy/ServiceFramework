@@ -97,5 +97,5 @@ if (!isEmpty(param("channelIds"))) {
    …..
 }
 ```
-所以，一个用来清爽的Controller应该是你一旦继承了父类，就能够从父类获得大量的有用的方法，比如join,isEmpty,map,list等。
-我甚至在想，我们应该实现一套PHP的函数库放到ApplicationController中。继承了，你就获得和php一样的优势。
+所以，一个用起来清爽的Controller应该是，你一旦继承了父类，就能够从父类获得大量的有用的方法，比如join,isEmpty,map,list等。
+我甚至在想，我们应该实现一套PHP的函数库放到ApplicationController中。继承了它，你就获得了一个函数库。

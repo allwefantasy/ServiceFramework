@@ -77,7 +77,7 @@ public class TagController extends ApplicationController {
         Set<String> newTags = Tag.synonym(param("tags"));
 
 
-        JPQL jpql = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags,",","'") + ")");
+        JPQL jpql = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags, ",", "'") + ")");
 
         if (!isEmpty(param("channelIds"))) {
             String channelIds = join(param("channelIds").split(","), ",", "'");
@@ -86,10 +86,11 @@ public class TagController extends ApplicationController {
 
         if (!isEmpty(param("blockedTagsNames"))) {
             String blockedTagsNames = join(param("blockedTagsNames").split(","), ",", "'");
-            jpql.where("tag.name not in (" + blockedTagsNames + ")");
+            String abc = "select object_id from " + param("type") + " where  tag.name in (" + blockedTagsNames + ")";
+            jpql.where("object_id not in (" + abc + ")");
         }
 
-       long count = jpql.count_fetch("count(distinct(object_id)) as count");
+        long count = jpql.count_fetch("count(distinct object_id ) as count");
 
         if (!isEmpty("orderFields")) {
             jpql.order(order());
@@ -97,9 +98,9 @@ public class TagController extends ApplicationController {
 
         List<Model> models = jpql.offset(paramAsInt("start", 0)).limit(paramAsInt("size", 15)).fetch();
 
-       // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetchObjectIds(models));
+        // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetchObjectIds(models));
 
-        render(map("total", 0, "data", map()));
+        render(map("total", count, "data", map()));
     }
 
 
