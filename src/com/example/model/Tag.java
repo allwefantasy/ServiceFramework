@@ -9,10 +9,7 @@ import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static net.csdn.common.collections.WowCollections.join;
 import static net.csdn.common.collections.WowCollections.map;
@@ -40,14 +37,14 @@ public class Tag extends Model {
     private List<TagGroup> tag_groups = new ArrayList<TagGroup>();
 
 
-    public static String synonym(String wow_names) {
+    public static Set<String> synonym(String wow_names) {
         String[] names = wow_names.split(",");
         //可以改为Set?
-        List<String> temp = new ArrayList<String>();
+        Set<String> temp = new HashSet<String>();
         for (String name : names) {
             Tag tag = Tag.where("name=:name", map("name", name)).single_fetch();
             if (tag == null) continue;
-            List<Tag> tags = Tag.where("tag_synonym=:tag_synonym",map("tag_synonym",tag.tag_synonym)).fetch();
+            List<Tag> tags = Tag.where("tag_synonym=:tag_synonym", map("tag_synonym", tag.tag_synonym)).fetch();
             for (Tag tag1 : tags) {
                 String tagName = tag1.attr("name", String.class);
                 if (!temp.contains(tagName))
@@ -55,7 +52,7 @@ public class Tag extends Model {
             }
 
         }
-        return join(temp, ",", "'");
+        return temp;
     }
 
 }

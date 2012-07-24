@@ -6,6 +6,7 @@ import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.context.JPAContext;
 import net.csdn.jpa.hql.WowJoinParser;
+import net.csdn.jpa.hql.WowSelectParser;
 import net.csdn.jpa.hql.WowWhereParser;
 import net.csdn.jpa.model.Model.JPAQuery;
 import net.csdn.reflect.ReflectHelper;
@@ -93,6 +94,13 @@ public class JPQL {
         return wowWhereParser.toHql();
     }
 
+    private String parseSelect(String condition) {
+
+        WowSelectParser wowSelectParser = new WowSelectParser(columns, defaultName);
+        wowSelectParser.parse(condition);
+        return wowSelectParser.toHql();
+    }
+
     private String parseJoin(String joins) {
         WowJoinParser wowJoinParser = new WowJoinParser(columns, defaultName);
         wowJoinParser.parse(joins);
@@ -123,7 +131,7 @@ public class JPQL {
     }
 
     public JPQL select(String select) {
-        this.select = select;
+        this.select = parseSelect(select);
         return this;
     }
 
@@ -151,8 +159,9 @@ public class JPQL {
         return this;
     }
 
-    public Long count_fetch() {
-        sql = "select count(*)" + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
+    public Long count_fetch(String countString) {
+
+        sql = "select " + parseSelect(countString) + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
         logger.info(sql);
         //limit 1.取一条
         Query query = em().createQuery(sql);
@@ -161,6 +170,10 @@ public class JPQL {
             query.setParameter(obj, bindings.get(obj));
         }
         return (Long) query.getResultList().get(0);
+    }
+
+    public Long count_fetch() {
+        return count_fetch("count(*)");
     }
 
     public <T> T single_fetch() {

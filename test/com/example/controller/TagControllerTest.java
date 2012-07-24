@@ -70,6 +70,7 @@ public class TagControllerTest extends IocTest {
 
         //过滤器
         tagController.m("checkParam");
+
         try {
             tagController.search();
         } catch (RenderFinish e) {

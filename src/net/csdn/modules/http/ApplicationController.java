@@ -1,6 +1,7 @@
 package net.csdn.modules.http;
 
 import net.csdn.ServiceFramwork;
+import net.csdn.common.collections.WowCollections;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
@@ -23,9 +24,8 @@ import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Map;
+import java.sql.Timestamp;
+import java.util.*;
 
 /**
  * BlogInfo: william
@@ -40,15 +40,14 @@ public abstract class ApplicationController {
     public static String OK = "{\"ok\":true,\"message\":\"{}\"}";
     public static String FAIL = "{\"ok\":false,\"message\":\"{}\"}";
 
+
+    //渲染输出
     public void render(int status, String content) {
         restResponse.originContent(content);
         restResponse.write(status, content);
         throw new RenderFinish();
     }
 
-    public Class<Model> const_model_get(String type) {
-        return JPA.models.get(type);
-    }
 
     //默认json
     public void render(int status, Object result) {
@@ -185,7 +184,7 @@ public abstract class ApplicationController {
         }
     }
 
-
+    //获取http参数
     public String header(String name) {
         return request.header(name);
     }
@@ -252,6 +251,7 @@ public abstract class ApplicationController {
         return request.paramAsStringArray(key, defaultValue);
     }
 
+    //调用方法
     public void m(String method) {
         try {
             ReflectHelper.method2(this, method);
@@ -260,6 +260,12 @@ public abstract class ApplicationController {
         }
     }
 
+    //获取model类
+    public Class<Model> const_model_get(String type) {
+        return JPA.models.get(type);
+    }
+
+    //单元测试可以调用
     public ApplicationController mockRequest(Map<String, String> params, RestRequest.Method method, String xmlOrJsonData) {
         this.request = new MockRestRequest(params, method, xmlOrJsonData);
         this.restResponse = new MockRestResponse();
@@ -270,4 +276,108 @@ public abstract class ApplicationController {
         return restResponse;
     }
 
+    //各种工具方法
+    public static <T> Set<T> newHashSet(T... arrays) {
+        return WowCollections.newHashSet(arrays);
+    }
+
+    public static Map selectMap(Map map, String... keys) {
+        return WowCollections.selectMap(map, keys);
+    }
+
+    public static Map selectMapWithAliasName(Map map, String... keys) {
+        return WowCollections.selectMapWithAliasName(map, keys);
+    }
+
+    public static Map map(Object... arrays) {
+        return WowCollections.map(arrays);
+    }
+
+
+    public static <T> List<T> list(T... arrays) {
+        return WowCollections.list(arrays);
+    }
+
+
+    public static <T> List<T> projectionColumn(List<Map> maps, String column) {
+        return WowCollections.projectionColumn(maps, column);
+    }
+
+
+    public static String join(Collection collection, String split) {
+        return WowCollections.join(collection, split);
+    }
+
+    public static String join(Collection collection) {
+        return WowCollections.join(collection);
+    }
+
+
+    public static List project(List<Map> list, String key) {
+        return WowCollections.project(list, key);
+    }
+
+    public static Map double_list_to_map(List keys, List values) {
+        return WowCollections.double_list_to_map(keys, values);
+    }
+
+    public static String join(Collection collection, String split, String wrapper) {
+        return WowCollections.join(collection, split, wrapper);
+    }
+
+    public static String join(Object[] collection, String split, String wrapper) {
+        return WowCollections.join(collection, split, wrapper);
+    }
+
+    public static String getString(Map map, String key) {
+        return WowCollections.getString(map, key);
+    }
+
+    public static String getStringNoNull(Map map, String key) {
+        return WowCollections.getStringNoNull(map, key);
+    }
+
+    public static Date getDate(Map map, String key) {
+        return WowCollections.getDate(map, key);
+    }
+
+    public static long getDateAsLong(Map map, String key) {
+        return WowCollections.getDateAsLong(map, key);
+    }
+
+    public static int getInt(Map map, String key) {
+        return WowCollections.getInt(map, key);
+    }
+
+    public static long getLong(Map map, String key) {
+        return WowCollections.getLong(map, key);
+    }
+
+    public static Set hashSet(Object[] array) {
+        return WowCollections.hashSet(array);
+    }
+
+
+    public static List toList(Object[] array) {
+        return WowCollections.toList(array);
+    }
+
+
+    public static Set hashSet(int[] array) {
+        return WowCollections.hashSet(array);
+    }
+
+    public static List jsonArrayToList(JSONArray jsonArray) {
+        return toList(jsonArray.toArray());
+
+    }
+
+    public static String join(Object[] arrays, String split) {
+        return WowCollections.join(arrays, split);
+    }
+
+    public static String join(int[] arrays, String split) {
+
+        return WowCollections.join(arrays, split);
+    }
 }

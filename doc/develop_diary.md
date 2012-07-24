@@ -85,3 +85,17 @@ Comment.select("post")
 Blog.activeBlogs().where("title=:title",map("title","yes")).fetch();
 ```
 这样就可以获取标题为yes,并且是激活的博客。
+
+
+##对Controller层封装的思考
+
+Php之前的函数式编程有一个很大的优点，就是你按流程调用一定数量的函数，基本就能把逻辑走下来。Java一直缺乏这方面的觉悟。比如一个 isEmpty判断，你要么自己写个工具类，要嘛调用StringUtils(apache commons里)的。
+总之不方便，天哪，为啥不能直接这么用:
+
+```
+if (!isEmpty(param("channelIds"))) {
+   …..
+}
+```
+所以，一个用来清爽的Controller应该是你一旦继承了父类，就能够从父类获得大量的有用的方法，比如join,isEmpty,map,list等。
+我甚至在想，我们应该实现一套PHP的函数库放到ApplicationController中。继承了，你就获得和php一样的优势。

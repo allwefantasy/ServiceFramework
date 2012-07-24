@@ -1,19 +1,23 @@
 package com.example.controller;
 
+import com.example.model.BlogTag;
 import com.example.model.Tag;
 import com.example.model.TagSynonym;
+import com.example.service.tag.RemoteDataService;
+import com.google.inject.Inject;
 import net.csdn.annotation.At;
 import net.csdn.annotation.BeforeFilter;
 import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
 import net.csdn.modules.http.ApplicationController;
 import net.csdn.reflect.ReflectHelper;
+import net.sf.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import static net.csdn.common.collections.WowCollections.*;
 import static net.csdn.common.logging.support.MessageFormat.format;
 import static net.csdn.filter.FilterHelper.BeforeFilter.only;
 import static net.csdn.modules.http.RestRequest.Method.GET;
@@ -50,6 +54,9 @@ public class TagController extends ApplicationController {
         render(OK);
     }
 
+    @Inject
+    private RemoteDataService remoteDataService;
+
     /**
      * @return 返回查询的结果集
      * @example doc/{type}/search?tagNames=java,php
@@ -67,9 +74,10 @@ public class TagController extends ApplicationController {
     @At(path = "/doc/{type}/search", types = GET)
     public void search() {
 
-        String newTags = Tag.synonym(param("tags"));
+        Set<String> newTags = Tag.synonym(param("tags"));
 
-        JPQL jpql = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + newTags + ")");
+
+        JPQL jpql = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags,",","'") + ")");
 
         if (!isEmpty(param("channelIds"))) {
             String channelIds = join(param("channelIds").split(","), ",", "'");
@@ -78,21 +86,21 @@ public class TagController extends ApplicationController {
 
         if (!isEmpty(param("blockedTagsNames"))) {
             String blockedTagsNames = join(param("blockedTagsNames").split(","), ",", "'");
-            jpql.where("tag.name in (" + blockedTagsNames + ")");
+            jpql.where("tag.name not in (" + blockedTagsNames + ")");
         }
 
-        long count = jpql.count_fetch();
+       long count = jpql.count_fetch("count(distinct(object_id)) as count");
 
         if (!isEmpty("orderFields")) {
             jpql.order(order());
         }
 
         List<Model> models = jpql.offset(paramAsInt("start", 0)).limit(paramAsInt("size", 15)).fetch();
-        render(map("total", count, "data", models));
+
+       // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetchObjectIds(models));
+
+        render(map("total", 0, "data", map()));
     }
-
-
-
 
 
     private String[] tags;
@@ -102,6 +110,14 @@ public class TagController extends ApplicationController {
         if (tags.length == 0) {
             render(HTTP_400, format(FAIL, "必须传递标签"));
         }
+    }
+
+    private String fetchObjectIds(List<Model> models) {
+        List<Integer> ids = new ArrayList<Integer>(models.size());
+        for (Model model : models) {
+            ids.add(model.attr("object_id", Integer.class));
+        }
+        return join(ids, ",");
     }
 
     private String order() {
