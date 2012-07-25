@@ -2,6 +2,7 @@ package net.csdn.enhancer;
 
 import javassist.CtClass;
 import javassist.CtField;
+import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.BadBytecode;
 import javassist.bytecode.ConstPool;
@@ -56,6 +57,77 @@ public class EnhancerHelper {
             annotation.addMemberValue(member.getKey(), member.getValue());
         }
         attribute.addAnnotation(annotation);
+    }
+
+
+    public static boolean hasAnnotation(CtClass ctClass, String annotation) throws ClassNotFoundException {
+        for (Object object : ctClass.getAvailableAnnotations()) {
+            Annotation ann = (Annotation) object;
+            if (ann.annotationType().getName().equals(annotation)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasAnnotationWithPrefix(CtClass ctClass, String annotationPrefix) throws ClassNotFoundException {
+        for (Object object : ctClass.getAvailableAnnotations()) {
+            Annotation ann = (Annotation) object;
+            if (ann.annotationType().getName().startsWith(annotationPrefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public static boolean hasAnnotation(CtField ctField, String annotation) throws ClassNotFoundException {
+        for (Object object : ctField.getAvailableAnnotations()) {
+            Annotation ann = (Annotation) object;
+            if (ann.annotationType().getName().equals(annotation)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasAnnotation(CtMethod ctMethod, String annotation) throws ClassNotFoundException {
+        for (Object object : ctMethod.getAvailableAnnotations()) {
+            Annotation ann = (Annotation) object;
+            if (ann.annotationType().getName().equals(annotation)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public static AnnotationsAttribute getAnnotations(CtClass ctClass) {
+        AnnotationsAttribute annotationsAttribute = (AnnotationsAttribute) ctClass.getClassFile().getAttribute(AnnotationsAttribute.visibleTag);
+        if (annotationsAttribute == null) {
+            annotationsAttribute = new AnnotationsAttribute(ctClass.getClassFile().getConstPool(), AnnotationsAttribute.visibleTag);
+            ctClass.getClassFile().addAttribute(annotationsAttribute);
+        }
+        return annotationsAttribute;
+    }
+
+    public static AnnotationsAttribute getAnnotations(CtField ctField) {
+        AnnotationsAttribute annotationsAttribute = (AnnotationsAttribute) ctField.getFieldInfo().getAttribute(AnnotationsAttribute.visibleTag);
+        if (annotationsAttribute == null) {
+            annotationsAttribute = new AnnotationsAttribute(ctField.getFieldInfo().getConstPool(), AnnotationsAttribute.visibleTag);
+            ctField.getFieldInfo().addAttribute(annotationsAttribute);
+        }
+        return annotationsAttribute;
+    }
+
+
+    public static AnnotationsAttribute getAnnotations(CtMethod ctMethod) {
+        AnnotationsAttribute annotationsAttribute = (AnnotationsAttribute) ctMethod.getMethodInfo().getAttribute(AnnotationsAttribute.visibleTag);
+        if (annotationsAttribute == null) {
+            annotationsAttribute = new AnnotationsAttribute(ctMethod.getMethodInfo().getConstPool(), AnnotationsAttribute.visibleTag);
+            ctMethod.getMethodInfo().addAttribute(annotationsAttribute);
+        }
+        return annotationsAttribute;
     }
 
 //    public static void modifyAnnotation(AnnotationsAttribute attribute, Annotation annotation, String key, MemberValue memberValue) {

@@ -2,6 +2,7 @@ package com.example.model;
 
 import net.csdn.jpa.model.Model;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
 import java.util.ArrayList;
@@ -14,6 +15,6 @@ import java.util.List;
  */
 @Entity
 public class TagGroup extends Model {
-    @ManyToMany(mappedBy = "tag_groups")
+    @ManyToMany
     private List<Tag> tags = new ArrayList<Tag>();
 }

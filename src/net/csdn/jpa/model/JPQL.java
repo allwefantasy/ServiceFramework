@@ -169,7 +169,7 @@ public class JPQL {
         for (String obj : bindings.keySet()) {
             query.setParameter(obj, bindings.get(obj));
         }
-        return (Long) query.getResultList().get(0);
+        return Long.parseLong(query.getSingleResult().toString());
     }
 
     public Long count_fetch() {
@@ -187,11 +187,8 @@ public class JPQL {
         }
         query.setFirstResult(offset);
         if (limit != -1) query.setMaxResults(limit);
-        List<T> models = query.getResultList();
-        if (models == null || models.size() == 0) {
-            return null;
-        }
-        return models.get(0);
+        return (T) query.getSingleResult();
+
     }
 
     public List fetch() {

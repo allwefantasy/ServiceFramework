@@ -4,6 +4,7 @@ import com.google.inject.*;
 import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.settings.Settings;
+import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
 import net.csdn.modules.http.HttpModule;
 import net.csdn.modules.scan.ScanModule;
@@ -29,7 +30,12 @@ public class ModuelLoader implements Loader {
         moduleList.add(new HttpModule());
         moduleList.add(new ScanModule());
 
-
+        moduleList.add(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(DBInfo.class).in(Singleton.class);
+            }
+        });
         moduleList.add(new AbstractModule() {
             @Override
             protected void configure() {

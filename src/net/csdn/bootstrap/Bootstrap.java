@@ -24,7 +24,7 @@ public class Bootstrap {
 
 
     private static HttpServer httpServer;
-
+    private static boolean isSystemConfigured = false;
 
     public static void main(String[] args) {
 
@@ -50,7 +50,7 @@ public class Bootstrap {
 
     //配置整个系统模块
     private static void configureSystem() throws Exception {
-
+        if (isSystemConfigured) return;
         Tuple<Settings, Environment> tuple = InternalSettingsPreparer.prepareSettings(EMPTY_SETTINGS);
 
 
@@ -67,6 +67,7 @@ public class Bootstrap {
             loader.load(tuple.v1());
         }
         JPA.setSettings(tuple.v1());
+        isSystemConfigured = true;
     }
 
     public static void isLoaded(String name) {
@@ -81,7 +82,7 @@ public class Bootstrap {
             cl = Thread.currentThread().getContextClassLoader();
             test1 = m.invoke(cl, name);
             System.out.println(name + "+=>" + (test1 != null));
-            if(test1 != null){
+            if (test1 != null) {
 
             }
             CtClass ctClass = ServiceFramwork.classPool.get(name);

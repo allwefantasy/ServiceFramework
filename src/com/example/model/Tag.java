@@ -1,17 +1,11 @@
 package com.example.model;
 
 import net.csdn.annotation.Validate;
-import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
-import net.csdn.validate.ValidateHelper;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.*;
 
-import static net.csdn.common.collections.WowCollections.join;
 import static net.csdn.common.collections.WowCollections.map;
 import static net.csdn.validate.ValidateHelper.presence;
 import static net.csdn.validate.ValidateHelper.uniqueness;
@@ -30,8 +24,9 @@ public class Tag extends Model {
     @ManyToOne
     private TagSynonym tag_synonym;
 
-    @OneToMany(mappedBy = "tag")
+    @OneToMany
     private List<BlogTag> blog_tags = new ArrayList<BlogTag>();
+
 
     @ManyToMany
     private List<TagGroup> tag_groups = new ArrayList<TagGroup>();
@@ -39,16 +34,14 @@ public class Tag extends Model {
 
     public static Set<String> synonym(String wow_names) {
         String[] names = wow_names.split(",");
-        //可以改为Set?
+
         Set<String> temp = new HashSet<String>();
         for (String name : names) {
             Tag tag = Tag.where("name=:name", map("name", name)).single_fetch();
             if (tag == null) continue;
             List<Tag> tags = Tag.where("tag_synonym=:tag_synonym", map("tag_synonym", tag.tag_synonym)).fetch();
             for (Tag tag1 : tags) {
-                String tagName = tag1.attr("name", String.class);
-                if (!temp.contains(tagName))
-                    temp.add(tagName);
+                temp.add(tag1.attr("name", String.class));
             }
 
         }

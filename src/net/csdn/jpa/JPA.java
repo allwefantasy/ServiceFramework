@@ -26,7 +26,7 @@ public class JPA {
 
     public static JPAConfig getJPAConfig() {
         if (jpaConfig == null) {
-            jpaConfig = new JPAConfig(properties(), "wow");
+            jpaConfig = new JPAConfig(properties(), settings.get("datasources.mysql.database"));
         }
         return jpaConfig;
     }

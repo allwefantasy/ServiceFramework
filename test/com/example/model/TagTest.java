@@ -49,30 +49,36 @@ public class TagTest extends IocTest {
         BlogTag.deleteAll();
         Tag.deleteAll();
         TagSynonym.deleteAll();
+        TagGroup.deleteAll();
 
         BlogTag blogTag = BlogTag.create(map("object_id", 17, "created_at", 2007022711l));
-        blogTag.attr("tag", Tag.create(map("name", "java")));
+        blogTag.m("tag", Tag.create(map("name", "java")));
         blogTag.save();
 
         blogTag = BlogTag.create(map("object_id", 17, "created_at", 2007022711l));
-        blogTag.attr("tag", Tag.create(map("name", "google")));
+        blogTag.m("tag", Tag.create(map("name", "google")));
         blogTag.save();
+
+        System.out.println("=======");
+        Tag _tag = Tag.create(map("name", "jack"));
+        _tag.save();
+       // _tag.attr("name", "jack2");
+        _tag.update();
+        System.out.println("=======");
 
         //添加一个同义词组
         TagSynonym tagSynonym = TagSynonym.create(map("name", "java"));
 
         List<Tag> tags = Tag.where("name in ('java','google')").fetch();
         for (Tag tag : tags) {
-            tagSynonym.attr("tags", List.class).add(tag);
-            tag.attr("tag_synonym", tagSynonym);
+            tagSynonym.m("tags", tag);
         }
         tagSynonym.save();
 
         //添加一个组
-        TagGroup tagGroup = TagGroup.create(map("name", "天才组"));
+        TagGroup tagGroup = TagGroup.create(map("name", "天才组2"));
         for (Tag tag : tags) {
-            tagGroup.attr("tags", List.class).add(tag);
-            tag.attr("tag_groups", List.class).add(tagGroup);
+            tagGroup.m("tags", tag);
         }
         tagGroup.save();
 

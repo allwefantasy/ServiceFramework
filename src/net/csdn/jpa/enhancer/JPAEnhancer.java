@@ -50,18 +50,22 @@ public class JPAEnhancer extends Enhancer {
         ConstPool constPool = ctClass.getClassFile().getConstPool();
         AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
         createAnnotation(attr, Entity.class);
-        createAnnotation(attr, org.hibernate.annotations.Entity.class, map("dynamicInsert", new BooleanMemberValue(true, constPool)));
+        createAnnotation(attr, org.hibernate.annotations.Entity.class, map("dynamicInsert", new BooleanMemberValue(true, constPool)
+        ));
         createAnnotation(attr, DynamicInsert.class);
         ctClass.getClassFile().addAttribute(attr);
-
-
-        for (BitEnhancer bitEnhancer : bitEnhancers) {
-            bitEnhancer.enhance(ctClass);
-        }
 
         //done
         return ctClass;
 
+    }
+
+    public void enhanceThisClass2(List<CtClass> ctClasses) throws Exception {
+        for (BitEnhancer bitEnhancer : bitEnhancers) {
+            for (CtClass ctClass : ctClasses) {
+                bitEnhancer.enhance(ctClass);
+            }
+        }
     }
 
 

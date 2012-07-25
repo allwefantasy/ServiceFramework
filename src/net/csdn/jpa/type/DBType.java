@@ -23,5 +23,4 @@ public interface DBType {
 
     public Tuple<Class, Map> dateType(String type, ConstPool constPool);
 
-    public Tuple<ResultSetMetaData, Connection> metaData(String entitySimpleName) throws Exception;
 }

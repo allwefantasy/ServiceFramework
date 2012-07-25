@@ -13,6 +13,7 @@ import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
+import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
 
 import javax.persistence.*;
@@ -91,7 +92,6 @@ public class PropertyEnhancer implements BitEnhancer {
 
     private void autoInjectProperty(CtClass ctClass) {
         //连接数据库，自动获取所有信息，然后添加属性
-        Connection conn = null;
         String entitySimpleName = ctClass.getSimpleName();
         List<String> skipFields = list();
 
@@ -99,12 +99,13 @@ public class PropertyEnhancer implements BitEnhancer {
 
         try {
             DBType dbType = ServiceFramwork.injector.getInstance(DBType.class);
-            Tuple<ResultSetMetaData, Connection> resultSetMetaDataConnectionTuple = dbType.metaData(entitySimpleName);
-            conn = resultSetMetaDataConnectionTuple.v2();
-            ResultSetMetaData rsme = resultSetMetaDataConnectionTuple.v1();
-            int columnCount = rsme.getColumnCount();
-            for (int i = 1; i <= columnCount; i++) {
-                String fieldName = rsme.getColumnName(i);
+            DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
+
+            Map<String, String> columns = dbInfo.tableColumns.get(entitySimpleName);
+
+            for (String columnName : columns.keySet()) {
+                String fieldName = columnName;
+                String fieldType = columns.get(columnName);
                 if (skipFields.contains(fieldName)) continue;
                 //对定义过的属性略过
                 boolean pass = true;
@@ -117,15 +118,14 @@ public class PropertyEnhancer implements BitEnhancer {
 
                 ConstPool constPool = ctClass.getClassFile().getConstPool();
                 AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-                CtField ctField = CtField.make(" private " + dbType.typeToJava(rsme.getColumnTypeName(i)).v2() + " " + fieldName + " ;", ctClass);
+                CtField ctField = CtField.make(" private " + dbType.typeToJava(fieldType).v2() + " " + fieldName + " ;", ctClass);
 
-                String fieldType = rsme.getColumnTypeName(i);
                 Tuple<Class, Map> tuple = dbType.dateType(fieldType, constPool);
                 if (tuple != null) {
                     createAnnotation(attr, tuple.v1(), tuple.v2());
                 }
 
-                if (rsme.isAutoIncrement(i) || rsme.getColumnTypeName(i).equals("id")) {
+                if (fieldName.equals("id")) {
                     createAnnotation(attr, javax.persistence.Id.class, map());
                     createAnnotation(attr, javax.persistence.GeneratedValue.class, map());
                 } else {
@@ -141,13 +141,6 @@ public class PropertyEnhancer implements BitEnhancer {
 
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            if (conn != null)
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-
-                }
         }
         ctClass.defrost();
     }

@@ -1,8 +1,6 @@
 package com.example.controller;
 
-import com.example.model.BlogTag;
 import com.example.model.Tag;
-import com.example.model.TagSynonym;
 import com.example.service.tag.RemoteDataService;
 import com.google.inject.Inject;
 import net.csdn.annotation.At;
@@ -11,7 +9,6 @@ import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
 import net.csdn.modules.http.ApplicationController;
 import net.csdn.reflect.ReflectHelper;
-import net.sf.json.JSONArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,26 +74,26 @@ public class TagController extends ApplicationController {
         Set<String> newTags = Tag.synonym(param("tags"));
 
 
-        JPQL jpql = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags, ",", "'") + ")");
+        JPQL query = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags, ",", "'") + ")");
 
         if (!isEmpty(param("channelIds"))) {
             String channelIds = join(param("channelIds").split(","), ",", "'");
-            jpql.where("channel_id in (" + channelIds + ")");
+            query.where("channel_id in (" + channelIds + ")");
         }
 
         if (!isEmpty(param("blockedTagsNames"))) {
             String blockedTagsNames = join(param("blockedTagsNames").split(","), ",", "'");
             String abc = "select object_id from " + param("type") + " where  tag.name in (" + blockedTagsNames + ")";
-            jpql.where("object_id not in (" + abc + ")");
+            query.where("object_id not in (" + abc + ")");
         }
 
-        long count = jpql.count_fetch("count(distinct object_id ) as count");
+        long count = query.count_fetch("count(distinct object_id ) as count");
 
         if (!isEmpty("orderFields")) {
-            jpql.order(order());
+            query.order(order());
         }
 
-        List<Model> models = jpql.offset(paramAsInt("start", 0)).limit(paramAsInt("size", 15)).fetch();
+        List<Model> models = query.offset(paramAsInt("start", 0)).limit(paramAsInt("size", 15)).fetch();
 
         // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetchObjectIds(models));
 

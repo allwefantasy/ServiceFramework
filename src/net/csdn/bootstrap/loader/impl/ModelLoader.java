@@ -25,7 +25,7 @@ import java.util.List;
  */
 public class ModelLoader implements Loader {
     @Override
-    public void load(Settings settings) throws IOException {
+    public void load(Settings settings) throws Exception {
         final Enhancer enhancer = new JPAEnhancer(ServiceFramwork.injector.getInstance(Settings.class));
         final List<CtClass> classList = new ArrayList<CtClass>();
         ServiceFramwork.scanService.scanArchives(settings.get("application.model"), new ScanService.LoadClassEnhanceCallBack() {
@@ -39,8 +39,12 @@ public class ModelLoader implements Loader {
                 return null;
             }
         });
+
+        enhancer.enhanceThisClass2(classList);
+
         for (CtClass ctClass : classList) {
             try {
+
                 Class<Model> clzz = ctClass.toClass();
                 JPA.models.put(clzz.getSimpleName(), clzz);
             } catch (CannotCompileException e) {

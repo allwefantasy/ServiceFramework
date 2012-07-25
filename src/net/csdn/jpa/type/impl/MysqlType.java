@@ -62,16 +62,4 @@ public class MysqlType implements DBType {
         return null;
     }
 
-    public Tuple<ResultSetMetaData, Connection> metaData(String entitySimpleName) throws Exception {
-        Connection conn = null;
-        Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Map<String, Settings> groups = settings.getGroups("datasources");
-        Settings mysqlSetting = groups.get("mysql");
-        String url = "jdbc:mysql://{}:{}/{}?useUnicode=true&characterEncoding=utf8";
-        url = format(url, mysqlSetting.get("host", "127.0.0.1"), mysqlSetting.get("port", "3306"), mysqlSetting.get("database", "csdn_search_client"));
-        conn = DriverManager.getConnection(url, mysqlSetting.get("username"), mysqlSetting.get("password"));
-        PreparedStatement ps = conn.prepareStatement("select * from " + entitySimpleName + " limit 1");
-        ResultSet rs = ps.executeQuery();
-        return new Tuple<ResultSetMetaData, Connection>(rs.getMetaData(), conn);
-    }
 }

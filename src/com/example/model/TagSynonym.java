@@ -15,6 +15,6 @@ import java.util.List;
  */
 @Entity
 public class TagSynonym extends Model {
-    @OneToMany(mappedBy = "tag_synonym", cascade = CascadeType.PERSIST)
+    @OneToMany
     private List<Tag> tags = new ArrayList<Tag>();
 }
