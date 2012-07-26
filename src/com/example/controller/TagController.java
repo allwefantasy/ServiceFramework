@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import com.example.model.BlogTag;
 import com.example.model.Tag;
 import com.example.service.tag.RemoteDataService;
 import com.google.inject.Inject;
@@ -27,6 +28,15 @@ public class TagController extends ApplicationController {
     @BeforeFilter
     private final static Map $checkParam = map(only, list("save", "search"));
 
+    @At(path="/{tag}/blog_tags",types = GET)
+    public void searchBlogTagsByName(){
+      List<BlogTag> blogTags =  BlogTag.where("tag.name=:name",map("name",param("tag")))
+                .offset(paramAsInt("start",0))
+                .limit(paramAsInt("size",15))
+                .fetch();
+        render(blogTags);
+    }
+
 
     /**
      * 通过插入doc 增加tag和doc的关联表
@@ -43,7 +53,7 @@ public class TagController extends ApplicationController {
 
         for (String tagStr : tags) {
             Model model = (Model) invoke_model(param("type"), "create", selectMapWithAliasName(paramAsJSON("jsonData"), "id", "object_id", "created_at", "created_at"));
-            model.attr("tag", Tag.create(map("name", tagStr)));
+            model.m("tag", Tag.create(map("name", tagStr)));
             if (!model.save()) {
                 render(HTTP_400, model.validateResults);
             }

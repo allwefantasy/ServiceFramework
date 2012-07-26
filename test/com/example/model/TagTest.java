@@ -59,13 +59,6 @@ public class TagTest extends IocTest {
         blogTag.m("tag", Tag.create(map("name", "google")));
         blogTag.save();
 
-        System.out.println("=======");
-        Tag _tag = Tag.create(map("name", "jack"));
-        _tag.save();
-       // _tag.attr("name", "jack2");
-        _tag.update();
-        System.out.println("=======");
-
         //添加一个同义词组
         TagSynonym tagSynonym = TagSynonym.create(map("name", "java"));
 
@@ -84,16 +77,5 @@ public class TagTest extends IocTest {
 
     }
 
-
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        JPA.getJPAConfig().getJPAContext().closeTx(false);
-    }
 
 }

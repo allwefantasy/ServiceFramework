@@ -5,15 +5,22 @@ import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.bootstrap.loader.impl.*;
 import net.csdn.common.collect.Tuple;
+import net.csdn.common.io.Streams;
 import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
 import net.csdn.env.Environment;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.HttpServer;
+import net.sf.json.JSON;
+import net.sf.json.JSONObject;
+import net.sf.json.xml.XMLSerializer;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import static net.csdn.common.logging.support.MessageFormat.format;
 import static net.csdn.common.settings.ImmutableSettings.Builder.EMPTY_SETTINGS;
 
 /**
@@ -52,7 +59,7 @@ public class Bootstrap {
     private static void configureSystem() throws Exception {
         if (isSystemConfigured) return;
         Tuple<Settings, Environment> tuple = InternalSettingsPreparer.prepareSettings(EMPTY_SETTINGS);
-
+        modifyPersistenceXml(tuple);
 
         List<Loader> loaders = new ArrayList<Loader>();
         loaders.add(new LoggerLoader());
@@ -68,6 +75,17 @@ public class Bootstrap {
         }
         JPA.setSettings(tuple.v1());
         isSystemConfigured = true;
+    }
+
+
+    //自动同步application.xml文件的配置到persistence.xml
+    private static void modifyPersistenceXml(Tuple<Settings, Environment> tuple) throws Exception {
+
+        String fileContent = Streams.copyToStringFromClasspath(Bootstrap.class.getClassLoader(), "META-INF/persistence.xml");
+        Map<String, Settings> groups = tuple.v1().getGroups("datasources");
+        Settings mysqlSetting = groups.get("mysql");
+        String path = Bootstrap.class.getClassLoader().getResource("META-INF/persistence.xml").getPath();
+        Streams.copy(format(fileContent, mysqlSetting.get("database")), new FileWriter(path));
     }
 
     public static void isLoaded(String name) {

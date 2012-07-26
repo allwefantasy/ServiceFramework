@@ -19,22 +19,26 @@ import java.lang.reflect.Method;
 public class IocTest {
     protected static Injector injector;
     protected static ServiceFramwork.Mode mode = ServiceFramwork.mode;
+    private static boolean isSystemConfigured = false;
 
     @Before
     public void setUp() throws Exception {
         ServiceFramwork.mode = ServiceFramwork.Mode.test;
+        if (isSystemConfigured) return;
         CtClass ctClass = ServiceFramwork.classPool.get("net.csdn.bootstrap.Bootstrap");
         //加载Guice容器
         Method method = ctClass.toClass().getDeclaredMethod("configureSystem");
         method.setAccessible(true);
         method.invoke(null);
         injector = ServiceFramwork.injector;
+        isSystemConfigured = true;
     }
 
 
     @After
     public void tearDown() throws Exception {
         ServiceFramwork.mode = mode;
+        dbCommit();
     }
 
     public void dbCommit() {

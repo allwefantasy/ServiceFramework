@@ -32,7 +32,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
     /*
         Hibernate 的关联关系太复杂了。要么你区分控制端和被控制端。要么你必须在使用的时候将两端都设置好关联关系。
-        对于mappedBy也是一个无语的设计。为什么我要通过它来区分控制端？完全有最佳实践
+        对于mappedBy也是一个无语的设计。为什么我要通过它来区分控制端？
      */
     @Override
     public void enhance(CtClass ctClass) throws Exception {
@@ -125,12 +125,10 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                     }
 
                     if (dbInfo.tableNames.contains(maybeTable2)) {
-                       // setCascad(ctField, "ManyToMany");
+                        // setCascad(ctField, "ManyToMany");
                         setMappedBy(ctField, mappedByFieldName, "ManyToMany");
                     }
-                    AnnotationsAttribute annotationsAttribute = EnhancerHelper.getAnnotations(other);
-                    EnhancerHelper.createAnnotation(annotationsAttribute, ManyToManyHint.class);
-
+                    setManyToManyHint(other);
                 }
 
                 try {
