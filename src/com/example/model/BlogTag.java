@@ -2,10 +2,8 @@ package com.example.model;
 
 import net.csdn.jpa.model.Model;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
-import java.util.List;
 
 /**
  * User: WilliamZhu

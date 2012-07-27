@@ -2,6 +2,7 @@ package com.example.controller;
 
 import com.example.model.BlogTag;
 import com.example.model.Tag;
+import com.example.model.TagGroup;
 import com.example.service.tag.RemoteDataService;
 import com.google.inject.Inject;
 import net.csdn.annotation.At;
@@ -18,8 +19,7 @@ import java.util.Set;
 
 import static net.csdn.common.logging.support.MessageFormat.format;
 import static net.csdn.filter.FilterHelper.BeforeFilter.only;
-import static net.csdn.modules.http.RestRequest.Method.GET;
-import static net.csdn.modules.http.RestRequest.Method.POST;
+import static net.csdn.modules.http.RestRequest.Method.*;
 import static net.csdn.modules.http.support.HttpStatus.HTTP_400;
 
 
@@ -27,14 +27,42 @@ public class TagController extends ApplicationController {
 
     @BeforeFilter
     private final static Map $checkParam = map(only, list("save", "search"));
+    @BeforeFilter
+    private final static Map $findTag = map(only, list("addTagToTagGroup", "deleteTagToTagGroup"));
 
-    @At(path="/{tag}/blog_tags",types = GET)
-    public void searchBlogTagsByName(){
-      List<BlogTag> blogTags =  BlogTag.where("tag.name=:name",map("name",param("tag")))
-                .offset(paramAsInt("start",0))
-                .limit(paramAsInt("size",15))
-                .fetch();
-        render(blogTags);
+
+    @At(path = "/tag_group/create", types = POST)
+    public void createTagGroup() {
+        TagGroup tagGroup = TagGroup.create(params());
+        if (!tagGroup.save()) {
+            render(HTTP_400, tagGroup.validateResults);
+        }
+        render(OK);
+    }
+
+
+    @At(path = "/tag_group/tag", types = {PUT, POST})
+    public void addTagToTagGroup() {
+        TagGroup tagGroup = TagGroup.findById(paramAsInt("id"));
+        tagGroup.associate("tags").add(tag);
+        render(OK);
+    }
+
+    @At(path = "/tag_group/tag", types = {DELETE})
+    public void deleteTagToTagGroup() {
+        TagGroup tagGroup = TagGroup.findById(paramAsInt("id"));
+        tagGroup.associate("tags").remove(tag);
+        tagGroup.save();
+        render(OK);
+    }
+
+
+    @At(path = "/{tag}/blog_tags", types = GET)
+    public void createBlogTag() {
+        tag.m("blog_tags", BlogTag.create(map("object_id", paramAsInt("objectd_id"))));
+        if (tag.save()) {
+
+        }
     }
 
 
@@ -53,7 +81,7 @@ public class TagController extends ApplicationController {
 
         for (String tagStr : tags) {
             Model model = (Model) invoke_model(param("type"), "create", selectMapWithAliasName(paramAsJSON("jsonData"), "id", "object_id", "created_at", "created_at"));
-            model.m("tag", Tag.create(map("name", tagStr)));
+            model.associate("tag").set(Tag.create(map("name", tagStr)));
             if (!model.save()) {
                 render(HTTP_400, model.validateResults);
             }
@@ -117,6 +145,15 @@ public class TagController extends ApplicationController {
         tags = param("tags", " ").split(",");
         if (tags.length == 0) {
             render(HTTP_400, format(FAIL, "必须传递标签"));
+        }
+    }
+
+    private Tag tag;
+
+    private void findTag() {
+        tag = Tag.where("name=:name", map("name", param("tag"))).single_fetch();
+        if (tag == null) {
+            render(HTTP_400, format(FAIL, "必须传递tag参数"));
         }
     }
 

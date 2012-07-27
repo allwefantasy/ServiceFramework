@@ -1,9 +1,10 @@
 package net.csdn.jpa.model;
 
-import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.JPA;
+import net.csdn.jpa.association.Association;
 import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.context.JPAContext;
+import net.csdn.reflect.ReflectHelper;
 import net.csdn.validate.ValidateParse;
 import net.csdn.validate.ValidateResult;
 import org.apache.commons.beanutils.BeanUtils;
@@ -11,11 +12,9 @@ import org.apache.commons.beanutils.MethodUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Transient;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.list;
 
@@ -32,6 +31,9 @@ public class JPABase implements GenericModel {
         return getJPAConfig().getJPAContext();
     }
 
+    public Integer id() {
+        return attr("id", Integer.class);
+    }
 
     public static JPAConfig getJPAConfig() {
         return JPA.getJPAConfig();
@@ -69,6 +71,10 @@ public class JPABase implements GenericModel {
         return null;
     }
 
+    public Association associate(String obj) {
+        return (Association) ReflectHelper.method(this, obj);
+    }
+
     @Override
     public boolean save() {
         if (valid()) {
@@ -82,12 +88,12 @@ public class JPABase implements GenericModel {
 
     }
 
-    public <T extends JPABase> T add(Map params) {
-        ParamBinding paramBinding = new ParamBinding();
-        paramBinding.parse(params);
-        paramBinding.toModel(this);
-        return (T) this;
-    }
+//    public <T extends JPABase> T add(Map params) {
+//        ParamBinding paramBinding = new ParamBinding();
+//        paramBinding.parse(params);
+//        paramBinding.toModel(this);
+//        return (T) this;
+//    }
 
     @Transient
     public final List<ValidateResult> validateResults = new ArrayList<ValidateResult>();

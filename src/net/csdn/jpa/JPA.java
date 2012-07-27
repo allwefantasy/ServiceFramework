@@ -53,17 +53,17 @@ public class JPA {
 
     private static Map<String, String> properties() {
         Map<String, String> properties = new HashMap<String, String>();
-        properties.put("hibernate.show_sql", "true");
+        properties.put("hibernate.show_sql", settings.get("orm.show_sql", "true"));
         properties.put("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
         properties.put("hibernate.connection.password", settings.get("datasources.mysql.password"));
         properties.put("hibernate.connection.url", "jdbc:mysql://" + settings.get("datasources.mysql.host") + "/" + settings.get("datasources.mysql.database"));
         properties.put("hibernate.connection.username", settings.get("datasources.mysql.username"));
         properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
-        properties.put("hibernate.c3p0.min_size", "5");
-        properties.put("hibernate.c3p0.max_size", "5");
-        properties.put("hibernate.c3p0.timeout", "300hibernate.c3p0.timeout");
-        properties.put("hibernate.c3p0.max_statements", "50");
-        properties.put("hibernate.c3p0.idle_test_period", "3000");
+        properties.put("hibernate.c3p0.min_size", settings.get("orm.pool_min_size", "20"));
+        properties.put("hibernate.c3p0.max_size", settings.get("orm.pool_max_size", "20"));
+        properties.put("hibernate.c3p0.timeout", settings.get("orm.timeout", "300"));
+        properties.put("hibernate.c3p0.max_statements", settings.get("orm.max_statements", "50"));
+        properties.put("hibernate.c3p0.idle_test_period", settings.get("orm.idle_test_period", "3000"));
         //    properties.put("hibernate.query.factory_class", "org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory");
         return properties;
     }

@@ -1,15 +1,12 @@
 package net.csdn.junit;
 
 import com.google.inject.Injector;
-import javassist.CtClass;
 import net.csdn.ServiceFramwork;
-import net.csdn.bootstrap.Bootstrap;
 import net.csdn.jpa.JPA;
 import org.junit.After;
 import org.junit.Before;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * BlogInfo: WilliamZhu
@@ -17,29 +14,7 @@ import java.lang.reflect.Method;
  * Time: 下午10:21
  */
 public class IocTest {
-    protected static Injector injector;
-    protected static ServiceFramwork.Mode mode = ServiceFramwork.mode;
-    private static boolean isSystemConfigured = false;
-
-    @Before
-    public void setUp() throws Exception {
-        ServiceFramwork.mode = ServiceFramwork.Mode.test;
-        if (isSystemConfigured) return;
-        CtClass ctClass = ServiceFramwork.classPool.get("net.csdn.bootstrap.Bootstrap");
-        //加载Guice容器
-        Method method = ctClass.toClass().getDeclaredMethod("configureSystem");
-        method.setAccessible(true);
-        method.invoke(null);
-        injector = ServiceFramwork.injector;
-        isSystemConfigured = true;
-    }
-
-
-    @After
-    public void tearDown() throws Exception {
-        ServiceFramwork.mode = mode;
-        dbCommit();
-    }
+    protected final static Injector injector = ServiceFramwork.injector;
 
     public void dbCommit() {
         JPA.getJPAConfig().getJPAContext().closeTx(false);
@@ -57,6 +32,15 @@ public class IocTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Before
+    public void setUp() throws Exception {
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        dbCommit();
     }
 
     protected void setService(Object targetObj, Class<?> fieldClass, Object fieldValue) {

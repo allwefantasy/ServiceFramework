@@ -6,7 +6,9 @@ import net.csdn.jpa.model.Model;
 import javax.persistence.*;
 import java.util.*;
 
+import static net.csdn.common.collections.WowCollections.list;
 import static net.csdn.common.collections.WowCollections.map;
+import static net.csdn.validate.ValidateHelper.associated;
 import static net.csdn.validate.ValidateHelper.presence;
 import static net.csdn.validate.ValidateHelper.uniqueness;
 
@@ -19,6 +21,7 @@ import static net.csdn.validate.ValidateHelper.uniqueness;
 public class Tag extends Model {
     @Validate
     private final static Map $name = map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复"));
+    private final static Map $associated = map(associated, list("blog_tags"));
 
 
     @ManyToOne

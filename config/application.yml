@@ -21,13 +21,20 @@ datasources:
         host: 127.0.0.1
         port: 6379
 
-
+orm:
+    show_sql: true
+    pool_min_size: 5
+    pool_max_size: 10
+    timeout: 300
+    max_statements: 50
+    idle_test_period: 3000
 ###############application config##################
 application:
     controller: com.example.controller
     model:      com.example.model
     service:    com.example.service
     util:       com.example.util
+    test:       test.com.example
 
 
 ###############http config##################

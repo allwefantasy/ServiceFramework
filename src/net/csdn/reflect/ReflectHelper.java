@@ -16,10 +16,21 @@ import java.util.List;
 public class ReflectHelper {
     public static void field(Object obj, String fieldName, Object value) throws Exception {
         Field field = null;
+        Class clzz = obj.getClass();
         try {
-            field = obj.getClass().getDeclaredField(fieldName);
+            field = clzz.getDeclaredField(fieldName);
         } catch (Exception e) {
-            field = obj.getClass().getField(fieldName);
+            try {
+
+
+                field = obj.getClass().getField(fieldName);
+            } catch (Exception e2) {
+                if (clzz.getSuperclass() != null) {
+                    field(obj, clzz.getSuperclass(), fieldName, value);
+                    return;
+                }
+                throw e2;
+            }
         }
         field.setAccessible(true);
         field.set(obj, value);
@@ -27,10 +38,42 @@ public class ReflectHelper {
 
     public static Object field(Object obj, String fieldName) throws Exception {
         Field field = null;
+        Class clzz = obj.getClass();
         try {
-            field = obj.getClass().getDeclaredField(fieldName);
+            field = clzz.getDeclaredField(fieldName);
         } catch (Exception e) {
-            field = obj.getClass().getField(fieldName);
+            try {
+                field = obj.getClass().getField(fieldName);
+            } catch (Exception e2) {
+                if (clzz.getSuperclass() != null) {
+                    return field(obj, clzz.getSuperclass(), fieldName);
+                }
+                throw e2;
+            }
+        }
+
+        field.setAccessible(true);
+        return field.get(obj);
+    }
+
+    public static void field(Object obj, Class clzz, String fieldName, Object value) throws Exception {
+        Field field = null;
+        try {
+            field = clzz.getDeclaredField(fieldName);
+        } catch (Exception e) {
+            field = clzz.getField(fieldName);
+        }
+
+        field.setAccessible(true);
+        field.set(obj, value);
+    }
+
+    public static Object field(Object obj, Class clzz, String fieldName) throws Exception {
+        Field field = null;
+        try {
+            field = clzz.getDeclaredField(fieldName);
+        } catch (Exception e) {
+            field = clzz.getField(fieldName);
         }
 
         field.setAccessible(true);

@@ -28,7 +28,10 @@ public interface ScanService {
 
     public List<String> classNames(String packageName);
 
+    public List<String> classNames(String packageName, Class baseClass);
+
     public interface LoadClassEnhanceCallBack {
-        public Class loaded(ClassPool classPool,DataInputStream classFile);
+        public Class loaded(ClassPool classPool, DataInputStream classFile);
     }
+
 }

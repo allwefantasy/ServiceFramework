@@ -4,6 +4,7 @@ import javassist.CtClass;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.BooleanMemberValue;
+import net.csdn.bootstrap.Bootstrap;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
 import net.csdn.enhancer.Enhancer;
@@ -63,6 +64,7 @@ public class JPAEnhancer extends Enhancer {
     public void enhanceThisClass2(List<CtClass> ctClasses) throws Exception {
         for (BitEnhancer bitEnhancer : bitEnhancers) {
             for (CtClass ctClass : ctClasses) {
+               // Bootstrap.isLoaded(ctClass.getName());
                 bitEnhancer.enhance(ctClass);
             }
         }

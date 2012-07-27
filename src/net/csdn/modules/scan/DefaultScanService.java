@@ -2,7 +2,6 @@ package net.csdn.modules.scan;
 
 import javassist.ClassPool;
 import net.csdn.ServiceFramwork;
-import net.csdn.bootstrap.Bootstrap;
 import net.csdn.modules.scan.component.ClasspathUrlFinder;
 import net.csdn.modules.scan.component.Filter;
 import net.csdn.modules.scan.component.IteratorFactory;
@@ -35,6 +34,21 @@ public class DefaultScanService implements ScanService {
     @Override
     public List<String> classNames(String packageName) {
         URL class_file_base_url = ClasspathUrlFinder.findClassBase(DefaultScanService.class);
+        File packageDir = new File(class_file_base_url.getPath() + packageName.replaceAll("\\.", "/"));
+        List<String> classes = new ArrayList<String>();
+        List<File> files = new ArrayList<File>();
+        iterateDir(packageDir, files);
+        for (File f : files) {
+            String path = f.getPath();
+            classes.add(path.substring(class_file_base_url.getPath().length(), path.length() - 6).replaceAll(File.separator, "."));
+        }
+        String obj = "";
+        return classes;
+    }
+
+    @Override
+    public List<String> classNames(String packageName, Class baseClass) {
+        URL class_file_base_url = ClasspathUrlFinder.findClassBase(baseClass);
         File packageDir = new File(class_file_base_url.getPath() + packageName.replaceAll("\\.", "/"));
         List<String> classes = new ArrayList<String>();
         List<File> files = new ArrayList<File>();

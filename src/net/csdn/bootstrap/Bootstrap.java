@@ -11,11 +11,8 @@ import net.csdn.common.settings.Settings;
 import net.csdn.env.Environment;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.HttpServer;
-import net.sf.json.JSON;
-import net.sf.json.JSONObject;
-import net.sf.json.xml.XMLSerializer;
 
-import java.io.*;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -106,6 +103,7 @@ public class Bootstrap {
             CtClass ctClass = ServiceFramwork.classPool.get(name);
             System.out.println(cl);
             System.out.println(ctClass);
+            System.out.println("-------------------------------");
 
         } catch (Exception e) {
             e.printStackTrace();

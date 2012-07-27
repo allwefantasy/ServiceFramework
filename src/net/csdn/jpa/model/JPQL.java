@@ -162,7 +162,6 @@ public class JPQL {
     public Long count_fetch(String countString) {
 
         sql = "select " + parseSelect(countString) + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
-        logger.info(sql);
         //limit 1.取一条
         Query query = em().createQuery(sql);
 
@@ -178,7 +177,6 @@ public class JPQL {
 
     public <T> T single_fetch() {
         sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
-        logger.info(sql);
         //limit 1.取一条
         Query query = em().createQuery(sql);
 
@@ -193,7 +191,6 @@ public class JPQL {
 
     public List fetch() {
         sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
-        logger.info(sql);
         //limit 1.取一条
         Query query = em().createQuery(sql);
 

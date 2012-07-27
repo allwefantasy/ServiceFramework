@@ -1,8 +1,7 @@
 package net.csdn.jpa.enhancer;
 
 import javassist.*;
-import javassist.bytecode.*;
-import javassist.bytecode.annotation.*;
+import javassist.bytecode.AnnotationsAttribute;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.ManyToManyHint;
 import net.csdn.common.settings.Settings;
@@ -11,7 +10,6 @@ import net.csdn.enhancer.BitEnhancer;
 import net.csdn.enhancer.EnhancerHelper;
 import net.csdn.jpa.type.DBInfo;
 import org.apache.commons.lang.StringUtils;
-
 
 import java.lang.reflect.Modifier;
 
@@ -59,11 +57,9 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                     String getter = "set" + propertyName;
 
                     CtMethod wow = CtMethod.make(
-                            format("public {} {}({} obj) {" +
-                                    "        this.{}.add(obj);" +
-                                    "        obj.{}(this);" +
-                                    "        return this;" +
-                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
+                            format("public net.csdn.jpa.association.Association {}() {" +
+                                    "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
+                                    "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.OneToMany"
                             )
                             ,
                             ctClass);
@@ -90,11 +86,9 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                     String getter = "get" + propertyName;
 
                     CtMethod wow = CtMethod.make(
-                            format("public {} {}({} obj) {" +
-                                    "        this.{} = obj;" +
-                                    "        obj.{}().add(this);" +
-                                    "        return this;" +
-                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
+                            format("public net.csdn.jpa.association.Association {}() {" +
+                                    "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
+                                    "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.ManyToOne"
                             ),
                             ctClass);
                     ctClass.addMethod(wow);
@@ -111,22 +105,26 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
                 CtField other = findAssociatedField(ctClass, clzzName);
 
+                DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
+                String otherClassSimpleName = findAssociatedClass(ctClass.getClassPool(), ctField).getSimpleName();
+
+
+                String maybeTable1 = ctClass.getSimpleName() + "_" + otherClassSimpleName;
+                String maybeTable2 = otherClassSimpleName + "_" + ctClass.getSimpleName();
+                String finalTableName = dbInfo.tableNames.contains(maybeTable1) ? maybeTable1 : maybeTable2;
+                setCascad(ctField, "ManyToMany");
+                boolean isMaster = false;
                 if (!ctField.hasAnnotation(ManyToManyHint.class)) {
-                    DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
-                    String otherClassSimpleName = findAssociatedClass(ctClass.getClassPool(), ctField).getSimpleName();
-                    String maybeTable1 = ctClass.getSimpleName() + "_" + otherClassSimpleName;
-                    String maybeTable2 = otherClassSimpleName + "_" + ctClass.getSimpleName();
-
-
                     if (dbInfo.tableNames.contains(maybeTable1)) {
-                        //setCascad(other, "ManyToMany");
                         setMappedBy(other, ctField.getName(), "ManyToMany");
+                        isMaster = true;
+                        finalTableName = maybeTable1;
 
                     }
 
                     if (dbInfo.tableNames.contains(maybeTable2)) {
-                        // setCascad(ctField, "ManyToMany");
                         setMappedBy(ctField, mappedByFieldName, "ManyToMany");
+                        finalTableName = maybeTable2;
                     }
                     setManyToManyHint(other);
                 }
@@ -139,12 +137,10 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                     String getter = "get" + propertyName;
 
                     CtMethod wow = CtMethod.make(
-                            format("public {} {}({} obj) {" +
-                                    "        {}.add(obj);" +
-                                    "        obj.{}().add(this);" +
-                                    "        return this;" +
-                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter)
-                            ,
+                            format("public net.csdn.jpa.association.Association {}() {" +
+                                    "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\",\"{}\",\"{}\");return obj;" +
+                                    "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.ManyToMany", finalTableName, isMaster
+                            ),
                             ctClass);
                     ctClass.addMethod(wow);
                 }
