@@ -13,14 +13,11 @@ import static net.csdn.common.collections.WowCollections.newHashSet;
 public class WowJoinParser {
 
     public static final String HQL_JOIN_SEPARATORS = WowWhereParser.HQL_SEPARATORS;
-    private Set<String> keywords = newHashSet("join", "left join", "right join", "inner join", "outer join");
+    private Set<String> keywords = newHashSet("join fetch", "left join fetch", "right join fetch", "inner join fetch", "outer join fetch");
 
     private Set columns = new HashSet<String>();
     private String alias = "";
     private List<String> joinClauses = new ArrayList<String>();
-
-    private boolean open = false;
-    private boolean close = true;
 
     public WowJoinParser(Set columns, String alias) {
         this.columns = columns;

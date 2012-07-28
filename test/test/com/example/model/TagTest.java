@@ -18,6 +18,47 @@ import static org.junit.Assert.assertTrue;
  */
 public class TagTest extends IocTest {
 
+
+    private void setUpTagAndTagSynonymData() {
+        String tagSynonymName = "java";
+        TagSynonym tagSynonym = TagSynonym.create(map("name", tagSynonymName));
+        tagSynonym.save();
+        for (int i = 0; i < 10; i++) {
+            tagSynonym.associate("tags").add(Tag.create(map("name", "tag_" + i)));
+        }
+
+        dbCommit();
+    }
+
+    private void tearDownTagAndTagSynonymData() {
+        TagSynonym.delete("name=?", "java");
+        Tag.delete("name like 'tag_%'");
+
+    }
+
+    @Test
+    public void associationJPQLTest() {
+        setUpTagAndTagSynonymData();
+
+        TagSynonym tagSynonym = TagSynonym.where("name=:name", map("name", "java")).single_fetch();
+        List<Tag> tags = tagSynonym.associate("tags").where("name=:name", map("name", "tag_1")).limit(1).fetch();
+        assertTrue(tags.size() == 1);
+
+        tearDownTagAndTagSynonymData();
+    }
+
+    @Test
+    public void joinTest() {
+        setUpTagAndTagSynonymData();
+
+        List<TagSynonym> tagSynonyms = TagSynonym.where("name=:name", map("name", "java")).joins("left join fetch tags").fetch();
+        assertTrue(tagSynonyms.size() == 1);
+        assertTrue(tagSynonyms.get(0).attr("tags", List.class).size() == 10);
+
+        tearDownTagAndTagSynonymData();
+
+    }
+
     @Test
     public void manyToManyAssociationTest() {
 
@@ -73,7 +114,7 @@ public class TagTest extends IocTest {
         assertTrue(tagSynonym != null);
 
         tag = Tag.findById(tag.id());
-        TagSynonym.delete("name=?",tagSynonymName);
+        TagSynonym.delete("name=?", tagSynonymName);
         tag.delete();
     }
 

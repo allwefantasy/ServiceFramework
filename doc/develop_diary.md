@@ -102,6 +102,8 @@ Blog.activeBlogs().where("title=:title",map("title","yes")).fetch();
 ```
 这样就可以获取标题为yes,并且是激活的博客。
 
+hibernate 是一个全面完善的ORM框架。但是太多的性能陷阱。而且配置繁杂，使用困难。ServiceFrame努力做的一件事情就是使得Hibenrate 更为易用，并且避免用户陷入性能陷阱。
+
 ### ServiceFrame Model层开发
 这种链式调用就是ServiceFramework推荐的方式。
 假设我们要开发一个标签系统,具有四个类(表):

@@ -6,7 +6,6 @@ import org.apache.commons.beanutils.MethodUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * User: WilliamZhu
@@ -55,6 +54,9 @@ public class ReflectHelper {
         field.setAccessible(true);
         return field.get(obj);
     }
+
+
+
 
     public static void field(Object obj, Class clzz, String fieldName, Object value) throws Exception {
         Field field = null;

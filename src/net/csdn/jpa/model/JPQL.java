@@ -9,19 +9,14 @@ import net.csdn.jpa.hql.WowJoinParser;
 import net.csdn.jpa.hql.WowSelectParser;
 import net.csdn.jpa.hql.WowWhereParser;
 import net.csdn.jpa.model.Model.JPAQuery;
-import net.csdn.reflect.ReflectHelper;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.ejb.metamodel.AbstractAttribute;
-import org.hibernate.ejb.metamodel.AbstractManagedType;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
-import java.lang.reflect.Field;
 import java.util.*;
-
-import static net.csdn.common.collections.WowCollections.newHashSet;
 
 public class JPQL {
     private CSLogger logger = Loggers.getLogger(getClass());
@@ -64,7 +59,7 @@ public class JPQL {
     //下面这些方法都是模拟active_record的链式操作
     public JPQL where(String condition, Map params) {
         where(condition);
-        this.bindings = params;
+        this.bindings.putAll(params);
         return this;
     }
 
@@ -139,7 +134,7 @@ public class JPQL {
         if (joins.contains("join")) {
             this.joins = parseJoin(joins);
         } else {
-            this.joins = "join " + parseJoin(joins);
+            this.joins = "inner join fetch" + parseJoin(joins);
         }
         return this;
     }
