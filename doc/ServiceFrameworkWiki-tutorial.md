@@ -41,22 +41,23 @@ border-collapse: collapse;
 ServcieFramework 定位在**移动互联网后端**。
 所以ServcieFramework非常强调开发的高效性，其开发效率可以比肩Rails(不相信？可以体验一下哦)。
 
-1. 拥有Java界最简单，非常高效，且规范的Model层。天然拥有ORM特性
+1. 拥有Java界最简单，非常高效，且规范的Model层
 2. Controller层有非常简洁的验证器，过滤器
+3. 简单但实用的View层，天然支持JSON,XMl格式输出
 
-因为针对的是移动后端，所以目前只支持字符串，json,xml格式输出。
-天生集成了对mysql,mongodb,redis的支持
+框架已经提供了对mysql,mongodb,redis的支持
 
 如果你面对的是一个遗留项目或者数据库设计，那么ServiceFramework不适合你。我们倾向于一个全新的项目中使用
-它。相信你会为Java也能做到如此的简洁而惊讶，如果高效的开发而窃喜。
+它。相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
 
 现在让我们开始 ServiceFramework 十五分钟旅程吧。
 
 
 
-### 搭建起来，跑起来
+### 搭起来，跑起来
 
-在终端下
+在终端下赋值黏贴运行该命令:
+
 git clone https://github.com/service_framework/service_framework.git tag_engine
 
 此时你就获得一个开箱即用的项目。所有的目录和结构都是规范化的。
@@ -118,7 +119,10 @@ git clone https://github.com/service_framework/service_framework.git tag_engine
 </tbody></table>
 
 项目在src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
+在test 中的 test.com.example 有example项目的测试代码。
+你可以在IDE环境运行 test 根目录下的
 
-这里我们会以这个Tag系统，来告诉你，如何高效的实现这个Tag系统。或许，他的开发速度会比Rails还快…..
+DynamicSuiteRunner 文件。
 
+这里我们会实现一个Tag系统来展示如何使用ServiceFrame 开发是如何的高效。
 

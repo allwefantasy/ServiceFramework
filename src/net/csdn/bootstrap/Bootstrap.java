@@ -56,6 +56,7 @@ public class Bootstrap {
     private static void configureSystem() throws Exception {
         if (isSystemConfigured) return;
         Tuple<Settings, Environment> tuple = InternalSettingsPreparer.prepareSettings(EMPTY_SETTINGS);
+        ServiceFramwork.mode = ServiceFramwork.Mode.valueOf(tuple.v1().get("mode"));
         modifyPersistenceXml(tuple);
 
         List<Loader> loaders = new ArrayList<Loader>();
@@ -79,7 +80,7 @@ public class Bootstrap {
     private static void modifyPersistenceXml(Tuple<Settings, Environment> tuple) throws Exception {
 
         String fileContent = Streams.copyToStringFromClasspath(Bootstrap.class.getClassLoader(), "META-INF/persistence.xml");
-        Map<String, Settings> groups = tuple.v1().getGroups("datasources");
+        Map<String, Settings> groups = tuple.v1().getGroups(ServiceFramwork.mode.name() + ".datasources");
         Settings mysqlSetting = groups.get("mysql");
         String path = Bootstrap.class.getClassLoader().getResource("META-INF/persistence.xml").getPath();
         Streams.copy(format(fileContent, mysqlSetting.get("database")), new FileWriter(path));

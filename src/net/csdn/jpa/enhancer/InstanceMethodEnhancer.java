@@ -17,7 +17,7 @@ import static net.csdn.common.logging.support.MessageFormat.format;
 
 
 /**
- * BlogInfo: WilliamZhu
+ * User: WilliamZhu
  * Date: 12-7-4
  * Time: 下午9:08
  */
@@ -48,6 +48,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
                 //如果没有设置mappedBy我们帮他设置吧
                 setMappedBy(ctField, mappedByFieldName, "OneToMany");
+                setCascad(ctField, "OneToMany");
 
 
                 try {
@@ -64,6 +65,18 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                             ,
                             ctClass);
                     ctClass.addMethod(wow);
+
+                    CtMethod wow2 = CtMethod.make(
+                            format("public {} {}({} obj) {" +
+                                    "        this.{}.add(obj);" +
+                                    "        obj.{}(this);" +
+                                    "        return this;" +
+                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
+                            )
+                            ,
+                            ctClass);
+                    ctClass.addMethod(wow2);
+
                 }
             }
 
@@ -92,6 +105,18 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                             ),
                             ctClass);
                     ctClass.addMethod(wow);
+
+
+                    CtMethod wow2 = CtMethod.make(
+                            format("public {} {}({} obj) {" +
+                                    "        this.{} = obj;" +
+                                    "        obj.{}().add(this);" +
+                                    "        return this;" +
+                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
+                            ),
+                            ctClass);
+                    ctClass.addMethod(wow2);
+
                 }
 
 
@@ -143,6 +168,18 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                             ),
                             ctClass);
                     ctClass.addMethod(wow);
+
+                    CtMethod wow2 = CtMethod.make(
+                            format("public {} {}({} obj) {" +
+                                    "        {}.add(obj);" +
+                                    "        obj.{}().add(this);" +
+                                    "        return this;" +
+                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter)
+                            ,
+                            ctClass);
+                    ctClass.addMethod(wow2);
+
+
                 }
             }
         }

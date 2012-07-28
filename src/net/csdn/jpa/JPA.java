@@ -1,5 +1,6 @@
 package net.csdn.jpa;
 
+import net.csdn.ServiceFramwork;
 import net.csdn.common.settings.Settings;
 import net.csdn.env.Environment;
 import net.csdn.jpa.context.JPAConfig;
@@ -53,11 +54,15 @@ public class JPA {
 
     private static Map<String, String> properties() {
         Map<String, String> properties = new HashMap<String, String>();
+
+        Map<String, Settings> groups = settings.getGroups(ServiceFramwork.mode.name() + ".datasources");
+        Settings mysqlSetting = groups.get("mysql");
+
         properties.put("hibernate.show_sql", settings.get("orm.show_sql", "true"));
         properties.put("hibernate.connection.driver_class", "com.mysql.jdbc.Driver");
-        properties.put("hibernate.connection.password", settings.get("datasources.mysql.password"));
-        properties.put("hibernate.connection.url", "jdbc:mysql://" + settings.get("datasources.mysql.host") + "/" + settings.get("datasources.mysql.database"));
-        properties.put("hibernate.connection.username", settings.get("datasources.mysql.username"));
+        properties.put("hibernate.connection.password", mysqlSetting.get("password"));
+        properties.put("hibernate.connection.url", "jdbc:mysql://" + mysqlSetting.get("host") + "/" + mysqlSetting.get("database"));
+        properties.put("hibernate.connection.username", mysqlSetting.get("username"));
         properties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
         properties.put("hibernate.c3p0.min_size", settings.get("orm.pool_min_size", "20"));
         properties.put("hibernate.c3p0.max_size", settings.get("orm.pool_max_size", "20"));

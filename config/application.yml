@@ -1,25 +1,41 @@
 #mode
 mode:
   development
-#mode=development
-#mode=test
+#mode=production
 
 ###############datasource config##################
 #mysql,mongodb,redis等数据源配置方式
-datasources:
-    mysql:
-       host: 127.0.0.1
-       port: 3306
-       database: wow
-       username: root
-       password: csdn.net
-    mongodb:
-       host: 127.0.0.1
-       port: 27017
-       database: csdn_data_center
-    redis:
-        host: 127.0.0.1
-        port: 6379
+development:
+    datasources:
+        mysql:
+           host: 127.0.0.1
+           port: 3306
+           database: wow
+           username: root
+           password: csdn.net
+        mongodb:
+           host: 127.0.0.1
+           port: 27017
+           database: csdn_data_center
+        redis:
+            host: 127.0.0.1
+            port: 6379
+
+production:
+    datasources:
+        mysql:
+           host: 127.0.0.1
+           port: 3306
+           database: wow
+           username: root
+           password: csdn.net
+        mongodb:
+           host: 127.0.0.1
+           port: 27017
+           database: csdn_data_center
+        redis:
+            host: 127.0.0.1
+            port: 6379
 
 orm:
     show_sql: true

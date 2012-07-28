@@ -1,6 +1,7 @@
 package net.csdn.jpa.type;
 
 import com.google.inject.Inject;
+import net.csdn.ServiceFramwork;
 import net.csdn.common.settings.Settings;
 
 import java.sql.*;
@@ -9,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.map;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
@@ -36,7 +36,7 @@ public class DBInfo {
     public void info() throws Exception {
         Connection conn = null;
         Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Map<String, Settings> groups = settings.getGroups("datasources");
+        Map<String, Settings> groups = settings.getGroups(ServiceFramwork.mode.name() + ".datasources");
         Settings mysqlSetting = groups.get("mysql");
         String url = "jdbc:mysql://{}:{}/{}?useUnicode=true&characterEncoding=utf8";
         url = format(url, mysqlSetting.get("host", "127.0.0.1"), mysqlSetting.get("port", "3306"), mysqlSetting.get("database", "csdn_search_client"));

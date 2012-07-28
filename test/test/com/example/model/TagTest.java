@@ -52,8 +52,7 @@ public class TagTest extends IocTest {
         assertTrue(tags.size() == 0);
 
         tagGroup.delete();
-        tag = Tag.where("name=:name", map("name", tagName)).single_fetch();
-        tag.delete();
+        Tag.delete("name=?", tagName);
 
     }
 
@@ -74,7 +73,7 @@ public class TagTest extends IocTest {
         assertTrue(tagSynonym != null);
 
         tag = Tag.findById(tag.id());
-        tagSynonym.delete();
+        TagSynonym.delete("name=?",tagSynonymName);
         tag.delete();
     }
 

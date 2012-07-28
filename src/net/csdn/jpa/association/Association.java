@@ -48,7 +48,7 @@ public class Association {
             if (type.equals("javax.persistence.ManyToMany")) {
                 String idFiled1 = field + "_id";
                 String idFiled2 = targetField + "_id";
-                entityManager.createNativeQuery(format("delete from " + tableName + " where {}={} and {}={}", idFiled1, object.id(), idFiled2, targetObject.id())).executeUpdate();
+                entityManager.createNativeQuery(format("delete from " + tableName + " where {}={} and {}={}", idFiled1, targetObject.id(), idFiled2, object.id())).executeUpdate();
             }
         } catch (Exception e) {
             e.printStackTrace();

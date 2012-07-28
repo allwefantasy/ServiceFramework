@@ -28,7 +28,7 @@ public class TagController extends ApplicationController {
     @BeforeFilter
     private final static Map $checkParam = map(only, list("save", "search"));
     @BeforeFilter
-    private final static Map $findTag = map(only, list("addTagToTagGroup", "deleteTagToTagGroup"));
+    private final static Map $findTag = map(only, list("addTagToTagGroup", "deleteTagToTagGroup","createBlogTag"));
 
 
     @At(path = "/tag_group/create", types = POST)
@@ -57,12 +57,10 @@ public class TagController extends ApplicationController {
     }
 
 
-    @At(path = "/{tag}/blog_tags", types = GET)
+    @At(path = "/{tag}/blog_tags", types = PUT)
     public void createBlogTag() {
-        tag.m("blog_tags", BlogTag.create(map("object_id", paramAsInt("objectd_id"))));
-        if (tag.save()) {
-
-        }
+        tag.associate("blog_tags").add(BlogTag.create(map("object_id", paramAsInt("object_id"))));
+        render(OK);
     }
 
 
@@ -81,7 +79,7 @@ public class TagController extends ApplicationController {
 
         for (String tagStr : tags) {
             Model model = (Model) invoke_model(param("type"), "create", selectMapWithAliasName(paramAsJSON("jsonData"), "id", "object_id", "created_at", "created_at"));
-            model.associate("tag").set(Tag.create(map("name", tagStr)));
+            model.m("tag", Tag.create(map("name", tagStr)));
             if (!model.save()) {
                 render(HTTP_400, model.validateResults);
             }

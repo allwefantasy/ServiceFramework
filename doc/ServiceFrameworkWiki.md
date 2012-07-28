@@ -1,3 +1,4 @@
+
 <link rel="stylesheet" href="http://yandex.st/highlightjs/6.2/styles/googlecode.min.css">
 
 <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
@@ -33,6 +34,7 @@ pre code {
 首先，建立三张示例表:
 
 ```
+--标签表
 CREATE TABLE `Tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
@@ -41,6 +43,7 @@ CREATE TABLE `Tag` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
+--标签组。一个标签可以属于多个标签组。一个标签组包含多个标签
 CREATE TABLE `TagGroup` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
@@ -48,6 +51,7 @@ CREATE TABLE `TagGroup` (
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8;
 
+--博客和标签的关联表。存有 博客id和标签id
 CREATE TABLE `BlogTag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `tag_id` int(11) DEFAULT NULL,
@@ -55,6 +59,13 @@ CREATE TABLE `BlogTag` (
   `created_at` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--标签近义词组。一个标签只可能属于一个标签近义词
+CREATE TABLE `TagSynonym` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
 
 
@@ -94,21 +105,58 @@ public class TagGroup extends Model {
     @ManyToMany
     private List<Tag> tags = new ArrayList<Tag>();
 }
+
+@Entity
+public class TagSynonym extends Model {
+    @OneToMany
+    private List<Tag> tags = new ArrayList<Tag>();
+}
+
+
 ```
+
+初看模型，你可能会惊讶于代码至少，关联配置只简单。甚至，连属性都没有。别介，让我们
+一步一步来看ServiceFrame为你带来的魔法。
 
 模型关系介绍:
 
 1. TagGroup 和 Tag是多对多关系
 2. Tag和BlogTag是一对多关系。
+3. Tag 和 TagSynonym 多对一关系
 
-博文会有很多Tag.他们之间的关系就存在BlogTag表中。会有一个TagGroup 对tag进行分组管理。
 
 你会发现ServiceFramework的模型具有以下几个特点:
 
-1.  不需要定义属性，所有的属性在运行时会自动填充。你可以通过"attr""方法获得或者设置属性值。当然，你也可以手动定义属性,就如同传统的模型类一样。
+1.  不需要定义属性，所有的属性在运行时会自动生成。你可以通过"attr""方法获得或者设置属性值。当然，你也可以手动定义属性,就如同传统的模型类一样。
 2.  模型关联需要手动定义。但是非常的简化，只需简单添加一个标准的JPA注解。你无需配置mappedBy,cascade等属性。当然，如果你需要，你也可以手动添加。
 3.  模型关联设置中如果是集合对象您需要手动初始化。
 4.  成为一个模型类的必要条件是 继承 Model 基类，添加@Entity 注解
+
+### 模型属性
+
+Model类会自动根据数据库获取信息。
+比如Tag 含有一个name 属性，可以这样获取它。
+
+```
+String name = tag.attr("name",String.class);
+```
+将其赋值为jack 则为:
+
+```
+tag.attr("name","jack");
+```
+
+
+### 关联关系
+
+关联关系可以做两件事情:
+
+1. 告诉框架表之间的外键关系
+2. 可以方便的级联保存，更新操作
+
+***WARNING***: 关联关系不应该用来查询。比如 你不应该通过 tag.getBlogTags()获取相关的BlogTag.即使是blogTag.getTag() 这样获取一个对象也不行。后面你会看到一个可控性更好，不需要你具有任何ORM只是，规范的查询方式。
+
+
 
 ### 模型方法
 

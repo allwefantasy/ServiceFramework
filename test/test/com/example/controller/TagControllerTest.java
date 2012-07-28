@@ -26,6 +26,43 @@ import static org.junit.Assert.assertTrue;
  */
 public class TagControllerTest extends IocTest {
 
+    @Test
+    public void testCreateBlogTag() {
+
+        String tagName = "google";
+        //准备一条tag数据.
+        Tag.create(map("name", tagName)).save();
+        dbCommit();
+
+
+        TagController tagController = injector.getInstance(TagController.class);
+
+        Map requestData = map("tag", tagName, "object_id", "17", "created_at", 2007072407);
+
+        tagController.mockRequest(requestData, RestRequest.Method.PUT, null);
+
+        //过滤器
+        tagController.m("findTag");
+
+
+        try {
+            tagController.createBlogTag();
+        } catch (RenderFinish e) {
+
+        }
+
+        RestResponse restResponse = tagController.mockResponse();
+        JSONObject renderResult = JSONObject.fromObject((String) restResponse.originContent());
+        assertTrue(renderResult.getBoolean("ok"));
+
+        dbCommit();
+        List<BlogTag> blogTags = BlogTag.where("object_id=17").fetch();
+        assertTrue(blogTags.size() == 1);
+        //清理数据
+        Tag.delete("name=?", tagName);
+        BlogTag.delete("object_id=17");
+
+    }
 
     @Test
     public void testSave() throws Exception {
@@ -58,8 +95,8 @@ public class TagControllerTest extends IocTest {
         assertTrue(blogTags.size() == 2);
 
         //清理数据
-        Tag.delete(format("where name in ({})", "\"java\",\"google\""));
-        BlogTag.delete("where object_id=17");
+        Tag.delete(format("name in ({})", "'java','google'"));
+        BlogTag.delete("object_id=17");
 
     }
 
