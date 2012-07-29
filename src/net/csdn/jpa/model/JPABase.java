@@ -88,6 +88,18 @@ public class JPABase implements GenericModel {
 
     }
 
+    public boolean save(boolean validate) {
+        if (validate && valid()) {
+            em().persist(this);
+            em().flush();
+            return true;
+        } else {
+            return false;
+        }
+
+
+    }
+
 //    public <T extends JPABase> T add(Map params) {
 //        ParamBinding paramBinding = new ParamBinding();
 //        paramBinding.parse(params);

@@ -33,7 +33,7 @@ public class Associated extends BaseValidateParse {
                         while (iterator.hasNext()) {
                             JPABase member = (JPABase) iterator.next();
                             if (member == null) continue;
-                            if (member.valid()) {
+                            if (!member.valid()) {
                                 validateResultList.addAll(member.validateResults);
                             }
 

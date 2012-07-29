@@ -4,8 +4,9 @@ import net.csdn.jpa.model.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToMany;
-import java.util.ArrayList;
 import java.util.List;
+
+import static net.csdn.common.collections.WowCollections.list;
 
 /**
  * User: WilliamZhu
@@ -15,5 +16,5 @@ import java.util.List;
 @Entity
 public class TagGroup extends Model {
     @ManyToMany
-    private List<Tag> tags = new ArrayList<Tag>();
+    private List<Tag> tags = list();
 }

@@ -45,8 +45,11 @@ public class WowJoinParser {
                 || lcToken.equals("inner")
                 || lcToken.equals("outer")
                 || lcToken.equals("inner")
-                || lcToken.equals("join")) {
+                ) {
             return token;
+        }
+        if (lcToken.equals("join")) {
+            return token + " fetch";
         }
         String prefixName = WowWhereParser.root(token);
         if (columns.contains(prefixName)) {

@@ -1,9 +1,15 @@
 package com.example.model;
 
+import net.csdn.annotation.Validate;
 import net.csdn.jpa.model.Model;
 
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
+import java.util.Map;
+
+import static net.csdn.common.collections.WowCollections.map;
+import static net.csdn.validate.ValidateHelper.Numericality.greater_than_or_equal_to;
+import static net.csdn.validate.ValidateHelper.numericality;
 
 /**
  * User: WilliamZhu
@@ -12,6 +18,10 @@ import javax.persistence.ManyToOne;
  */
 @Entity
 public class BlogTag extends Model {
+
+    @Validate//这个限制只是为了展示用法
+    private final static Map $object_id = map(numericality, map(greater_than_or_equal_to, 2));
+
 
     @ManyToOne
     private Tag tag;

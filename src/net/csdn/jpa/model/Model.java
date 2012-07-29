@@ -23,6 +23,15 @@ public class Model extends JPABase {
     }
 
     //----------------------------------------------------------------------------------
+
+    public static JPQL find(Long id) {
+        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+    }
+
+    public static JPQL find(List ids) {
+        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+    }
+
     public static JPQL where(String cc) {
         throw new UnsupportedOperationException("ooooooops...not implemented yet....");
     }

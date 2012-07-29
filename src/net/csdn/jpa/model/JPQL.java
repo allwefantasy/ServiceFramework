@@ -5,6 +5,7 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.param.ParamBinding;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.context.JPAContext;
+import net.csdn.jpa.hql.WowCommonParser;
 import net.csdn.jpa.hql.WowJoinParser;
 import net.csdn.jpa.hql.WowSelectParser;
 import net.csdn.jpa.hql.WowWhereParser;
@@ -18,6 +19,8 @@ import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 import java.util.*;
 
+import static net.csdn.common.collections.WowCollections.join;
+
 public class JPQL {
     private CSLogger logger = Loggers.getLogger(getClass());
     private JPAContext jpaContext;
@@ -27,6 +30,7 @@ public class JPQL {
     private String select = "";
     private String joins = "";
     private String order = "";
+    private String group = "";
     private int limit = -1;
     private int offset = 0;
     private Map<String, Object> bindings = new HashMap();
@@ -57,6 +61,19 @@ public class JPQL {
     }
 
     //下面这些方法都是模拟active_record的链式操作
+
+    public Model find(Integer id) {
+        List<Model> list = where("id=" + id).fetch();
+        if (list.size() == 0) return null;
+        return list.get(0);
+    }
+
+    public List<Model> find(List ids) {
+        String in_ids = join(ids, ",", "'");
+        List<Model> list = where("id in (" + in_ids + ")").fetch();
+        return list;
+    }
+
     public JPQL where(String condition, Map params) {
         where(condition);
         this.bindings.putAll(params);
@@ -67,6 +84,16 @@ public class JPQL {
         this.where = (StringUtils.isEmpty(where) ? "where" : where + " and ") + EMPTY_STRING + "(" + parseWhere(condition) + ")";
         return this;
     }
+
+    public JPQL group(String group) {
+        if (group.startsWith("group")) {
+            this.group = parse(group);
+        } else {
+            this.group = "group by " + parse(group);
+        }
+        return this;
+    }
+
 
     public JPQL from(String modelAndAlias) {
         modelAndAlias = modelAndAlias.trim();
@@ -94,6 +121,13 @@ public class JPQL {
         WowSelectParser wowSelectParser = new WowSelectParser(columns, defaultName);
         wowSelectParser.parse(condition);
         return wowSelectParser.toHql();
+    }
+
+    private String parse(String wow) {
+        WowCommonParser commonParser = new WowCommonParser(columns, defaultName);
+        commonParser.parse(wow);
+        return commonParser.toHql();
+
     }
 
     private String parseJoin(String joins) {
@@ -140,7 +174,7 @@ public class JPQL {
     }
 
     public JPQL order(String order) {
-        this.order = "order by " + EMPTY_STRING + defaultName + "." + order;
+        this.order = "order by " + EMPTY_STRING + defaultName + "." + parse(order);
         return this;
     }
 
@@ -156,7 +190,7 @@ public class JPQL {
 
     public Long count_fetch(String countString) {
 
-        sql = "select " + parseSelect(countString) + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
+        sql = "select " + parseSelect(countString) + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + group + EMPTY_STRING + order + EMPTY_STRING;
         //limit 1.取一条
         Query query = em().createQuery(sql);
 
@@ -171,7 +205,7 @@ public class JPQL {
     }
 
     public <T> T single_fetch() {
-        sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
+        sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + group + EMPTY_STRING + order + EMPTY_STRING;
         //limit 1.取一条
         Query query = em().createQuery(sql);
 
@@ -185,7 +219,7 @@ public class JPQL {
     }
 
     public List fetch() {
-        sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + order + EMPTY_STRING;
+        sql = select + EMPTY_STRING + "from" + EMPTY_STRING + entity + " as " + defaultName + EMPTY_STRING + joins + EMPTY_STRING + where + EMPTY_STRING + group + EMPTY_STRING + order + EMPTY_STRING;
         //limit 1.取一条
         Query query = em().createQuery(sql);
 

@@ -9,9 +9,6 @@ import net.csdn.enhancer.AssociatedHelper;
 import net.csdn.enhancer.BitEnhancer;
 import net.csdn.enhancer.EnhancerHelper;
 import net.csdn.jpa.type.DBInfo;
-import org.apache.commons.lang.StringUtils;
-
-import java.lang.reflect.Modifier;
 
 import static net.csdn.common.logging.support.MessageFormat.format;
 
@@ -51,33 +48,31 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                 setCascad(ctField, "OneToMany");
 
 
-                try {
-                    findMethod(ctClass, ctField, mappedByClassName);
-                } catch (NotFoundException e) {
-                    String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
-                    String getter = "set" + propertyName;
+                findAndRemoveMethod(ctClass, ctField, mappedByClassName);
+                findAndRemoveMethod(ctClass, ctField);
+                String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
+                String getter = "set" + propertyName;
 
-                    CtMethod wow = CtMethod.make(
-                            format("public net.csdn.jpa.association.Association {}() {" +
-                                    "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
-                                    "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.OneToMany"
-                            )
-                            ,
-                            ctClass);
-                    ctClass.addMethod(wow);
+                CtMethod wow = CtMethod.make(
+                        format("public net.csdn.jpa.association.Association {}() {" +
+                                "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
+                                "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.OneToMany"
+                        )
+                        ,
+                        ctClass);
+                ctClass.addMethod(wow);
 
-                    CtMethod wow2 = CtMethod.make(
-                            format("public {} {}({} obj) {" +
-                                    "        this.{}.add(obj);" +
-                                    "        obj.{}(this);" +
-                                    "        return this;" +
-                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
-                            )
-                            ,
-                            ctClass);
-                    ctClass.addMethod(wow2);
+                CtMethod wow2 = CtMethod.make(
+                        format("public {} {}({} obj) {" +
+                                "        this.{}.add(obj);" +
+                                "        obj.{}(this);" +
+                                "        return this;" +
+                                "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
+                        )
+                        ,
+                        ctClass);
+                ctClass.addMethod(wow2);
 
-                }
             }
 
 
@@ -92,32 +87,29 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                 setCascad(ctField, "ManyToOne");
 
 
-                try {
-                    findMethod(ctClass, ctField, mappedByClassName);
-                } catch (NotFoundException e) {
-                    String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
-                    String getter = "get" + propertyName;
+                findAndRemoveMethod(ctClass, ctField, mappedByClassName);
+                findAndRemoveMethod(ctClass, ctField);
+                String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
+                String getter = "get" + propertyName;
 
-                    CtMethod wow = CtMethod.make(
-                            format("public net.csdn.jpa.association.Association {}() {" +
-                                    "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
-                                    "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.ManyToOne"
-                            ),
-                            ctClass);
-                    ctClass.addMethod(wow);
+                CtMethod wow = CtMethod.make(
+                        format("public net.csdn.jpa.association.Association {}() {" +
+                                "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
+                                "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.ManyToOne"
+                        ),
+                        ctClass);
+                ctClass.addMethod(wow);
 
 
-                    CtMethod wow2 = CtMethod.make(
-                            format("public {} {}({} obj) {" +
-                                    "        this.{} = obj;" +
-                                    "        obj.{}().add(this);" +
-                                    "        return this;" +
-                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
-                            ),
-                            ctClass);
-                    ctClass.addMethod(wow2);
-
-                }
+                CtMethod wow2 = CtMethod.make(
+                        format("public {} {}({} obj) {" +
+                                "        this.{} = obj;" +
+                                "        obj.{}().add(this);" +
+                                "        return this;" +
+                                "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
+                        ),
+                        ctClass);
+                ctClass.addMethod(wow2);
 
 
             }
@@ -154,43 +146,51 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                     setManyToManyHint(other);
                 }
 
-                try {
 
-                    findMethod(ctClass, ctField, mappedByClassName);
-                } catch (NotFoundException e) {
-                    String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
-                    String getter = "get" + propertyName;
+                findAndRemoveMethod(ctClass, ctField, mappedByClassName);
+                findAndRemoveMethod(ctClass, ctField);
+                String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
+                String getter = "get" + propertyName;
 
-                    CtMethod wow = CtMethod.make(
-                            format("public net.csdn.jpa.association.Association {}() {" +
-                                    "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\",\"{}\",\"{}\");return obj;" +
-                                    "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.ManyToMany", finalTableName, isMaster
-                            ),
-                            ctClass);
-                    ctClass.addMethod(wow);
+                CtMethod wow = CtMethod.make(
+                        format("public net.csdn.jpa.association.Association {}() {" +
+                                "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\",\"{}\",\"{}\");return obj;" +
+                                "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.ManyToMany", finalTableName, isMaster
+                        ),
+                        ctClass);
+                ctClass.addMethod(wow);
 
-                    CtMethod wow2 = CtMethod.make(
-                            format("public {} {}({} obj) {" +
-                                    "        {}.add(obj);" +
-                                    "        obj.{}().add(this);" +
-                                    "        return this;" +
-                                    "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter)
-                            ,
-                            ctClass);
-                    ctClass.addMethod(wow2);
+                CtMethod wow2 = CtMethod.make(
+                        format("public {} {}({} obj) {" +
+                                "        {}.add(obj);" +
+                                "        obj.{}().add(this);" +
+                                "        return this;" +
+                                "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter)
+                        ,
+                        ctClass);
+                ctClass.addMethod(wow2);
 
 
-                }
             }
         }
         ctClass.defrost();
     }
 
-    private void findMethod(CtClass ctClass, CtField ctField, String className) throws NotFoundException {
-        if (StringUtils.isEmpty(className)) throw new NotFoundException("猜测没有");
-        CtMethod ctMethod = ctClass.getDeclaredMethod(ctField.getName(), new CtClass[]{ctClass.getClassPool().get(className)});
-        if (Modifier.isStatic(ctMethod.getModifiers()) || Modifier.isFinal(ctMethod.getModifiers())) {
-            throw new NotFoundException("这个方法已经出现了，并且被设置为static 或者final");
+    private void findAndRemoveMethod(CtClass ctClass, CtField ctField, String className) {
+
+        try {
+            CtMethod ctMethod = ctClass.getDeclaredMethod(ctField.getName(), new CtClass[]{ctClass.getClassPool().get(className)});
+            ctClass.getClassFile().getMethods().remove(ctMethod.getMethodInfo());
+        } catch (Exception e) {
+        }
+
+    }
+
+    private void findAndRemoveMethod(CtClass ctClass, CtField ctField) throws NotFoundException {
+        try {
+            CtMethod ctMethod = ctClass.getDeclaredMethod(ctField.getName());
+            ctClass.getClassFile().getMethods().remove(ctMethod.getMethodInfo());
+        } catch (Exception e) {
         }
     }
 

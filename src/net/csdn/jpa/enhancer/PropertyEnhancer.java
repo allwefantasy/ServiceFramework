@@ -1,6 +1,9 @@
 package net.csdn.jpa.enhancer;
 
-import javassist.*;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtMethod;
+import javassist.NotFoundException;
 import javassist.bytecode.AccessFlag;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
@@ -16,10 +19,11 @@ import net.csdn.enhancer.BitEnhancer;
 import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.sql.*;
 import java.util.List;
 import java.util.Map;
 

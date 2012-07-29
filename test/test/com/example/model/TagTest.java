@@ -1,5 +1,6 @@
 package test.com.example.model;
 
+import com.example.model.BlogTag;
 import com.example.model.Tag;
 import com.example.model.TagGroup;
 import com.example.model.TagSynonym;
@@ -18,6 +19,52 @@ import static org.junit.Assert.assertTrue;
  */
 public class TagTest extends IocTest {
 
+    @Test
+    public void testFormatValidate(){
+
+    }
+
+    @Test
+    public void testAssociatedValidate() {
+        Tag tag = Tag.create(map("name", "java"));
+        BlogTag blogTag = BlogTag.create(map("object_id", 1));
+        tag.m("blog_tags", blogTag);
+        assertTrue(tag.save() == false);
+        assertTrue(tag.validateResults.get(0).getFieldName().equals("object_id"));
+
+        tag.validateResults.clear();
+        blogTag.validateResults.clear();
+
+        blogTag.attr("object_id", 10);
+        assertTrue(tag.save());
+
+        Tag.delete("name='java'");
+        BlogTag.delete("object_id=10");
+    }
+
+    @Test
+    public void testUniquenessValidate() {
+        Tag tag = Tag.create(map("name", "java"));
+        assertTrue(tag.save());
+        dbCommit();
+        tag = Tag.create(map("name", "java"));
+        assertTrue(tag.save() == false);
+        assertTrue(tag.validateResults.get(0).getFieldName().equals("name"));
+        assertTrue(tag.validateResults.get(0).getMessage().contains("重复"));
+
+        Tag.delete("name='java'");
+
+    }
+
+    @Test
+    public void testPresenceValidate() {
+        Tag tag = Tag.create(map("name", ""));
+        assertTrue(tag.save() == false);
+        assertTrue(tag.validateResults.get(0).getFieldName().equals("name"));
+        tag = Tag.create(map("name", null));
+        assertTrue(tag.save() == false);
+        assertTrue(tag.validateResults.get(0).getFieldName().equals("name"));
+    }
 
     private void setUpTagAndTagSynonymData() {
         String tagSynonymName = "java";
@@ -51,7 +98,7 @@ public class TagTest extends IocTest {
     public void joinTest() {
         setUpTagAndTagSynonymData();
 
-        List<TagSynonym> tagSynonyms = TagSynonym.where("name=:name", map("name", "java")).joins("left join fetch tags").fetch();
+        List<TagSynonym> tagSynonyms = TagSynonym.where("name=:name", map("name", "java")).joins("left join  tags").fetch();
         assertTrue(tagSynonyms.size() == 1);
         assertTrue(tagSynonyms.get(0).attr("tags", List.class).size() == 10);
 

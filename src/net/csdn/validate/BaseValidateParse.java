@@ -21,8 +21,10 @@ public abstract class BaseValidateParse implements ValidateParse {
         List<Field> validateFields = new ArrayList<Field>();
         Field[] fields = clzz.getDeclaredFields();
         for (Field field : fields) {
-            if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isPrivate(field.getModifiers())) continue;
+            if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isFinal(field.getModifiers()) || !Modifier.isPrivate(field.getModifiers()))
+                continue;
             if (field.getAnnotation(Validate.class) == null) continue;
+            if (field.getName().startsWith("$")) continue;
             validateFields.add(field);
         }
 

@@ -21,6 +21,7 @@ import static net.csdn.validate.ValidateHelper.uniqueness;
 public class Tag extends Model {
     @Validate
     private final static Map $name = map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复"));
+    @Validate
     private final static Map $associated = map(associated, list("blog_tags"));
 
 
@@ -28,11 +29,11 @@ public class Tag extends Model {
     private TagSynonym tag_synonym;
 
     @OneToMany
-    private List<BlogTag> blog_tags = new ArrayList<BlogTag>();
+    private List<BlogTag> blog_tags = list();
 
 
     @ManyToMany
-    private List<TagGroup> tag_groups = new ArrayList<TagGroup>();
+    private List<TagGroup> tag_groups = list();
 
 
     public static Set<String> synonym(String wow_names) {

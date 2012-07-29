@@ -6,31 +6,31 @@ import static net.csdn.common.collections.WowCollections.join;
 
 /**
  * User: WilliamZhu
- * Date: 12-7-23
- * Time: 下午3:26
+ * Date: 12-7-28
+ * Time: 下午11:54
  */
-public class WowSelectParser {
-    public static final String HQL_SELECT_SEPARATORS = WowWhereParser.HQL_SEPARATORS;
+public class WowCommonParser {
+    public static final String HQL_JOIN_SEPARATORS = WowWhereParser.HQL_SEPARATORS;
     private Set columns = new HashSet<String>();
     private String alias = "";
-    private List<String> selectConditions = new ArrayList<String>();
+    private List<String> orderList = new ArrayList<String>();
 
 
-    public WowSelectParser(Set columns, String alias) {
+    public WowCommonParser(Set columns, String alias) {
         this.columns = columns;
         this.alias = alias;
     }
 
-    public void parse(String wheres) {
-        StringTokenizer tokens = new StringTokenizer(wheres, HQL_SELECT_SEPARATORS, true);
+    public void parse(String common) {
+        StringTokenizer tokens = new StringTokenizer(common, HQL_JOIN_SEPARATORS, true);
         while (tokens.hasMoreElements()) {
             String token = tokens.nextToken();
-            selectConditions.add(this.token(token));
+            orderList.add(this.token(token));
         }
     }
 
     public String toHql() {
-        return join(selectConditions);
+        return join(orderList);
     }
     //private String
 
@@ -50,5 +50,4 @@ public class WowSelectParser {
         int loc = qualifiedName.indexOf(".");
         return (loc < 0) ? qualifiedName : qualifiedName.substring(0, loc);
     }
-
 }

@@ -3,15 +3,13 @@ package net.csdn.validate.impl;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.validate.BaseValidateParse;
-import net.csdn.validate.ValidateHelper;
 import net.csdn.validate.ValidateResult;
+import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.logging.support.MessageFormat.format;
-import static net.csdn.validate.ValidateHelper.message;
 import static net.csdn.validate.ValidateHelper.presence;
 
 /**
@@ -32,7 +30,7 @@ public class Presence extends BaseValidateParse {
                 if (info instanceof Map) msg = messageWithDefault((Map) info, notice);
                 Object value = getModelField(clzz, targetFieldName).get(target);
                 if (value instanceof String) {
-                    if (value == null || ((String) value).isEmpty()) {
+                    if (StringUtils.isEmpty((String) value)) {
                         validateResultList.add(validateResult(msg, targetFieldName));
                     }
                 } else {
