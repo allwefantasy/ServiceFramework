@@ -28,7 +28,7 @@ import java.util.*;
  * Time: 上午11:12
  */
 public abstract class ApplicationController {
-    private CSLogger logger = Loggers.getLogger(getClass());
+    protected CSLogger logger = Loggers.getLogger(getClass());
     protected RestRequest request;
     protected RestResponse restResponse;
     public static String EMPTY_JSON = "{}";

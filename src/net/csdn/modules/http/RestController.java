@@ -82,15 +82,16 @@ public class RestController {
     }
 
     private List<Method> whoFilterThisMethod(Class clzz, List<Field> filters, Method method) throws Exception {
+
         List<Method> result = list();
         for (Field filter : filters) {
             filter.setAccessible(true);
             Map filterInfo = (Map) filter.get(null);
-            String filterMethod = filter.getName().substring(1, filter.getName().length() - 1);
+            String filterMethod = filter.getName().substring(1, filter.getName().length());
             if (filterInfo.containsKey(FilterHelper.BeforeFilter.only)) {
                 List<String> actions = (List<String>) filterInfo.get(FilterHelper.BeforeFilter.only);
                 if (actions.contains(method.getName())) {
-                    result.add(clzz.getMethod(filterMethod));
+                    result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
                 }
             } else {
                 if (filterInfo.containsKey(FilterHelper.BeforeFilter.except)) {
@@ -99,7 +100,7 @@ public class RestController {
 
                     }
                 } else {
-                    result.add(clzz.getMethod(filterMethod));
+                    result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
                 }
             }
         }
@@ -109,8 +110,8 @@ public class RestController {
     private void filter(Tuple<Class<ApplicationController>, Method> handlerKey, ApplicationController applicationController) throws Exception {
         //check beforeFilter
 
-        List<Field> globalBeforeFilters = ReflectHelper.fields(ApplicationController.class, BeforeFilter.class);
-        List<Field> globalAroundFilters = ReflectHelper.fields(ApplicationController.class, AroundFilter.class);
+        List<Field> globalBeforeFilters = ReflectHelper.fields(handlerKey.v1().getSuperclass(), BeforeFilter.class);
+        List<Field> globalAroundFilters = ReflectHelper.fields(handlerKey.v1().getSuperclass(), AroundFilter.class);
 
 
         List<Field> beforeFilters = ReflectHelper.fields(handlerKey.v1(), BeforeFilter.class);
@@ -129,6 +130,7 @@ public class RestController {
         Method action = handlerKey.v2();
 
         List<Method> beforeFilterFilterThisAction = whoFilterThisMethod(handlerKey.v1(), beforeFilters, action);
+
         List<Method> aroundFilterFilterThisAction = whoFilterThisMethod(handlerKey.v1(), aroundFilters, action);
 
         for (Method filter : beforeFilterFilterThisAction) {
@@ -161,7 +163,7 @@ public class RestController {
     public class WowAroundFilter {
         private WowAroundFilter next;
         private Method currentFilter;
-        private Method action;
+        public Method action;
         private ApplicationController applicationController;
 
         public WowAroundFilter(Method currentFilter, Method action, ApplicationController applicationController) {
@@ -175,13 +177,33 @@ public class RestController {
             return false;
         }
 
-        public void invoke() throws Exception {
+        public void invoke() {
             try {
-                if (shouldInvokeAction()) {
-                    action.invoke(applicationController);
-                    return;
+                WowAroundFilter wowAroundFilter = this.next;
+                if (wowAroundFilter == null) {
+                    wowAroundFilter = new WowAroundFilter(null, action, applicationController) {
+                        @Override
+                        public void invoke() {
+                            try {
+                                this.action.invoke(applicationController);
+                            } catch (Exception e) {
+                                try {
+                                    ExceptionHandler.renderHandle(e);
+                                } catch (Exception e1) {
+                                    try {
+                                        throw e1;
+                                    } catch (Exception e2) {
+                                        e2.printStackTrace();
+                                    }
+                                }
+                            }
+                        }
+                    };
+
                 }
-                next.invoke();
+                currentFilter.setAccessible(true);
+                currentFilter.invoke(applicationController, wowAroundFilter);
+
             } catch (Exception e) {
                 try {
                     ExceptionHandler.renderHandle(e);

@@ -21,7 +21,7 @@ public class ReflectHelper {
     public static List<Field> fields(Class clzz, Class annotation) {
 
         List<Field> result = list();
-        Field[] fields = clzz.getFields();
+        Field[] fields = clzz.getDeclaredFields();
         for (Field field : fields) {
             if (field.isAnnotationPresent(annotation)) {
                 result.add(field);
@@ -30,69 +30,56 @@ public class ReflectHelper {
         return result;
     }
 
-    public static void field(Object obj, String fieldName, Object value) throws Exception {
+    public static Field findField(Class clzz, String fieldName) {
         Field field = null;
-        Class clzz = obj.getClass();
         try {
             field = clzz.getDeclaredField(fieldName);
         } catch (Exception e) {
-            try {
-
-
-                field = obj.getClass().getField(fieldName);
-            } catch (Exception e2) {
-                if (clzz.getSuperclass() != null) {
-                    field(obj, clzz.getSuperclass(), fieldName, value);
-                    return;
-                }
-                throw e2;
+            if (clzz.getSuperclass() != null) {
+                field = findField(clzz.getSuperclass(), fieldName);
             }
         }
+        return field;
+    }
+
+    public static Method findMethodByName(Class clzz, String methodName) {
+        Method result = null;
+        Method[] methods = clzz.getDeclaredMethods();
+        for (Method method : methods) {
+            if (method.getName().equals(methodName)) {
+                result = method;
+                break;
+            }
+        }
+        if (result == null) {
+            if (clzz.getSuperclass() != null) {
+                result = findMethodByName(clzz.getSuperclass(), methodName);
+            }
+        }
+        return result;
+    }
+
+    public static void field(Object obj, String fieldName, Object value) throws Exception {
+        Field field = findField(obj.getClass(), fieldName);
         field.setAccessible(true);
         field.set(obj, value);
     }
 
     public static Object field(Object obj, String fieldName) throws Exception {
-        Field field = null;
-        Class clzz = obj.getClass();
-        try {
-            field = clzz.getDeclaredField(fieldName);
-        } catch (Exception e) {
-            try {
-                field = obj.getClass().getField(fieldName);
-            } catch (Exception e2) {
-                if (clzz.getSuperclass() != null) {
-                    return field(obj, clzz.getSuperclass(), fieldName);
-                }
-                throw e2;
-            }
-        }
-
+        Field field = findField(obj.getClass(), fieldName);
         field.setAccessible(true);
         return field.get(obj);
     }
 
 
     public static void field(Object obj, Class clzz, String fieldName, Object value) throws Exception {
-        Field field = null;
-        try {
-            field = clzz.getDeclaredField(fieldName);
-        } catch (Exception e) {
-            field = clzz.getField(fieldName);
-        }
-
+        Field field = findField(clzz, fieldName);
         field.setAccessible(true);
         field.set(obj, value);
     }
 
     public static Object field(Object obj, Class clzz, String fieldName) throws Exception {
-        Field field = null;
-        try {
-            field = clzz.getDeclaredField(fieldName);
-        } catch (Exception e) {
-            field = clzz.getField(fieldName);
-        }
-
+        Field field = findField(clzz, fieldName);
         field.setAccessible(true);
         return field.get(obj);
     }

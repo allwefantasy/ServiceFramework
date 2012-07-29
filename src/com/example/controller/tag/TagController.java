@@ -6,10 +6,12 @@ import com.example.model.Tag;
 import com.example.model.TagGroup;
 import com.example.service.tag.RemoteDataService;
 import com.google.inject.Inject;
+import net.csdn.annotation.AroundFilter;
 import net.csdn.annotation.At;
 import net.csdn.annotation.BeforeFilter;
 import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
+import net.csdn.modules.http.RestController;
 import net.csdn.reflect.ReflectHelper;
 
 import java.util.ArrayList;
@@ -28,8 +30,24 @@ public class TagController extends ApplicationController {
     @BeforeFilter
     private final static Map $checkParam = map(only, list("save", "search"));
     @BeforeFilter
-    private final static Map $findTag = map(only, list("addTagToTagGroup", "deleteTagToTagGroup","createBlogTag"));
+    private final static Map $findTag = map(only, list("addTagToTagGroup", "deleteTagToTagGroup", "createBlogTag"));
 
+    @AroundFilter
+    private final static Map $print_action_execute_time2 = map();
+
+    private void print_action_execute_time2(RestController.WowAroundFilter wowAroundFilter) {
+        long time1 = System.currentTimeMillis();
+
+        wowAroundFilter.invoke();
+        logger.info("execute time2:[" + (System.currentTimeMillis() - time1) + "]");
+
+    }
+
+    @At(path = "/wow", types = GET)
+    public void wow() {
+        logger.info("天才");
+        render(OK);
+    }
 
     @At(path = "/tag_group/create", types = POST)
     public void createTagGroup() {

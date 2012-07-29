@@ -58,9 +58,16 @@ public class ControllerLoader implements Loader {
             protected void configure() {
                 if (clzz == null) return;
                 try {
-                    if (clzz.getSuperclass() != ApplicationController.class) {
-                        return;
+                    boolean isController = false;
+                    Class wow = clzz;
+                    while (wow.getSuperclass() != null) {
+                        if (wow.getSuperclass() == ApplicationController.class) {
+                            isController = true;
+                            break;
+                        }
+                        wow = wow.getSuperclass();
                     }
+                    if (!isController) return;
                     Method[] methods = clzz.getDeclaredMethods();
 
                     for (Method method : methods) {
