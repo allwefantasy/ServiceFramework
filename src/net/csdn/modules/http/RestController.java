@@ -14,11 +14,12 @@ import net.csdn.filter.FilterHelper;
 import net.csdn.reflect.ReflectHelper;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static net.csdn.common.collections.WowCollections.list;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
@@ -72,13 +73,7 @@ public class RestController {
 
         enhanceApplicationController(applicationController, request, restResponse);
 
-        //check beforeFilter
-        boolean containsAroundFilter = filter(handlerKey, applicationController);
-
-        //invoke real
-        if (!containsAroundFilter)
-            handlerKey.v2().invoke(applicationController);
-
+        filter(handlerKey, applicationController);
     }
 
     private void enhanceApplicationController(ApplicationController applicationController, final RestRequest request, RestResponse restResponse) throws Exception {
@@ -86,72 +81,107 @@ public class RestController {
         ReflectHelper.field(applicationController, "restResponse", restResponse);
     }
 
-    private boolean filter(Tuple<Class<ApplicationController>, Method> handlerKey, ApplicationController applicationController) throws Exception {
-        //check beforeFilter
-        Field[] fields = handlerKey.v1().getDeclaredFields();
-        boolean containsAroundFilter = false;
-        for (Field temp : fields) {
-            if (temp.isAnnotationPresent(BeforeFilter.class)) {
-                temp.setAccessible(true);
-                Map beforeFilter = (Map) temp.get(null);
+    private List<Method> whoFilterThisMethod(Class clzz, List<Field> filters, Method method) throws Exception {
+        List<Method> result = list();
+        for (Field filter : filters) {
+            filter.setAccessible(true);
+            Map filterInfo = (Map) filter.get(null);
+            String filterMethod = filter.getName().substring(1, filter.getName().length() - 1);
+            if (filterInfo.containsKey(FilterHelper.BeforeFilter.only)) {
+                List<String> actions = (List<String>) filterInfo.get(FilterHelper.BeforeFilter.only);
+                if (actions.contains(method.getName())) {
+                    result.add(clzz.getMethod(filterMethod));
+                }
+            } else {
+                if (filterInfo.containsKey(FilterHelper.BeforeFilter.except)) {
+                    List<String> actions = (List<String>) filterInfo.get(FilterHelper.BeforeFilter.except);
+                    if (actions.contains(method.getName())) {
 
-                String beforeMethod = temp.getName().substring(1);
-                boolean shouldInvoke = false;
-                if (beforeFilter.containsKey(FilterHelper.BeforeFilter.only)) {
-                    List<String> list = (List) beforeFilter.get(FilterHelper.BeforeFilter.only);
-                    shouldInvoke = list.contains(handlerKey.v2().getName());
-                } else if (beforeFilter.containsKey(FilterHelper.BeforeFilter.except)) {
-                    List<String> list = (List) beforeFilter.get(FilterHelper.BeforeFilter.except);
-                    shouldInvoke = !list.contains(handlerKey.v2().getName());
+                    }
                 } else {
-                    shouldInvoke = true;
+                    result.add(clzz.getMethod(filterMethod));
                 }
-
-                if (shouldInvoke) {
-                    Method beforeMethodFilter = handlerKey.v1().getDeclaredMethod(beforeMethod);
-                    beforeMethodFilter.setAccessible(true);
-                    beforeMethodFilter.invoke(applicationController);
-                }
-
-            }
-            if (temp.isAnnotationPresent(AroundFilter.class)) {
-                temp.setAccessible(true);
-                Map beforeFilter = (Map) temp.get(null);
-
-                String beforeMethod = temp.getName().substring(1);
-                boolean shouldInvoke = false;
-                if (beforeFilter.containsKey(FilterHelper.AroundFilter.only)) {
-                    List<String> list = (List) beforeFilter.get(FilterHelper.AroundFilter.only);
-                    shouldInvoke = list.contains(handlerKey.v2().getName());
-                } else if (beforeFilter.containsKey(FilterHelper.AroundFilter.except)) {
-                    List<String> list = (List) beforeFilter.get(FilterHelper.AroundFilter.except);
-                    shouldInvoke = !list.contains(handlerKey.v2().getName());
-                } else {
-                    shouldInvoke = true;
-                }
-                if (shouldInvoke) {
-                    Method aroundMethodFilter = handlerKey.v1().getDeclaredMethod(beforeMethod, Action.class);
-                    aroundMethodFilter.setAccessible(true);
-                    aroundMethodFilter.invoke(applicationController, new Action(handlerKey.v2(), applicationController));
-                }
-                containsAroundFilter = shouldInvoke;
             }
         }
-        return containsAroundFilter;
+        return result;
     }
 
-    public class Action {
-        private Method method;
+    private void filter(Tuple<Class<ApplicationController>, Method> handlerKey, ApplicationController applicationController) throws Exception {
+        //check beforeFilter
+
+        List<Field> globalBeforeFilters = ReflectHelper.fields(ApplicationController.class, BeforeFilter.class);
+        List<Field> globalAroundFilters = ReflectHelper.fields(ApplicationController.class, AroundFilter.class);
+
+
+        List<Field> beforeFilters = ReflectHelper.fields(handlerKey.v1(), BeforeFilter.class);
+        List<Field> aroundFilters = ReflectHelper.fields(handlerKey.v1(), AroundFilter.class);
+
+        globalBeforeFilters.addAll(beforeFilters);
+        globalAroundFilters.addAll(aroundFilters);
+
+        beforeFilters.clear();
+        aroundFilters.clear();
+
+        beforeFilters.addAll(globalBeforeFilters);
+        aroundFilters.addAll(globalAroundFilters);
+
+
+        Method action = handlerKey.v2();
+
+        List<Method> beforeFilterFilterThisAction = whoFilterThisMethod(handlerKey.v1(), beforeFilters, action);
+        List<Method> aroundFilterFilterThisAction = whoFilterThisMethod(handlerKey.v1(), aroundFilters, action);
+
+        for (Method filter : beforeFilterFilterThisAction) {
+            filter.invoke(applicationController);
+        }
+
+        Iterator<Method> iterator = aroundFilterFilterThisAction.iterator();
+
+        WowAroundFilter wowAroundFilter = null;
+        WowAroundFilter first = null;
+        if (iterator.hasNext()) {
+            Method currentFilter = iterator.next();
+            wowAroundFilter = new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController);
+            first = wowAroundFilter;
+        }
+        while (iterator.hasNext()) {
+            Method currentFilter = iterator.next();
+            wowAroundFilter.setNext(new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController));
+            wowAroundFilter = wowAroundFilter.next;
+        }
+
+        if (first != null) {
+            first.invoke();
+        } else {
+            handlerKey.v2().invoke(applicationController);
+        }
+
+    }
+
+    public class WowAroundFilter {
+        private WowAroundFilter next;
+        private Method currentFilter;
+        private Method action;
         private ApplicationController applicationController;
 
-        public Action(Method method, ApplicationController applicationController) {
-            this.method = method;
+        public WowAroundFilter(Method currentFilter, Method action, ApplicationController applicationController) {
+            this.currentFilter = currentFilter;
+            this.action = action;
             this.applicationController = applicationController;
         }
 
-        public void invoke() {
+        public boolean shouldInvokeAction() {
+            if (next == null) return true;
+            return false;
+        }
+
+        public void invoke() throws Exception {
             try {
-                method.invoke(applicationController);
+                if (shouldInvokeAction()) {
+                    action.invoke(applicationController);
+                    return;
+                }
+                next.invoke();
             } catch (Exception e) {
                 try {
                     ExceptionHandler.renderHandle(e);
@@ -163,8 +193,14 @@ public class RestController {
                     }
                 }
             }
+
+        }
+
+        public void setNext(WowAroundFilter next) {
+            this.next = next;
         }
     }
+
 
     private Tuple<Class<ApplicationController>, Method> getHandler(RestRequest request) {
         String path = getPath(request);

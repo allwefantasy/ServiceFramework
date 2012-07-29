@@ -1,6 +1,6 @@
 package net.csdn.bootstrap.loader.impl;
 
-import com.example.controller.TagController;
+import com.example.controller.tag.TagController;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import javassist.ClassPool;

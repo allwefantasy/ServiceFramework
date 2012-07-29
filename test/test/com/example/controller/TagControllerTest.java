@@ -1,6 +1,6 @@
 package test.com.example.controller;
 
-import com.example.controller.TagController;
+import com.example.controller.tag.TagController;
 import com.example.model.BlogTag;
 import com.example.model.Tag;
 import com.example.model.TagGroup;

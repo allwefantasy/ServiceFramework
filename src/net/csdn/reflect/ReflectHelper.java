@@ -6,6 +6,9 @@ import org.apache.commons.beanutils.MethodUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
+
+import static net.csdn.common.collections.WowCollections.list;
 
 /**
  * User: WilliamZhu
@@ -13,6 +16,20 @@ import java.lang.reflect.Method;
  * Time: 下午4:48
  */
 public class ReflectHelper {
+
+
+    public static List<Field> fields(Class clzz, Class annotation) {
+
+        List<Field> result = list();
+        Field[] fields = clzz.getFields();
+        for (Field field : fields) {
+            if (field.isAnnotationPresent(annotation)) {
+                result.add(field);
+            }
+        }
+        return result;
+    }
+
     public static void field(Object obj, String fieldName, Object value) throws Exception {
         Field field = null;
         Class clzz = obj.getClass();
@@ -54,8 +71,6 @@ public class ReflectHelper {
         field.setAccessible(true);
         return field.get(obj);
     }
-
-
 
 
     public static void field(Object obj, Class clzz, String fieldName, Object value) throws Exception {

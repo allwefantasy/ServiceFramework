@@ -23,8 +23,8 @@ public abstract class BaseValidateParse implements ValidateParse {
         for (Field field : fields) {
             if (!Modifier.isStatic(field.getModifiers()) || !Modifier.isFinal(field.getModifiers()) || !Modifier.isPrivate(field.getModifiers()))
                 continue;
-            if (field.getAnnotation(Validate.class) == null) continue;
-            if (field.getName().startsWith("$")) continue;
+            if (!field.isAnnotationPresent(Validate.class)) continue;
+            if (!field.getName().startsWith("$")) continue;
             validateFields.add(field);
         }
 

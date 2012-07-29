@@ -1,5 +1,6 @@
-package com.example.controller;
+package com.example.controller.tag;
 
+import com.example.controller.ApplicationController;
 import com.example.model.BlogTag;
 import com.example.model.Tag;
 import com.example.model.TagGroup;
@@ -9,7 +10,6 @@ import net.csdn.annotation.At;
 import net.csdn.annotation.BeforeFilter;
 import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
-import net.csdn.modules.http.ApplicationController;
 import net.csdn.reflect.ReflectHelper;
 
 import java.util.ArrayList;
