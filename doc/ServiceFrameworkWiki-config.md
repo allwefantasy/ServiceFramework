@@ -46,13 +46,13 @@ development:
         mysql:
            host: 127.0.0.1
            port: 3306
-           database: wow
-           username: root
-           password: csdn.net
+           database: tag_engine
+           username: tag
+           password: tag
         mongodb:
            host: 127.0.0.1
            port: 27017
-           database: csdn_data_center
+           database: tag_engine
         redis:
             host: 127.0.0.1
             port: 6379
@@ -62,13 +62,13 @@ production:
         mysql:
            host: 127.0.0.1
            port: 3306
-           database: wow
-           username: root
-           password: csdn.net
+           database: tag_engine
+           username: tag
+           password: tag
         mongodb:
            host: 127.0.0.1
            port: 27017
-           database: csdn_data_center
+           database: tag_engine
         redis:
             host: 127.0.0.1
             port: 6379
@@ -112,3 +112,5 @@ validator:
 type_mapping:  net.csdn.jpa.type.impl.MysqlType
 
 ```
+
+对于数据库等的配置是区分开发或者生产环境的
