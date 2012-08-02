@@ -31,7 +31,7 @@ pre code {
 
 这个章节，我们会知道 ServiceFramework 模型层 完整的使用。
 
-首先，建立三张示例表:
+首先，建立四张示例表:
 
 ```
 --标签表
@@ -115,7 +115,7 @@ public class TagSynonym extends Model {
 
 ```
 
-初看模型，你可能会惊讶于代码之少，关联配置之简单。甚至，连属性都没有。哈哈，那让我们
+初看模型，你可能会惊讶于代码之少，关联配置之简单。是的，上面就是我们对模型类所有的配置了。甚至，连属性都没有，但是就是这些代码实现了非常多的事情。哈哈，那让我们
 一步一步来看ServiceFrame是如何为你带来这些魔法的。
 
 模型关系介绍:
@@ -183,6 +183,16 @@ tag.attr("name","jack");
 
 ***WARNING***: 关联关系不应该用来查询。比如 你不应该通过 tag.getBlogTags()获取相关的BlogTag.即使是blogTag.getTag() 这样获取一个对象也不行。在后续的文档中你会看到一个可控性更好，不需要你具有任何ORM知识，规范的查询方式。
 
+ServiceFramework 支持标准的三种种关系。
+
+* OneToOne
+* OneToMany
+* ManyToMany
+
+在ServiceFramework中，所有关系都是双向的。当然，你不必担心这些，你了解这些细节固然好，但是
+不了解也没有关系。你只要按照直觉通过四个注解声明模型类的关系即可。
+
+
 给一个***已经存在的***同义词组添加一个同义词，我们可以这样做:
 
 ```
@@ -194,7 +204,7 @@ tag.attr("name","jack");
 tagSynonym.associate("tags").remove(tag);
 ```
 
-可以对同义词组和标签解除关系。
+可以将同义词组和标签解除关系。当然，这并不会删除tag在数据库里的记录。而只是吧他们之间的关系抹除了
 
 我们可以看到 “tags“  就是我们定义在TagSynonym 中的一个属性。ServiceFramework默认会为
 这种集合映射属性添加一个同名的方法，并且返回Association。
@@ -207,7 +217,7 @@ public Association tags(){throw new AutoGeneration();}
 
 associate 只是帮你调用这些看不到的方法。
 为了获得IDE提示的好处，
-你可以把上面那段代码定义。ServiceFramework会去实现里面具体的细节。
+你可以把上面那段代码写进你的模型类中。ServiceFramework会去实现里面具体的细节。
 
 ```
 @Entity
@@ -367,8 +377,7 @@ Tag.active().where("id>10").join("tag_groups").offset(0).limit(15).fetch();
 
 ### 模型方法
 
-在ServiceFramework中。一旦你定义了模型类，那么该模型类会自动拥有众多的方法。下面所有的示例都会使用我们前面建立的Tag模型
-静态方法:
+在ServiceFramework中。一旦你定义了模型类，那么该模型类会自动拥有众多的方法。一些静态方法:
 
 	Tag.create(map)
 	Tag.deleteAll()
@@ -386,7 +395,7 @@ Tag.active().where("id>10").join("tag_groups").offset(0).limit(15).fetch();
 	Tag.limit(int limit)
 	Tag.select(String select)
 	
-有代码提示的实例方法:
+一些实例方法
 
     tag.save()
 	tag.valid()
@@ -590,8 +599,15 @@ public class TagTest extends IocTest {
 
 你可以继承IocTest以获取必要的测试框架支持。当然，如果你希望测试是clean的也可以不继承它。
 
-WARNNING: 有一点需要注意的是，测试要么全部运行，要不都不运行。这意味着目前你没法只运行一个测试单元。运行测试集也非常简单，你只要运行test目录下的DynamicSuiteRunner 类。你可以直接使用支持JUnit的IDE或者通过脚本运行该类即可。  
-而这种方式带来的一个额外好处是，他可以保证你做的任何修改不至于让别人的或者自己写的其他测试奔溃。如果你有机会只运行自己的测试，估计没有多少人会主动去运行所有的测试。在那种情况下，测试就没有意义了。
+ServiceFramework  强烈建议：
+
+***测试要么全部运行，要不都不运行***
+
+这意味着目前你没法只运行一个测试单元。你必须运行所有测试集。
+为此，ServiceFramework在test目录下提供了DynamicSuiteRunner 类。
+你可以直接使用支持JUnit的IDE或者通过脚本运行该类即可。该类会自动运行所有配置文件指定package下的所有的测试类。
+  
+这种方式带来的一个额外好处是，他可以保证你做的任何修改不至于让别人的或者自己写的其他测试奔溃。如果你有机会只运行自己的测试，估计没有多少人会主动去运行所有的测试。在那种情况下，测试就没有意义了。
 
 
 	

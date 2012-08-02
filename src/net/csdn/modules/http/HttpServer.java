@@ -4,11 +4,13 @@ import com.google.inject.Inject;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
-import net.csdn.exception.*;
+import net.csdn.exception.ArgumentErrorException;
+import net.csdn.exception.ExceptionHandler;
+import net.csdn.exception.RecordExistedException;
+import net.csdn.exception.RecordNotFoundException;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.support.HttpStatus;
 import net.sf.json.JSONException;
-import net.sf.json.xml.XMLSerializer;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -22,7 +24,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 
 import static net.csdn.common.logging.support.MessageFormat.format;
 
@@ -132,7 +133,7 @@ public class HttpServer {
                         status = HttpStatus.HttpStatusSystemError;
                     }
                     httpServletResponse.setStatus(status);
-                    output(format("{\"ok\":false,\"message\":\"{}\"}", e.getMessage()));
+                    output(e.getMessage());
                 }
 
                 public void output(String msg) throws IOException {
@@ -166,8 +167,8 @@ public class HttpServer {
             DefaultResponse channel = new DefaultResponse();
             try {
                 channel.internalDispatchRequest();
-                channel.send();
                 JPA.getJPAConfig().getJPAContext().closeTx(false);
+                channel.send();
             } catch (Exception e) {
                 e.printStackTrace();
                 //回滚

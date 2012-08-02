@@ -319,9 +319,10 @@ render 方法也可以在过滤器中使用。一旦调用render方法后，就�
     }
 ```
 
-在上面的示例代码中，你无需render之后调用return 语句。
+在上面的示例代码中，你无需render之后再调用return 语句。
 
-ServcieFramewok 代码本就是IOC容器组织的。使用的是google的guice.没有做任何包装，以保证你获得足够的灵活性。你写的所有Service会被自动填充进IOC容器。所以，在Controller中你要调用Service会相当的简单。如下: 
+
+###ServiceFramework
 
 ```
 @Inject

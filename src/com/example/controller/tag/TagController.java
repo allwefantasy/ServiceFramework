@@ -7,8 +7,8 @@ import com.example.model.TagGroup;
 import com.example.service.tag.RemoteDataService;
 import com.google.inject.Inject;
 import net.csdn.annotation.filter.AroundFilter;
-import net.csdn.annotation.rest.At;
 import net.csdn.annotation.filter.BeforeFilter;
+import net.csdn.annotation.rest.At;
 import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
 import net.csdn.modules.http.RestController;
@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static net.csdn.common.logging.support.MessageFormat.format;
 import static net.csdn.filter.FilterHelper.BeforeFilter.only;
 import static net.csdn.modules.http.RestRequest.Method.*;
 import static net.csdn.modules.http.support.HttpStatus.HTTP_400;
@@ -45,8 +44,7 @@ public class TagController extends ApplicationController {
 
     @At(path = "/wow", types = GET)
     public void wow() {
-        logger.info("天才");
-        render(OK);
+        render(ok("天才"));
     }
 
     @At(path = "/tag_group/create", types = POST)
@@ -55,7 +53,7 @@ public class TagController extends ApplicationController {
         if (!tagGroup.save()) {
             render(HTTP_400, tagGroup.validateResults);
         }
-        render(OK);
+        render(ok());
     }
 
 
@@ -63,7 +61,7 @@ public class TagController extends ApplicationController {
     public void addTagToTagGroup() {
         TagGroup tagGroup = TagGroup.findById(paramAsInt("id"));
         tagGroup.associate("tags").add(tag);
-        render(OK);
+        render(ok());
     }
 
     @At(path = "/tag_group/tag", types = {DELETE})
@@ -71,14 +69,14 @@ public class TagController extends ApplicationController {
         TagGroup tagGroup = TagGroup.findById(paramAsInt("id"));
         tagGroup.associate("tags").remove(tag);
         tagGroup.save();
-        render(OK);
+        render(ok());
     }
 
 
     @At(path = "/{tag}/blog_tags", types = PUT)
     public void createBlogTag() {
         tag.associate("blog_tags").add(BlogTag.create(map("object_id", paramAsInt("object_id"))));
-        render(OK);
+        render(ok());
     }
 
 
@@ -102,7 +100,7 @@ public class TagController extends ApplicationController {
                 render(HTTP_400, model.validateResults);
             }
         }
-        render(OK);
+        render(ok());
     }
 
     @Inject
@@ -160,7 +158,7 @@ public class TagController extends ApplicationController {
     private void checkParam() {
         tags = param("tags", " ").split(",");
         if (tags.length == 0) {
-            render(HTTP_400, format(FAIL, "必须传递标签"));
+            render(HTTP_400, fail("必须传递标签"));
         }
     }
 
@@ -169,7 +167,7 @@ public class TagController extends ApplicationController {
     private void findTag() {
         tag = Tag.where("name=:name", map("name", param("tag"))).single_fetch();
         if (tag == null) {
-            render(HTTP_400, format(FAIL, "必须传递tag参数"));
+            render(HTTP_400, fail("必须传递tag参数"));
         }
     }
 

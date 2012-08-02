@@ -6,12 +6,34 @@ import net.csdn.modules.http.RestController;
 
 import java.util.Map;
 
+import static net.csdn.common.logging.support.MessageFormat.format;
+
 /**
  * User: WilliamZhu
  * Date: 12-7-29
  * Time: 下午3:48
  */
 public class ApplicationController extends net.csdn.modules.http.ApplicationController {
+
+    public static String OK = "{\"ok\":true,\"message\":\"{}\"}";
+    public static String FAIL = "{\"ok\":false,\"message\":\"{}\"}";
+
+
+    public static String ok(String msg) {
+        return format(OK, msg);
+    }
+
+    public static String fail(String msg) {
+        return format(FAIL, msg);
+    }
+
+    public static String ok() {
+        return format(OK, "");
+    }
+
+    public static String fail() {
+        return format(FAIL, "");
+    }
 
     @AroundFilter
     private final static Map $print_action_execute_time = map();

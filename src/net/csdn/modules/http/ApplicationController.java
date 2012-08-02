@@ -32,8 +32,6 @@ public abstract class ApplicationController {
     protected RestRequest request;
     protected RestResponse restResponse;
     public static String EMPTY_JSON = "{}";
-    public static String OK = "{\"ok\":true,\"message\":\"{}\"}";
-    public static String FAIL = "{\"ok\":false,\"message\":\"{}\"}";
 
 
     //渲染输出
