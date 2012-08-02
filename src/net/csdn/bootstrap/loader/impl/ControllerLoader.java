@@ -6,7 +6,7 @@ import com.google.inject.Module;
 import javassist.ClassPool;
 import javassist.CtClass;
 import net.csdn.ServiceFramwork;
-import net.csdn.annotation.At;
+import net.csdn.annotation.rest.At;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.settings.Settings;

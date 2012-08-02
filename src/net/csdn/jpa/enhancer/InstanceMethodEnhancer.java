@@ -3,7 +3,7 @@ package net.csdn.jpa.enhancer;
 import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
 import net.csdn.ServiceFramwork;
-import net.csdn.annotation.ManyToManyHint;
+import net.csdn.annotation.association.ManyToManyHint;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.AssociatedHelper;
 import net.csdn.enhancer.BitEnhancer;
@@ -32,6 +32,15 @@ public class InstanceMethodEnhancer implements BitEnhancer {
     @Override
     public void enhance(CtClass ctClass) throws Exception {
         CtField[] fields = ctClass.getDeclaredFields();
+
+        CtMethod ctMethod = CtMethod.make("public void executeInNewSession() {\n" +
+                "        net.csdn.jpa.context.JPAContext jpaContext = new net.csdn.jpa.context.JPAContext(getJPAConfig());\n" +
+                ""+
+                "        }\n" +
+                "    }", ctClass);
+
+        ctClass.addMethod(ctMethod);
+
         for (CtField ctField : fields) {
 
 
@@ -49,7 +58,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
 
                 findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass, ctField);
+                findAndRemoveMethod(ctClass,ctField.getName());
                 String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
                 String getter = "set" + propertyName;
 
@@ -88,7 +97,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
 
                 findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass, ctField);
+                findAndRemoveMethod(ctClass,ctField.getName());
                 String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
                 String getter = "get" + propertyName;
 
@@ -148,7 +157,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
 
                 findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass, ctField);
+                findAndRemoveMethod(ctClass,ctField.getName());
                 String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
                 String getter = "get" + propertyName;
 
@@ -186,9 +195,10 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
     }
 
-    private void findAndRemoveMethod(CtClass ctClass, CtField ctField) throws NotFoundException {
+
+    private void findAndRemoveMethod(CtClass ctClass, String methodName) throws NotFoundException {
         try {
-            CtMethod ctMethod = ctClass.getDeclaredMethod(ctField.getName());
+            CtMethod ctMethod = ctClass.getDeclaredMethod(methodName);
             ctClass.getClassFile().getMethods().remove(ctMethod.getMethodInfo());
         } catch (Exception e) {
         }

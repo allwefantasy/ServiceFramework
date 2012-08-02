@@ -1,6 +1,6 @@
 package net.csdn.validate;
 
-import net.csdn.annotation.Validate;
+import net.csdn.annotation.validate.Validate;
 
 import javax.persistence.Transient;
 import java.lang.reflect.Field;

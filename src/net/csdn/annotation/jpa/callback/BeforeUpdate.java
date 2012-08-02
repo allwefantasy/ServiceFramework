@@ -1,4 +1,4 @@
-package net.csdn.annotation;
+package net.csdn.annotation.jpa.callback;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,10 +7,10 @@ import java.lang.annotation.Target;
 
 /**
  * User: WilliamZhu
- * Date: 12-7-9
- * Time: 下午11:43
+ * Date: 12-8-1
+ * Time: 上午8:08
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface AroundFilter {
+@Target(ElementType.METHOD)
+public @interface BeforeUpdate {
 }

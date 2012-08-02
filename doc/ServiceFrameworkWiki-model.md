@@ -49,7 +49,7 @@ CREATE TABLE `TagGroup` (
   `name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 --博客和标签的关联表。存有 博客id和标签id
 CREATE TABLE `BlogTag` (
@@ -116,21 +116,21 @@ public class TagSynonym extends Model {
 ```
 
 初看模型，你可能会惊讶于代码之少，关联配置之简单。甚至，连属性都没有。哈哈，那让我们
-一步一步来看ServiceFrame为你带来的魔法。
+一步一步来看ServiceFrame是如何为你带来这些魔法的。
 
 模型关系介绍:
 
 1. TagGroup 和 Tag是多对多关系
 2. Tag和BlogTag是一对多关系。
-3. Tag 和 TagSynonym 多对一关系
+3. TagSynonym 和Tag 是多对一关系
 
-建立模型类只需要三部:
+建立模型类只需要三步:
 
 1. 继承 Model 基类
 2. 添加 Entity 注解
 3. 声明集合属性时需要初始化它
 
-ServiceFramework 为你提供了大量便利方法。比如建立map/list可以
+ServiceFramework 为你提供了大量便利方法。比如建立map/list
 
 ```
 Map newMap = map();
@@ -138,7 +138,7 @@ Map newMap2 = map("key1","value1","key2","value2")
 List newList = list();
 List newList2 = list("value1","value2","value3");
 ```
-所以集合初始化的时候也变得很简答，比如示例代码中的
+所以集合初始化的时候也变得很简洁，比如示例代码中
 
 ```
 @ManyToMany
@@ -146,15 +146,16 @@ private List<Tag> tags = list();
 ```
 
 ### 表和模型之间的映射关系
-前面的例子可以看到，我们不需要进行任何表和模型之间的映射。也就是不需要Table注解。当然，你也可以使用。
-但是我们强烈建议你使用默认的命名约定。
+前面的例子可以看到，我们不需要进行任何表和模型之间的映射配置。当然，你也可以使用标准的JPA进行配置。
+但是我们强烈建议你使用默认的命名约定。这些规则包括：
 
 1. 表名和类名相同
 2. 外键名称 = 属性名+"_id"
-3. 属性名 小写 加 下划线的形式。 这和传统java会有些区别。这主要是为了数据库字段和Model属性名保持一致。使用后你会发现这是相当便利的一种方式。
+3. 属性名 = 小写 加 下划线的形式。比如示例中的 tag_groups 等。 这和传统java会有些区别。这主要是为了数据库字段和Model属性名保持一致。如果你使用"tagGroups"这种传统的驼峰命名方式，,那么数据库中的字段名就会很丑陋了。遵循现在的方式你会发现这是相当便利的一种方式。
+4. 根据语义区分单复数形式 
 
-关于主键ID    
-ServiceFramework 强烈推荐使用自增id,名称为id,并且为long/interge类型。这可以省掉很多麻烦。
+***关于主键ID***    
+ServiceFramework 强烈推荐使用自增id,名称为id,并且为interge类型。这可以省掉很多麻烦。
 
 
 ### 模型属性
@@ -180,22 +181,33 @@ tag.attr("name","jack");
 1. 告诉框架模型(表)之间的外键关系
 2. 可以方便的级联保存，更新操作
 
-***WARNING***: 关联关系不应该用来查询。比如 你不应该通过 tag.getBlogTags()获取相关的BlogTag.即使是blogTag.getTag() 这样获取一个对象也不行。在后续的文档中你会看到一个可控性更好，不需要你具有任何ORM，规范的查询方式。
+***WARNING***: 关联关系不应该用来查询。比如 你不应该通过 tag.getBlogTags()获取相关的BlogTag.即使是blogTag.getTag() 这样获取一个对象也不行。在后续的文档中你会看到一个可控性更好，不需要你具有任何ORM知识，规范的查询方式。
 
 给一个***已经存在的***同义词组添加一个同义词，我们可以这样做:
 
 ```
  tagSynonym.associate("tags").add(Tag.create(map("name","i am tag "));
 ```
-这个时候会创建一个tag并且设置好与TagSynonym的关系。你也可以通过
+这个时候会创建一个tag并且设置好与TagSynonym的关系。相应的
 
 ```
 tagSynonym.associate("tags").remove(tag);
 ```
-来进行接触关系的操作。
 
-我们可以看到 “tags“  就是我们定义在TagSynonym 中的一个属性。
-你也可以在 TagSynonym 定义一个空的名称为 tags ，返回值为 Association的方法。
+可以对同义词组和标签解除关系。
+
+我们可以看到 “tags“  就是我们定义在TagSynonym 中的一个属性。ServiceFramework默认会为
+这种集合映射属性添加一个同名的方法，并且返回Association。
+
+类似于:
+
+```
+public Association tags(){throw new AutoGeneration();}
+```
+
+associate 只是帮你调用这些看不到的方法。
+为了获得IDE提示的好处，
+你可以把上面那段代码定义。ServiceFramework会去实现里面具体的细节。
 
 ```
 @Entity
@@ -206,8 +218,7 @@ public class TagSynonym extends Model {
 }
 ```
 
-接着你就可以获取ide的代码提示功能。除了上面举得两个例子，我们再添加一个查询例子。     
-假设我们要获取一个同义词组所有的d>10的tag，我们可以这么做
+现在假设我们要获取一个同义词组所有的d>10的tag，我们可以这么做
 
 ```
 List<Tag> tags = tagSynonym.tags().where("id>10").fetch(); 
@@ -231,18 +242,18 @@ ServiceFramework 提供了一套便利，规范，高效，且拥有部分HQL对
 
 方法列表:
 
-where
-select
-group
-order
-limit
-offset
-joins
-from
+* where
+* select
+* group
+* order
+* limit
+* offset
+* joins
+* from
 
 以后我们会继续完善。添加更多方法，譬如 lock,having等。
 
-从这些关键字可以看出，这些方法基本是以Sql语句关键字为基础的。所有这些方法最终返回的是JPQL对象(ServiceFramework内部组装sql语句的一个类)。
+从这些关键字可以看出，这些方法基本是以Sql关键字为基础的。所有这些方法最终返回的是JPQL对象(ServiceFramework内部组装sql语句的一个类)。
 
 1.1 根据ID获得对象
 
@@ -274,7 +285,7 @@ Tag.where("tag_synonym=:tag_synonym",map("tag_synonym",tag_synonym));
 ```
 select * from Tag where tag_synonym_id=? 
 ```
-因为对象关联模型告诉了那个是外键。
+因为对象关联模型告诉了系统那个是外键。这不会带来任何性能方面的损耗。
 
 1.4 order
 
@@ -289,7 +300,7 @@ Tag.order("id desc,name asc")
 
 1.5 joins
 
-joins 语法也是对象化的，这也得益于我们之前简单的模型关系的建议。你所操作的就是相应的模型属性。不管简单属性还是对象属性。
+joins 语法也是对象化的，这也得益于我们之前简单的模型关系声明。你所操作的就是相应的模型属性。不管简单属性还是对象属性。
 
 ```
 Tag.joins("tag_synonym").fetch();
@@ -416,8 +427,8 @@ ServiceFramework提供了声明式的validator语法。
 ```
 @Validate
     private final static Map $name = map(
-    presence, map("message", "{}字段不能为空"),
-    uniqueness, map("message", "{}字段不能重复")
+         presence, map("message", "{}字段不能为空"),
+         uniqueness, map("message", "{}字段不能重复")
     );
 
 ```
@@ -433,11 +444,11 @@ ServiceFramework提供了声明式的validator语法。
 
 你会发现valiator具有以下几个特点:
 
-1. 想成validator的必要条件是，声明为 private final 并且添加 @Validate 注解，并且字段名以$开始 。通常，@Validate注解只是让你知道，这个字段是验证器。否则你可能会对这种以$开头的字段感到疑惑。
+1. 想成validator的必要条件是，声明为 private final static 添加 @Validate 注解，并且字段名以$开始 。通常，@Validate注解只是让你知道，这个字段是验证器。否则你可能会对这种以$开头的字段感到疑惑。
 2. validator 是一个Map类型的字段
-3. $name 中的name 为需要验证的字段名。这里，我么要求Tag中的name不能为空，并且需要具有唯一性。
+3. $name 中的name 为需要验证的字段名。这里 我们要求Tag中的name不能为空，并且需要具有唯一性。
 
-你可以显示调用一个模型的valid()方法。你也可以直接调用save()方法。该方法返回boolean.false代表没有通过验证。
+你可以显式调用一个模型的valid()方法。你也可以直接调用save()方法。该方法返回boolean.false代表没有通过验证。
 验证结果你可以通过直接使用模型的validateResults属性获取。
 
 ```
@@ -451,6 +462,13 @@ ServiceFramework提供了声明式的validator语法。
    tag.save();
  }
 ```
+
+对于save方法，你也可以跳过验证
+
+```
+tag.save(false)
+```
+参数 false 表示不需要验证就进行保存。
 
 1.1 prensence
 
@@ -497,11 +515,56 @@ private final static Map $name = map(length, map("minimum",10));
 * too_short
 * too_long
 
+###回调
 
-### 缓存
+ServiceFramework中，你可以使用标准的JPA回调注解。
 
-缓存会马上在下一个版本添加。主要考虑两个缓存，对象缓存以及Controller 缓存。
+* @PrePersist
+* @PostPersist
+* @PreUpdate
+* @PostUpdate
+* @PreRemove
+* @PostLoad
 
+```
+@Entity
+public class Tag extends Model {
+    @PostUpdate
+    public void afterUpdate() {
+        findService(RedisClient.class).expire(this.id().toString());
+    }
+```
+需要注意的是，接受注解的方法必须为public void修饰，并且没有参数。
+ServiceFramework 任何一个模型类都能通过findService 方法获得有用的Service,Util服务。例子中
+当更新一个对象的时候，我们就让redis缓存中的对象过期。
+我们期望的是你能定义在模型内。但是如果你想给所有模型方法共用的花，你可以通过类的声明方式。
+
+```
+@Entity
+@EntityListeners(UpdateCallback.class)
+public class Tag extends Model {
+    @Validate
+    private final static Map $name = map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复"));
+    @Validate
+    private final static Map $associated = map(associated, list("blog_tags"));
+```
+
+相应的类为:
+
+```
+class UpdateCallback{
+   @PostUpdate
+    public void afterUpdate() {
+        findService(RedisClient.class).expire(this.id().toString());
+    }
+}
+```
+
+
+其实，从上面的介绍可以看出，ServiceFramework的Model层是真正富领域模型。关于数据库大部分逻辑操作都应该定义在model层。
+当然，Service层依然是需要的。DAO层则被完全摒弃了。通常我们建议，对model调用
+可以直接在controller中。而Service则提供其他服务，譬如远程调用，复杂的逻辑判断。当然，
+我们完全赞同在Service里调用model。这样对事物也具有较好的控制。
 
 ### 模型类的单元测试
 
@@ -527,7 +590,7 @@ public class TagTest extends IocTest {
 
 你可以继承IocTest以获取必要的测试框架支持。当然，如果你希望测试是clean的也可以不继承它。
 
-WARNNING: 有一点需要注意的是，测试要么全部运行，要不都不运行。这意味着目前你没法只运行一个测试单元。运行测试集也非常简答，你只要运行test目录下的DynamicSuiteRunner 类。你可以直接使用支持JUnit的IDE或者通过脚本运行该类即可。  
+WARNNING: 有一点需要注意的是，测试要么全部运行，要不都不运行。这意味着目前你没法只运行一个测试单元。运行测试集也非常简单，你只要运行test目录下的DynamicSuiteRunner 类。你可以直接使用支持JUnit的IDE或者通过脚本运行该类即可。  
 而这种方式带来的一个额外好处是，他可以保证你做的任何修改不至于让别人的或者自己写的其他测试奔溃。如果你有机会只运行自己的测试，估计没有多少人会主动去运行所有的测试。在那种情况下，测试就没有意义了。
 
 

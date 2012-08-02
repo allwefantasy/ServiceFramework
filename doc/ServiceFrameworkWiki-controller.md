@@ -40,6 +40,10 @@ public class TagController extends ApplicationController {
     private final static Map $findTag = map(only, list("addTagToTagGroup", "deleteTagToTagGroup","createBlogTag"));
 
 
+    @AroundFilter
+    private final static Map $print_action_execute_time2 = map();
+
+   
     @At(path = "/tag_group/create", types = POST)
     public void createTagGroup() {
         TagGroup tagGroup = TagGroup.create(params());
@@ -169,6 +173,15 @@ public class TagController extends ApplicationController {
     private Object invoke_model(String type, String method, Object... params) {
         return ReflectHelper.method(const_model_get(type), method, params);
     }
+    
+     private void print_action_execute_time2(RestController.WowAroundFilter wowAroundFilter) {
+        long time1 = System.currentTimeMillis();
+
+        wowAroundFilter.invoke();
+        logger.info("execute time2:[" + (System.currentTimeMillis() - time1) + "]");
+
+    }
+
 
 }
 ```
@@ -181,9 +194,10 @@ public class TagController extends ApplicationController {
 4. 所有其他的Service或者Util推荐采用使用IOC容器管理。譬如例子里的RemoteDataService
 5. filter只是一个简单的私有方法。如果申明在ApplicationController。那么对所有controller有效
 
+
 ###过滤器
 
-ServiceFramework 支持两种过滤器
+ServiceFramework 目前支持两种过滤器
 
 1. BeforeFilter 前置过滤器
 2. AroundFilter 环绕过滤器
@@ -191,7 +205,7 @@ ServiceFramework 支持两种过滤器
 如同示例，过滤的器声明非常简单
 
 * private,final static 三个修饰符
-* 过滤器 注解声明
+* 过滤器 @BeforeFilter 或者 @AroundFilter 注解声明
 
 
 
@@ -203,12 +217,15 @@ ServiceFramework 支持两种过滤器
 filter是声明在一个map属性上的。map 接受两个属性，only,except。如果没有这两个属性，那么表示过滤当前Controller中所有Action。
 属性依然以$开头，后面的属性名其实是一个方法的名称。比如你会发现在上面的controller中确实包含一个checkParam 方法。
 
-示例表示，只有save,search两个Action方法在调用前会先调用checkParam。
+例子的含义是，只有save,search两个Action方法在调用前会先调用checkParam。
 
-Controller是多线程安全的。这意味着，你可以安全的使用实例变量。示例中"addTagToTagGroup", "deleteTagToTagGroup","createBlogTag" 三个Action再使用之前都需要事先获得tag对象。所以可以使用findTag过滤器先填充 tag示例变量。如果用户没有传递tag名，就可以在过滤器中直接告诉用户参数问题。
+Controller是多线程安全的。这意味着，你可以安全的使用实例变量。示例中"addTagToTagGroup", "deleteTagToTagGroup","createBlogTag" 三个Action在调用前都需要事先获得tag对象。你可以使用findTag过滤器先填充 tag实例变量。如果用户没有传递tag名，就可以在过滤器中直接告诉用户参数问题。
 
-####路径配置
-路径配置使用的是注解配置。
+需要注意的一点是，BeforeFilter 比 AroundFilter 运行的更早。Filter 也可以调用render 方法，进行结果输出。
+
+###路径配置
+
+路径配置使用的也是注解配置。
 
 ```
 @At(path = "/tag_group/tag", types = {PUT, POST})
@@ -225,34 +242,40 @@ path 支持占位符，比如:
 ```
 tag这个值会被自动填充到请求对象中。你可以通过 param("tag")获取。
 
+
 #### request 参数获取
 
 在ServiceFramework 中 提供了一个非常便利的获取request参数的方式。不管是form表单,get请求，还是url中的数据，都可以统一通过param() 方法获取。
 
 ```
 int id = paramAsInt("id");
+//或者
+String id = param("id");
 ```
 
 比如这就可以获取 id 参数，并且将其转换为int类型。
-你还可以直接获取json
+如果你确认传递过来的是json或者xml格式，你可以调用下面的方式
 
 ```
 JSON obj = paramAsJSON();
 //或者
 JSON obj = paramsAsXML();
 ```
-xml文本的数据会自动转化json格式。
+其中,xml文本的数据会自动转化json格式,便与操作。
 
 ServiceFramework 尽量让事情简单而方便。
 
 方法列表:
+
+```
 params()
 param(key)
 param(key,defaultValue)
 paramAsInt(key)
 paramAsLong(key)
 paramAsFloat(key)
-….
+//还有更多….
+```
 
 
 #### 渲染输出
@@ -283,7 +306,7 @@ render(tag,ViewType.xml);
 render(HTTP_200,tag,ViewType.xml);
 ```
 
-render 方法也可以在过滤器中使用。一旦调用render方法后，就会自动跳出action调用。
+render 方法也可以在过滤器中使用。一旦调用render方法后，就会自动跳过action调用。
 
 ```
 @At(path = "/tag_group/create", types = POST)
@@ -298,7 +321,7 @@ render 方法也可以在过滤器中使用。一旦调用render方法后，就�
 
 在上面的示例代码中，你无需render之后调用return 语句。
 
-ServcieFramewok 代码本身也是使用IOC容器组织的。使用的是google的guice.没有做任何包装，以保证你获得足够的灵活性。你写的所有Service会被自动填充进IOC容器。所以，在Controller中你要调用Service会相当的简单。如下: 
+ServcieFramewok 代码本就是IOC容器组织的。使用的是google的guice.没有做任何包装，以保证你获得足够的灵活性。你写的所有Service会被自动填充进IOC容器。所以，在Controller中你要调用Service会相当的简单。如下: 
 
 ```
 @Inject

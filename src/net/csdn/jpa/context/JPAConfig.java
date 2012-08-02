@@ -3,7 +3,6 @@ package net.csdn.jpa.context;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.metamodel.Metamodel;
 import java.util.Map;
 
 /**
@@ -57,6 +56,7 @@ public class JPAConfig {
         }
         return context;
     }
+
 
     public boolean threadHasJPAContext() {
         return local.get() != null;

@@ -1,6 +1,6 @@
 package com.example.model;
 
-import net.csdn.annotation.Validate;
+import net.csdn.annotation.validate.Validate;
 import net.csdn.jpa.model.Model;
 
 import javax.persistence.Entity;

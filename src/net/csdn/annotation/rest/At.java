@@ -1,4 +1,4 @@
-package net.csdn.annotation;
+package net.csdn.annotation.rest;
 
 import net.csdn.modules.http.RestRequest;
 

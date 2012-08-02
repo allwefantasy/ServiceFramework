@@ -1,16 +1,17 @@
 package com.example.model;
 
-import net.csdn.annotation.Validate;
+import net.csdn.annotation.validate.Validate;
 import net.csdn.jpa.model.Model;
 
 import javax.persistence.*;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static net.csdn.common.collections.WowCollections.list;
 import static net.csdn.common.collections.WowCollections.map;
-import static net.csdn.validate.ValidateHelper.associated;
-import static net.csdn.validate.ValidateHelper.presence;
-import static net.csdn.validate.ValidateHelper.uniqueness;
+import static net.csdn.validate.ValidateHelper.*;
 
 /**
  * User: WilliamZhu
@@ -35,6 +36,11 @@ public class Tag extends Model {
     @ManyToMany
     private List<TagGroup> tag_groups = list();
 
+
+    @PostPersist
+    public void afterSave() {
+       // findService(RedisClient.class).exits(this.id().toString());
+    }
 
     public static Set<String> synonym(String wow_names) {
         String[] names = wow_names.split(",");

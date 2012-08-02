@@ -1,8 +1,8 @@
 package net.csdn.modules.http;
 
 import net.csdn.ServiceFramwork;
-import net.csdn.annotation.AroundFilter;
-import net.csdn.annotation.BeforeFilter;
+import net.csdn.annotation.filter.AroundFilter;
+import net.csdn.annotation.filter.BeforeFilter;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
@@ -163,7 +163,7 @@ public class RestController {
     public class WowAroundFilter {
         private WowAroundFilter next;
         private Method currentFilter;
-        public Method action;
+        private Method action;
         private ApplicationController applicationController;
 
         public WowAroundFilter(Method currentFilter, Method action, ApplicationController applicationController) {
@@ -185,7 +185,7 @@ public class RestController {
                         @Override
                         public void invoke() {
                             try {
-                                this.action.invoke(applicationController);
+                                WowAroundFilter.this.action.invoke(applicationController);
                             } catch (Exception e) {
                                 try {
                                     ExceptionHandler.renderHandle(e);

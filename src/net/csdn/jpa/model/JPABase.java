@@ -1,5 +1,8 @@
 package net.csdn.jpa.model;
 
+import net.csdn.ServiceFramwork;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.association.Association;
 import net.csdn.jpa.context.JPAConfig;
@@ -25,11 +28,17 @@ import static net.csdn.common.collections.WowCollections.list;
  */
 public class JPABase implements GenericModel {
 
+    protected CSLogger logger = Loggers.getLogger(getClass());
     public final static List validateParses = list();
 
     public static JPAContext getJPAContext() {
         return getJPAConfig().getJPAContext();
     }
+
+    public static  <T> T findService(Class<T> clz) {
+        return ServiceFramwork.injector.getInstance(clz);
+    }
+
 
     public Integer id() {
         return attr("id", Integer.class);

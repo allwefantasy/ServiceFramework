@@ -5,6 +5,7 @@ import com.example.model.Tag;
 import com.example.model.TagGroup;
 import com.example.model.TagSynonym;
 import net.csdn.junit.IocTest;
+import net.csdn.reflect.ReflectHelper;
 import org.junit.Test;
 
 import java.util.List;
@@ -20,7 +21,16 @@ import static org.junit.Assert.assertTrue;
 public class TagTest extends IocTest {
 
     @Test
-    public void testFormatValidate(){
+    public void testFormatValidate() {
+
+        setUpTagAndTagSynonymData();
+        System.out.println("begin:---------");
+        TagSynonym tagSynonym = TagSynonym.where("name=:name", map("name", "java")).single_fetch();
+        List<Tag> list = (List<Tag>) ReflectHelper.method(tagSynonym, "getTags");
+        System.out.println(list.size());
+        System.out.print("end:---------");
+
+        tearDownTagAndTagSynonymData();
 
     }
 

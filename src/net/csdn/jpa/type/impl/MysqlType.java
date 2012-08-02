@@ -8,11 +8,9 @@ import net.csdn.common.settings.Settings;
 import net.csdn.jpa.type.DBType;
 
 import javax.persistence.Temporal;
-import java.sql.*;
 import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.map;
-import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
  * User: WilliamZhu
@@ -27,9 +25,15 @@ public class MysqlType implements DBType {
     private Settings settings;
     private final static Map<String, String> typeToJava = map(
             "CHAR", "String",
+            "MEDIUMTEXT", "String",
+            "LONGTEXT", "String",
+            "BIT", "Boolean",
+            "BOOLEAN", "Boolean",
             "VARCHAR", "String",
             "Text", "String",
             "INT", "Integer",
+            "SMALLINT", "Integer",
+            "TINYINT", "Integer",
             "BIGINT", "Long",
             "FlOAT", "Float",
             "DOUBLE", "Double",
@@ -41,6 +45,7 @@ public class MysqlType implements DBType {
 
     public Tuple<String, String> typeToJava(String sqlType) {
         String type = typeToJava.get(sqlType);
+        if (type == null) type = "byte[]";
         return new Tuple<String, String>(sqlType, type);
     }
 

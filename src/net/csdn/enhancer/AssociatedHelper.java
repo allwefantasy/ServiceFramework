@@ -11,7 +11,7 @@ import javassist.bytecode.annotation.Annotation;
 import javassist.bytecode.annotation.ArrayMemberValue;
 import javassist.bytecode.annotation.EnumMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
-import net.csdn.annotation.ManyToManyHint;
+import net.csdn.annotation.association.ManyToManyHint;
 import org.apache.commons.lang.StringUtils;
 
 import java.lang.reflect.Modifier;

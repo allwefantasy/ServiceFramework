@@ -1,4 +1,4 @@
-package net.csdn.annotation;
+package net.csdn.annotation.association;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

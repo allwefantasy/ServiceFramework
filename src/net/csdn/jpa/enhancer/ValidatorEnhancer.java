@@ -1,15 +1,8 @@
 package net.csdn.jpa.enhancer;
 
 import javassist.CtClass;
-import javassist.CtField;
-import javassist.bytecode.AccessFlag;
-import javassist.bytecode.AnnotationsAttribute;
-import javassist.bytecode.ConstPool;
-import net.csdn.annotation.Validate;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
-
-import java.lang.reflect.Modifier;
 
 
 /**
