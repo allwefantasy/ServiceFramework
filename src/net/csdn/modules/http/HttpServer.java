@@ -25,8 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import static net.csdn.common.logging.support.MessageFormat.format;
-
 
 /**
  * BlogInfo: william
@@ -138,6 +136,7 @@ public class HttpServer {
 
                 public void output(String msg) throws IOException {
                     httpServletResponse.setContentType(content_type);
+                    httpServletResponse.setStatus(status);
                     //httpServletResponse.setContentLength(msg.length());
                     PrintWriter printWriter = httpServletResponse.getWriter();
                     printWriter.write(msg);
@@ -147,6 +146,7 @@ public class HttpServer {
 
                 public void outputAsByte(byte[] msg) throws IOException {
                     //httpServletResponse.setContentType("application/json; charset=UTF-8");
+                    httpServletResponse.setStatus(status);
                     ServletOutputStream outputStream = httpServletResponse.getOutputStream();
                     outputStream.write(msg);
                     outputStream.flush();

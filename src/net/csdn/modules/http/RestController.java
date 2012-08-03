@@ -134,6 +134,7 @@ public class RestController {
         List<Method> aroundFilterFilterThisAction = whoFilterThisMethod(handlerKey.v1(), aroundFilters, action);
 
         for (Method filter : beforeFilterFilterThisAction) {
+            filter.setAccessible(true);
             filter.invoke(applicationController);
         }
 

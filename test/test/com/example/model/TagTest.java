@@ -52,6 +52,8 @@ public class TagTest extends IocTest {
         BlogTag.delete("object_id=10");
     }
 
+
+
     @Test
     public void testUniquenessValidate() {
         Tag tag = Tag.create(map("name", "java"));

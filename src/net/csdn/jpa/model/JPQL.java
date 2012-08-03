@@ -214,7 +214,9 @@ public class JPQL {
         }
         query.setFirstResult(offset);
         if (limit != -1) query.setMaxResults(limit);
-        return (T) query.getSingleResult();
+        List list = query.getResultList();
+        if (list.size() == 0) return null;
+        return (T) list.get(0);
 
     }
 

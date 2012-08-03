@@ -24,11 +24,11 @@ public class Model extends JPABase {
 
     //----------------------------------------------------------------------------------
 
-    public static JPQL find(Long id) {
+    public static <T extends JPABase> T find(Integer id) {
         throw new UnsupportedOperationException("ooooooops...not implemented yet....");
     }
 
-    public static JPQL find(List ids) {
+    public static <T extends JPABase> T find(List ids) {
         throw new UnsupportedOperationException("ooooooops...not implemented yet....");
     }
 

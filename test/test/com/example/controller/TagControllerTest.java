@@ -26,58 +26,19 @@ import static org.junit.Assert.assertTrue;
  */
 public class TagControllerTest extends IocTest {
 
-    @Test
-    public void testCreateBlogTag() {
-
-        String tagName = "google";
-        //准备一条tag数据.
-        Tag.create(map("name", tagName)).save();
-        dbCommit();
-
-
-        TagController tagController = injector.getInstance(TagController.class);
-
-        Map requestData = map("tag", tagName, "object_id", "17", "created_at", 2007072407);
-
-        tagController.mockRequest(requestData, RestRequest.Method.PUT, null);
-
-        //过滤器
-        tagController.m("findTag");
-
-
-        try {
-            tagController.createBlogTag();
-        } catch (RenderFinish e) {
-
-        }
-
-        RestResponse restResponse = tagController.mockResponse();
-        JSONObject renderResult = JSONObject.fromObject((String) restResponse.originContent());
-        assertTrue(renderResult.getBoolean("ok"));
-
-        dbCommit();
-        List<BlogTag> blogTags = BlogTag.where("object_id=17").fetch();
-        assertTrue(blogTags.size() == 1);
-        //清理数据
-        Tag.delete("name=?", tagName);
-        BlogTag.delete("object_id=17");
-
-    }
 
     @Test
     public void testSave() throws Exception {
         TagController tagController = injector.getInstance(TagController.class);
 
-        Map jsonData = map("title", "google", "id", 17, "created_at", 2007072407);
-
-        tagController.mockRequest(map("type", "BlogTag",
-                "jsonData", JSONObject.fromObject(jsonData).toString(),
+        tagController.mockRequest(map(
+                "object_id", "17",
                 "tags", "java,google"
 
-        ), RestRequest.Method.POST, null);
+        ), RestRequest.Method.PUT, null);
 
         //过滤器
-        tagController.m("checkParam");
+        tagController.m("check_params");
 
 
         try {
@@ -109,7 +70,6 @@ public class TagControllerTest extends IocTest {
 
         TagController tagController = injector.getInstance(TagController.class);
         tagController.mockRequest(map(
-                "type", "BlogTag",
                 "tags", "java,google",
                 "channelIds", "1,2,3",
                 "blockedTagsNames", "google",

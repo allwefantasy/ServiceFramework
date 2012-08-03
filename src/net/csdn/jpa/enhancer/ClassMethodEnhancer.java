@@ -95,7 +95,7 @@ public class ClassMethodEnhancer implements BitEnhancer {
         CtMethod offset = CtMethod.make("public static net.csdn.jpa.model.JPQL offset(int cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").offset(cc);}", ctClass);
         ctClass.addMethod(offset);
 
-        CtMethod findWithSingleId = CtMethod.make("public static net.csdn.jpa.model.Model find(Integer cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").find(cc);}", ctClass);
+        CtMethod findWithSingleId = CtMethod.make("public static net.csdn.jpa.model.JPABase  find(Integer cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").find(cc);}", ctClass);
         ctClass.addMethod(findWithSingleId);
 
         CtMethod findWithMultiId = CtMethod.make("public static java.util.List find(java.util.List cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").find(cc);}", ctClass);

@@ -3,7 +3,6 @@ package com.example.controller.tag;
 import com.example.controller.ApplicationController;
 import com.example.model.BlogTag;
 import com.example.model.Tag;
-import com.example.model.TagGroup;
 import com.example.service.tag.RemoteDataService;
 import com.google.inject.Inject;
 import net.csdn.annotation.filter.AroundFilter;
@@ -20,91 +19,42 @@ import java.util.Map;
 import java.util.Set;
 
 import static net.csdn.filter.FilterHelper.BeforeFilter.only;
-import static net.csdn.modules.http.RestRequest.Method.*;
+import static net.csdn.modules.http.RestRequest.Method.GET;
+import static net.csdn.modules.http.RestRequest.Method.PUT;
 import static net.csdn.modules.http.support.HttpStatus.HTTP_400;
 
 
 public class TagController extends ApplicationController {
 
     @BeforeFilter
-    private final static Map $checkParam = map(only, list("save", "search"));
+    private final static Map $check_params = map(only, list("save", "search"));
     @BeforeFilter
-    private final static Map $findTag = map(only, list("addTagToTagGroup", "deleteTagToTagGroup", "createBlogTag"));
+    private final static Map $find_tag = map(only, list("create_blog_tag"));
+
 
     @AroundFilter
-    private final static Map $print_action_execute_time2 = map();
+    private final static Map $print_action_execute_time2 = map(only, list("search"));
 
     private void print_action_execute_time2(RestController.WowAroundFilter wowAroundFilter) {
         long time1 = System.currentTimeMillis();
-
         wowAroundFilter.invoke();
-        logger.info("execute time2:[" + (System.currentTimeMillis() - time1) + "]");
+        logger.info("标签聚合消耗时间:[" + (System.currentTimeMillis() - time1) + "]");
 
     }
 
-    @At(path = "/wow", types = GET)
-    public void wow() {
-        render(ok("天才"));
-    }
-
-    @At(path = "/tag_group/create", types = POST)
-    public void createTagGroup() {
-        TagGroup tagGroup = TagGroup.create(params());
-        if (!tagGroup.save()) {
-            render(HTTP_400, tagGroup.validateResults);
-        }
-        render(ok());
-    }
-
-
-    @At(path = "/tag_group/tag", types = {PUT, POST})
-    public void addTagToTagGroup() {
-        TagGroup tagGroup = TagGroup.findById(paramAsInt("id"));
-        tagGroup.associate("tags").add(tag);
-        render(ok());
-    }
-
-    @At(path = "/tag_group/tag", types = {DELETE})
-    public void deleteTagToTagGroup() {
-        TagGroup tagGroup = TagGroup.findById(paramAsInt("id"));
-        tagGroup.associate("tags").remove(tag);
-        tagGroup.save();
-        render(ok());
-    }
-
-
-    @At(path = "/{tag}/blog_tags", types = PUT)
-    public void createBlogTag() {
-        tag.associate("blog_tags").add(BlogTag.create(map("object_id", paramAsInt("object_id"))));
-        render(ok());
-    }
-
-
-    /**
-     * 通过插入doc 增加tag和doc的关联表
-     * <p/>
-     * type
-     * doc所属的类型.example 新闻:NewsTag ,博客:BlogTag
-     * jsonDate
-     * json格式对象.其中有body title ....
-     * tags
-     * 这个文章所包含的tag.
-     */
-    @At(path = "/doc/{type}/insert", types = POST)
+    @At(path = "/blog_tags", types = PUT)
     public void save() {
 
         for (String tagStr : tags) {
-            Model model = (Model) invoke_model(param("type"), "create", selectMapWithAliasName(paramAsJSON("jsonData"), "id", "object_id", "created_at", "created_at"));
-            model.m("tag", Tag.create(map("name", tagStr)));
-            if (!model.save()) {
-                render(HTTP_400, model.validateResults);
+            Tag tag = Tag.where("name=:name", map("name", tagStr)).single_fetch();
+            if (tag == null) {
+                tag = Tag.create(map("name", tagStr));
+                tag.save();
             }
+            tag.associate("blog_tags").add(BlogTag.create(map("object_id", paramAsInt("object_id"))));
         }
         render(ok());
     }
-
-    @Inject
-    private RemoteDataService remoteDataService;
 
     /**
      * @return 返回查询的结果集
@@ -117,16 +67,14 @@ public class TagController extends ApplicationController {
      * isOriginal		 : 是否原创 true or false
      * start		         :分页用。开始条数。默认0
      * size: 		     :一页显示条数。默认15
-     * type               :typeName doc所属的类型.example 新闻:NewsTag ,博客:BlogTag
      * @description 可排序字段  id  create_at weight
      */
-    @At(path = "/doc/{type}/search", types = GET)
+    @At(path = "/blog_tags/search", types = GET)
     public void search() {
 
         Set<String> newTags = Tag.synonym(param("tags"));
 
-
-        JPQL query = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags, ",", "'") + ")");
+        JPQL query = BlogTag.where("tag.name in (" + join(newTags, ",", "'") + ")");
 
         if (!isEmpty(param("channelIds"))) {
             String channelIds = join(param("channelIds").split(","), ",", "'");
@@ -147,15 +95,15 @@ public class TagController extends ApplicationController {
 
         List<Model> models = query.offset(paramAsInt("start", 0)).limit(paramAsInt("size", 15)).fetch();
 
-        // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetchObjectIds(models));
+        // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetch_object_ids(models));
 
-        render(map("total", count, "data", map()));
+        render(map("total", count, "data", models));
     }
 
 
     private String[] tags;
 
-    private void checkParam() {
+    private void check_params() {
         tags = param("tags", " ").split(",");
         if (tags.length == 0) {
             render(HTTP_400, fail("必须传递标签"));
@@ -164,14 +112,14 @@ public class TagController extends ApplicationController {
 
     private Tag tag;
 
-    private void findTag() {
+    private void find_tag() {
         tag = Tag.where("name=:name", map("name", param("tag"))).single_fetch();
         if (tag == null) {
             render(HTTP_400, fail("必须传递tag参数"));
         }
     }
 
-    private String fetchObjectIds(List<Model> models) {
+    private String fetch_object_ids(List<Model> models) {
         List<Integer> ids = new ArrayList<Integer>(models.size());
         for (Model model : models) {
             ids.add(model.attr("object_id", Integer.class));
@@ -198,5 +146,8 @@ public class TagController extends ApplicationController {
     private Object invoke_model(String type, String method, Object... params) {
         return ReflectHelper.method(const_model_get(type), method, params);
     }
+
+    @Inject
+    private RemoteDataService remoteDataService;
 
 }

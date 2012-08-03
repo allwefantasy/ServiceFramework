@@ -37,6 +37,7 @@ public class ControllerLoader implements Loader {
             public Class loaded(ClassPool classPool, DataInputStream classFile) {
                 try {
                     CtClass ctClass = classPool.makeClass(classFile);
+                    if (Modifier.isAbstract(ctClass.getModifiers())) return null;
                     moduleList.add(bindAction(ctClass.toClass()));
                 } catch (Exception e) {
                     e.printStackTrace();
