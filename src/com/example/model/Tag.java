@@ -44,7 +44,7 @@ public class Tag extends Model {
     @AfterSave
     public void afterSave() {
         // findService(RedisClient.class).exits(this.id().toString());
-        BlogTag.create(map("object_id", 19)).save();
+        //BlogTag.create(map("object_id", 19)).save();
         logger.info("我被保存了....");
     }
 
