@@ -373,4 +373,9 @@ public abstract class ApplicationController {
 
         return WowCollections.join(arrays, split);
     }
+
+
+    public static Map selectMapWithAliasNameInclude(Map map, String... keys) {
+        return WowCollections.selectMapWithAliasNameInclude(map, keys);
+    }
 }

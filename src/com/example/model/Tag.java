@@ -1,9 +1,13 @@
 package com.example.model;
 
+import net.csdn.annotation.jpa.callback.AfterSave;
 import net.csdn.annotation.validate.Validate;
 import net.csdn.jpa.model.Model;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +41,11 @@ public class Tag extends Model {
     private List<TagGroup> tag_groups = list();
 
 
-    @PostPersist
+    @AfterSave
     public void afterSave() {
-       // findService(RedisClient.class).exits(this.id().toString());
+        // findService(RedisClient.class).exits(this.id().toString());
+        BlogTag.create(map("object_id", 19)).save();
+        logger.info("我被保存了....");
     }
 
     public static Set<String> synonym(String wow_names) {

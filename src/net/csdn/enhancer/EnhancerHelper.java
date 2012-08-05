@@ -5,17 +5,13 @@ import javassist.CtField;
 import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.BadBytecode;
-import javassist.bytecode.ConstPool;
 import javassist.bytecode.SignatureAttribute;
-import javassist.bytecode.annotation.*;
-import net.csdn.reflect.ReflectHelper;
+import javassist.bytecode.annotation.MemberValue;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * User: WilliamZhu
@@ -69,6 +65,7 @@ public class EnhancerHelper {
         }
         return false;
     }
+
 
     public static boolean hasAnnotationWithPrefix(CtClass ctClass, String annotationPrefix) throws ClassNotFoundException {
         for (Object object : ctClass.getAvailableAnnotations()) {

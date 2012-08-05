@@ -4,12 +4,17 @@ import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.association.ManyToManyHint;
+import net.csdn.annotation.jpa.callback.*;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.AssociatedHelper;
 import net.csdn.enhancer.BitEnhancer;
 import net.csdn.enhancer.EnhancerHelper;
 import net.csdn.jpa.type.DBInfo;
 
+import javax.persistence.*;
+import java.util.Map;
+
+import static net.csdn.common.collections.WowCollections.map;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 
@@ -32,14 +37,25 @@ public class InstanceMethodEnhancer implements BitEnhancer {
     @Override
     public void enhance(CtClass ctClass) throws Exception {
         CtField[] fields = ctClass.getDeclaredFields();
+//        String entityListener = "javax.persistence.EntityListeners";
 
-        CtMethod ctMethod = CtMethod.make("public void executeInNewSession() {\n" +
-                "        net.csdn.jpa.context.JPAContext jpaContext = new net.csdn.jpa.context.JPAContext(getJPAConfig());\n" +
-                ""+
-                "        }\n" +
-                "    }", ctClass);
+//        if (ctClass.hasAnnotation(EntityCallback.class)) {
+//            EntityCallback entityListeners = (EntityCallback) ctClass.getAnnotation(EntityCallback.class);
+//            String clzzName = entityListeners.value();
+//            CtClass clzz = ServiceFramwork.classPool.get(clzzName);
+//            enhanceJPACallback(clzz);
+//            AnnotationsAttribute annotationsAttribute = EnhancerHelper.getAnnotations(ctClass);
+//            ArrayMemberValue arrayMemberValue = new ArrayMemberValue(annotationsAttribute.getConstPool());
+//            ClassMemberValue[] clzzes = new ClassMemberValue[]{new ClassMemberValue(clzzName, annotationsAttribute.getConstPool())};
+//            arrayMemberValue.setValue(clzzes);
+//            EnhancerHelper.createAnnotation(annotationsAttribute, EntityListeners.class, map("value", arrayMemberValue));
+//
+//        } else {
+//
+//        }
 
-        ctClass.addMethod(ctMethod);
+        enhanceJPACallback(ctClass);
+
 
         for (CtField ctField : fields) {
 
@@ -58,7 +74,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
 
                 findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass,ctField.getName());
+                findAndRemoveMethod(ctClass, ctField.getName());
                 String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
                 String getter = "set" + propertyName;
 
@@ -97,7 +113,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
 
                 findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass,ctField.getName());
+                findAndRemoveMethod(ctClass, ctField.getName());
                 String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
                 String getter = "get" + propertyName;
 
@@ -157,7 +173,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
 
 
                 findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass,ctField.getName());
+                findAndRemoveMethod(ctClass, ctField.getName());
                 String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
                 String getter = "get" + propertyName;
 
@@ -183,6 +199,59 @@ public class InstanceMethodEnhancer implements BitEnhancer {
             }
         }
         ctClass.defrost();
+    }
+
+    private Map<Class, Class> callback_classes = map(
+            AfterSave.class, PostPersist.class,
+            BeforeSave.class, PrePersist.class,
+            BeforeUpdate.class, PreUpdate.class,
+            AfterUpdate.class, PostUpdate.class,
+            BeforeDestroy.class, PostRemove.class,
+            AfterLoad.class, PostLoad.class
+    );
+
+    private void enhanceJPACallback(CtClass ctClass) throws Exception {
+        CtMethod[] methods = ctClass.getDeclaredMethods();
+        for (CtMethod ctMethod : methods) {
+            if (ctMethod.hasAnnotation(AfterSave.class)) {
+                enhanceJPACallback(ctClass, ctMethod, AfterSave.class);
+            }
+            if (ctMethod.hasAnnotation(BeforeSave.class)) {
+                enhanceJPACallback(ctClass, ctMethod, BeforeSave.class);
+            }
+            if (ctMethod.hasAnnotation(AfterUpdate.class)) {
+                enhanceJPACallback(ctClass, ctMethod, AfterUpdate.class);
+            }
+            if (ctMethod.hasAnnotation(BeforeUpdate.class)) {
+                enhanceJPACallback(ctClass, ctMethod, BeforeUpdate.class);
+            }
+            if (ctMethod.hasAnnotation(BeforeDestroy.class)) {
+                enhanceJPACallback(ctClass, ctMethod, BeforeDestroy.class);
+            }
+            if (ctMethod.hasAnnotation(AfterLoad.class)) {
+                enhanceJPACallback(ctClass, ctMethod, AfterLoad.class);
+            }
+        }
+    }
+
+    private void enhanceJPACallback(CtClass ctClass, CtMethod method, Class anno) throws Exception {
+        if (method.hasAnnotation(anno)) {
+            CtMethod ctMethod = CtMethod.make(format("public void {}() {\n" +
+                    "        net.csdn.jpa.context.JPAContext jpaContext = getJPAConfig().reInitJPAContext();\n" +
+                    "        try {\n" +
+                    "            {}();\n" +
+                    "            getJPAConfig().getJPAContext().closeTx(false);\n" +
+                    "        } catch (Exception e) {\n" +
+                    "            getJPAConfig().getJPAContext().closeTx(true);\n" +
+                    "        } finally {\n" +
+                    "            getJPAConfig().setJPAContext(jpaContext);\n" +
+                    "        }\n" +
+                    "    }", "$_" + method.getName(), method.getName()), ctClass);
+
+            ctClass.addMethod(ctMethod);
+            AnnotationsAttribute annotationsAttribute = EnhancerHelper.getAnnotations(ctMethod);
+            EnhancerHelper.createAnnotation(annotationsAttribute, callback_classes.get(anno));
+        }
     }
 
     private void findAndRemoveMethod(CtClass ctClass, CtField ctField, String className) {

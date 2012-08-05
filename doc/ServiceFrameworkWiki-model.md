@@ -526,43 +526,55 @@ private final static Map $name = map(length, map("minimum",10));
 
 ###回调
 
-ServiceFramework中，你可以使用标准的JPA回调注解。
+ServiceFramework中，你可以使用标准的JPA回调注解。但是我们依然希望你使用我们替你增强过的回调
 
-* @PrePersist
-* @PostPersist
-* @PreUpdate
-* @PostUpdate
-* @PreRemove
-* @PostLoad
+* @BeforeSave
+* @AfterSave
+* @BeforeUpdate
+* @AfterUpdate
+* @BeforeDestory
+* @AfterLoad
 
 ```
 @Entity
 public class Tag extends Model {
-    @PostUpdate
+    @AfterUpdate
     public void afterUpdate() {
         findService(RedisClient.class).expire(this.id().toString());
     }
 ```
-需要注意的是，接受注解的方法必须为public void修饰，并且没有参数。
+需要注意的是，接受注解的方法必须没有参数。
 ServiceFramework 任何一个模型类都能通过findService 方法获得有用的Service,Util服务。例子中
 当更新一个对象的时候，我们就让redis缓存中的对象过期。
-我们期望的是你能定义在模型内。但是如果你想给所有模型方法共用的花，你可以通过类的声明方式。
+
+在回调中你依然可调用模型类进行持久化操作。但是需要注意的是 
+
+1. 不能对本身进行相关的持久化，更新操作。但是可以进行查询动作。
+2. 回调函数被包装在一个事务中，执行完后会被立即提交
+
+
+```
+@Entity
+public class Tag extends Model {
+    @AfterUpdate
+    public void afterUpdate() {
+        BlogTag.create(map("object_id",10)).save();
+    }
+```
+
+我们期望的是你能定义在模型内。但是如果你想给所有模型方法共用的话，你可以通过类的声明方式。
 
 ```
 @Entity
 @EntityListeners(UpdateCallback.class)
 public class Tag extends Model {
-    @Validate
-    private final static Map $name = map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复"));
-    @Validate
-    private final static Map $associated = map(associated, list("blog_tags"));
 ```
 
 相应的类为:
 
 ```
 class UpdateCallback{
-   @PostUpdate
+   @AfterUpdate
     public void afterUpdate() {
         findService(RedisClient.class).expire(this.id().toString());
     }

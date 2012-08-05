@@ -32,6 +32,18 @@ public class WowCollections {
 
     public static Map selectMapWithAliasName(Map map, String... keys) {
         Map temp = new HashMap();
+        temp.putAll(map);
+        for (int i = 0; i < keys.length; i++) {
+            String oldKey = keys[i];
+            String newKey = keys[++i];
+            temp.put(newKey, map.get(oldKey));
+            temp.remove(oldKey);
+        }
+        return temp;
+    }
+
+    public static Map selectMapWithAliasNameInclude(Map map, String... keys) {
+        Map temp = new HashMap();
         for (int i = 0; i < keys.length; i++) {
             String oldKey = keys[i];
             String newKey = keys[++i];
@@ -39,6 +51,7 @@ public class WowCollections {
         }
         return temp;
     }
+
 
     public static Map map(Object... arrays) {
         Map maps = new HashMap();
