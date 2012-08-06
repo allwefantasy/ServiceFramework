@@ -21,6 +21,13 @@ targetdir=`cd $targetdir; pwd`
 
 cd $targetdir
 
+if [ "$1" == "start" ];then
+  ./compile.sh
+fi
+
+cd $targetdir
+cd ../build
+
 classpath=.
 for jarfile in `ls lib`
 do
@@ -28,12 +35,12 @@ do
 done
 start()
 {
-  nohup java -Xms$min_heap_size -Xmx$max_heap_size -XX:PermSize=128m -Xloggc:gc.log -XX:+PrintGCTimeStamps -XX:-PrintGCDetails -cp $classpath net.csdn.bootstrap.Application  > search.log  &
-  echo $! > search_system.pid
+  nohup java -Xms$min_heap_size -Xmx$max_heap_size -XX:PermSize=128m -Xloggc:gc.log -XX:+PrintGCTimeStamps -XX:-PrintGCDetails -cp $classpath net.csdn.bootstrap.Application  > service_framework.log  &
+  echo $! > service_framework.pid
 }
 stop()
 {
-  kill  `cat search_system.pid`
+  kill  `cat service_framework.pid`
 }
 
 case $1 in

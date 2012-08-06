@@ -48,8 +48,8 @@ done
 echo "create build direcotry if it's not exits"
 s_mkdir "$S_HOME/build"
 
-copy_file_list="bin lib config"
-new_file_list="gateway data logs"
+copy_file_list="lib config"
+new_file_list="client script logs"
 
 for file in $copy_file_list
 do
@@ -68,7 +68,5 @@ do
 done
 
 javac -cp $classpath -d "$S_HOME/build" -encoding UTF-8 $sourcefiles
+cp -r "$S_HOME/src/META-INF" "$S_HOME/build"
 
-echo "copy build/bin/run.sh to build and chmod u+x"
-cp -f  "build/bin/run.sh" "build"
-chmod u+x  "build/run.sh"
