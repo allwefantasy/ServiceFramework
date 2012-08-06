@@ -124,5 +124,9 @@ git clone https://github.com/service_framework/service_framework.git tag_engine
 
 DynamicSuiteRunner 文件。
 
-这里我们会实现一个Tag系统来展示如何使用ServiceFrame 开发是如何的高效。
+你可以可以运行 net.csdn.bootstrap.Application
+启动HttpServer.
+然后通过curl 进行访问。
+
+这里我们会实现一个Tag系统来展示如何使用ServiceFrameWork 开发是如何的高效。
 

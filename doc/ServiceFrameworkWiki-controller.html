@@ -337,17 +337,19 @@ public class TagController extends ApplicationController {
 <p>在ServiceFramework 中 提供了一个非常便利的获取request参数的方式。不管是form表单,get请求，还是url中的数据，都可以统一通过param() 方法获取。</p>
 
 <pre><code>int id = paramAsInt("id");
+//或者
+String id = param("id");
 </code></pre>
 
 <p>比如这就可以获取 id 参数，并且将其转换为int类型。
-你还可以直接获取json</p>
+如果你确认传递过来的是json或者xml格式，你可以调用下面的方式</p>
 
 <pre><code>JSON obj = paramAsJSON();
 //或者
 JSON obj = paramsAsXML();
 </code></pre>
 
-<p>xml文本的数据会自动转化json格式。</p>
+<p>其中,xml文本的数据会自动转化json格式,便与操作。</p>
 
 <p>ServiceFramework 尽量让事情简单而方便。</p>
 
@@ -398,9 +400,9 @@ paramAsFloat(key)
     }
 </code></pre>
 
-<p>在上面的示例代码中，你无需render之后调用return 语句。</p>
+<p>在上面的示例代码中，你无需render之后再调用return 语句。</p>
 
-<p>ServcieFramewok 代码本就是IOC容器组织的。使用的是google的guice.没有做任何包装，以保证你获得足够的灵活性。你写的所有Service会被自动填充进IOC容器。所以，在Controller中你要调用Service会相当的简单。如下:</p>
+<h3>ServiceFramework</h3>
 
 <pre><code>@Inject
 private RemoteDataService remoteDataService;
