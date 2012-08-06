@@ -1,28 +1,3 @@
-<link rel="stylesheet" href="http://yandex.st/highlightjs/6.2/styles/googlecode.min.css">
-
-<script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
-<script src="http://yandex.st/highlightjs/6.2/highlight.min.js"></script>
-
-<script>hljs.initHighlightingOnLoad();</script>
-
-
-<script type="text/javascript">
-    $(document).ready(function(){
-    $("h2,h3,h4,h5,h6").each(function(i,item){
-    $(item).attr("id","wow"+i);
-    $("#category").append("<li><a href=\"#wow"+i+"\">"+$(this).text()+"</a></li>");
-    });
-    });
-</script>
-
-
-
-<style>
-    pre code {
-    break-word: break-all;
-    word-wrap: break-word;
-    }
-</style>
 
 #ServiceFramework 开发日志
 
@@ -111,7 +86,7 @@ ServiceFramework提供了一套完整的解决方案：
 
 常规的例子是:
 
-```
+```java
 //前面还需要获取session
 Query query = session.createQuery("from Stock where stockCode = :code ");
 query.setParameter("code", "7277");
@@ -125,7 +100,7 @@ spring等则可通过配置的方式避免显式加入事务代码。
 
 举个例子:
 
-```
+```java
 Stock.find(
 "from Stock where stockCode = :code", "7277"
 );
@@ -133,7 +108,7 @@ Stock.find(
 
 其实from Stock 是没有必要的。所以可以简化
 
-```
+```java
 Stock.find(
 "where stockCode = :code", "7277"
 );
@@ -143,14 +118,14 @@ Stock.find(
 
 最佳的方式是
 
-```
+```java
 Stock.where("stockCode=:code",map("code","7277")).fetch();
 ```
 
 那他是如何替代Criteria呢？假设有个status属性是需要根据用户提交来确定是否添加的，那么代码如下
 
 
-```
+```java
 JPQL query = Stock.where("stockCode=:code",map("code","7277"));
 
 if(status!=null){
@@ -171,12 +146,12 @@ List<Stock> result = query.fetch();
 3. 强制使用命名参数
 4. 通过语法使得查询变得异常简洁。假如我想找到stockCode为“7277”。那么就是天然的
 
-```
+```java
 Stock.where("stockCode=:code",map("code","7277"));
 ```
 而不是每次重复类似下面的代码
 
-```
+```java
 Query query = session.createQuery("from Stock where stockCode = :code ");
 query.setParameter("code", "7277");
 ```
@@ -185,7 +160,7 @@ query.setParameter("code", "7277");
 Java ORM框架的关联关系配置也是非常的不友好。
 一个较为完整的ManyToMany配置
 
-```
+```java
 
 @Entity
 @Table(name="EMPLOYEE")
@@ -209,7 +184,7 @@ private Set<Employee> employees = new HashSet<Employee>();
 非常的复杂，你要配置主控端(通过mappedBy),你还要配置关联表，在ServiceFramework中，这一切都是不必要的。
 
 
-```
+```java
 @Entity
 public class Tag extends Model {
 @ManyToMany
@@ -233,14 +208,14 @@ private List<Tag> tags = list();
 
 传统的解除多对多双向关系，你必须这样：
 
-```
+```java
 tag_group.getTags().remove(tag);
 tag.getTag_groups().remove(tag_group);
 ```
 
 而ServiceFramework则极大的简化了这类关系的操作。
 
-```
+```java
 tag_group.associate("tags").remove(tag);
 //或者
 tag.associate("tag_groups").remove(tag_group);
@@ -249,19 +224,19 @@ tag.associate("tag_groups").remove(tag_group);
 
 对于sessionFilter,标准的hibernate 写法是:
 
-```
+```java
 Query filterQuery = session.createFilter(tag_group.getTags(), "where this.name like 'S%'");
 ```
 
 ServiceFramework 则更加直观
 
-```
+```java
 tag_group.associate("tags").where("name like 'S%'"));
 ```
 
 最为有意思的是，你可以定义tags方法，内部你可以任意实现。我们要的只是这个方法签名。
 
-```
+```java
 @Entity
 public class TagGroup extends Model {
 @ManyToMany
@@ -276,7 +251,7 @@ throw  new AutoGeneration()
 接着你可以这样调用上面的例子：
 
 
-```
+```java
 tag_group.tags().where("name like 'S%'"));
 ```
 
@@ -284,7 +259,7 @@ tag_group.tags().where("name like 'S%'"));
 
 其实上面的移除关系之类的操作也可以用这个方法签名。
 
-```
+```java
 tag_group.tags().remove(tag);
 ```
 
@@ -292,7 +267,7 @@ tag_group.tags().remove(tag);
 
 此外 ServiceFramework 还提供了更加灵活的回调，比如：
 
-```
+```java
 @AfterUpdate
 public void afterUpdate() {
 findService(RedisClient.class).expire(this.id().toString());
@@ -304,7 +279,7 @@ BlogTag.create(map("object_id", 19)).save();
 
 校验器，对了，更简单，只是一个声明即可：
 
-```
+```java
 @Entity
 public class Tag extends Model {
 @Validate
@@ -331,7 +306,7 @@ private final static Map $associated = map(associated, list("blog_tags"));
 PHP之类的函数式编程语言(当然，从5.0开始也是面向对象了)有一个很大的优点，就是你按流程调用一定数量的函数，基本就能把逻辑走下来。Java一直缺乏这方面的觉悟。比如一个 isEmpty判断，你要么自己写个工具类，要嘛调用StringUtils(apache commons里)的。
 总之不方便，天哪，为啥不能直接这么用，在你写代码的时候，你只是习惯性的调用isEmpty,然后你惊奇的发现框架已经给你提供好了，无需任何包的导入!
 
-```
+```java
 if (!isEmpty(param("channelIds"))) {
 …..
 }
@@ -347,13 +322,13 @@ if (!isEmpty(param("channelIds"))) {
 
 最传统的是:
 
-```
+```java
 String abc= request.getParameter("abc");
 ```
 
 先进点的通过参数，比如SpringMVC 就是通过这种方式进行的。
 
-```
+```java
 public class TagAdminController extends ApplicationController {
 
 public void action1(@param("abc") String abc){
@@ -377,27 +352,27 @@ public void action1(@param("abc") String abc){
 其实深入一点，接受参数无非就是为了构造查询条件或者将其存入持久层。
 构造查询条件很简单，如果这样子你能觉得合理吗？
 
-```
+```java
 Tag.find("name=:name",map("name",params("name")));
 ```
 这我们只是为了获得name 这个参数，最直观的方式就是有个方法传入name这个key,就能获得用户传来的name.最简单，最直观。
 
 ServiceFramework 采用了 params函数。他还有很多变种，方便类型转换，比如
 
-```
+```java
 int id = paramsAsInt("id");
 ```
 
 那么对于数据存入呢？如何方便的构造一个模型？
 
-```
+```java
 Tag tag = Tag.create(params());
 ```
 
 create 方式是任何模型类都具有的一个方法。不需要用户自己实现。
 params() 返回一个键值对，类似
 
-```
+```java
 request.getParameterMap();
 ```
 
@@ -407,7 +382,7 @@ request.getParameterMap();
 用户传递过来的是tag_name,但是模型类中的字段名是name.这个时候是函数库起作用的时候了。仍然以
 上面的tag为例子。
 
-```
+```java
 Tag tag = Tag.create(selectMapWithAliasName(params(),"tag_name","name"));
 ```
 selectMapWithAliasName会将tag_name 替换成name.其他不变。并且，selectMapWithAliasName是继承ApplicationController后就直接可用的。这也是我一直强调的函数库的好处。
@@ -429,7 +404,7 @@ Controller 基本设计目标是：
 
 一个典型的示例如下：
 
-```
+```java
 public class TagAdminController extends ApplicationController {
 
 //过滤器声明
@@ -487,7 +462,7 @@ ServiceFramewrok 天然分为四部分:
 我们的目标是给你一个最佳的实践来组织你的项目结构。让你不用烦心代码应该如何放置。
 你可以在配置文件配置他们的位置。典型配置为:
 
-```
+```yaml
 ###############application config##################
 application:
 controller: com.example.controller
