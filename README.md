@@ -101,7 +101,7 @@ DynamicSuiteRunner 文件。
 
 首先，建立四张示例表:
 
-```
+```sql
 --标签表
 CREATE TABLE `Tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -139,7 +139,7 @@ CREATE TABLE `TagSynonym` (
 
 对应的类文件:
 
-```
+```java
 /**
  * User: WilliamZhu
  * Date: 12-7-23
@@ -200,7 +200,7 @@ public class TagSynonym extends Model {
 
 ServiceFramework 为你提供了大量便利方法。比如建立map/list
 
-```
+```java
 Map newMap = map();
 Map newMap2 = map("key1","value1","key2","value2")
 List newList = list();
@@ -208,7 +208,7 @@ List newList2 = list("value1","value2","value3");
 ```
 所以集合初始化的时候也变得很简洁，比如示例代码中
 
-```
+```java
 @ManyToMany
 private List<Tag> tags = list();
 ```
@@ -231,12 +231,12 @@ ServiceFramework 强烈推荐使用自增id,名称为id,并且为interge类型�
 Model类会自动根据数据库获取信息。
 比如Tag 含有一个name 属性，可以这样获取它。
 
-```
+```java
 String name = tag.attr("name",String.class);
 ```
 将其赋值为jack 则为:
 
-```
+```java
 tag.attr("name","jack");
 ```
 
@@ -263,12 +263,12 @@ ServiceFramework 支持标准的三种种关系。
 
 给一个***已经存在的***同义词组添加一个同义词，我们可以这样做:
 
-```
+```java
  tagSynonym.associate("tags").add(Tag.create(map("name","i am tag "));
 ```
 这个时候会创建一个tag并且设置好与TagSynonym的关系。相应的
 
-```
+```java
 tagSynonym.associate("tags").remove(tag);
 ```
 
@@ -279,7 +279,7 @@ tagSynonym.associate("tags").remove(tag);
 
 类似于:
 
-```
+```java
 public Association tags(){throw new AutoGeneration();}
 ```
 
@@ -287,7 +287,7 @@ associate 只是帮你调用这些看不到的方法。
 为了获得IDE提示的好处，
 你可以把上面那段代码写进你的模型类中。ServiceFramework会去实现里面具体的细节。
 
-```
+```java
 @Entity
 public class TagSynonym extends Model {
     @OneToMany
@@ -298,12 +298,12 @@ public class TagSynonym extends Model {
 
 现在假设我们要获取一个同义词组所有的d>10的tag，我们可以这么做
 
-```
+```java
 List<Tag> tags = tagSynonym.tags().where("id>10").fetch(); 
 ```
 当然，你依然可以写成
 
-```
+```java
 List<Tag> tags = tagSynonym.associate("tags").where("id>10").fetch(); 
 ```
 结果是一样的。对于这种只是为了代码提示而创建的方法，我们推荐方法内部 填充 'throw new AutoGeneration()'来标记它会被框架自动实现。虽然，即使它不存在，系统也会创建它。
@@ -335,44 +335,44 @@ ServiceFramework 提供了一套便利，规范，高效，且拥有部分HQL对
 
 1.1 根据ID获得对象
 
-```
+```java
 Tag.findById(10)
 //或者
 Tag.find(10)
 ```
 1.2 根据多个ID获取
 
-```
+```java
 Tag.find(list(1,2,,4,5))
 ```
 1.3 条件查询
 
-```
+```java
 Tag.where("id=:id",map("id",7)).fetch();
 ```
 map 是一个创建Map的一个便利方法。
 
 你也可以使用一个更复杂的例子:
 
-```
+```java
 Tag.where("tag_synonym=:tag_synonym",map("tag_synonym",tag_synonym));
 ```
 还记得之前提到的，对象关联关系的建立，可以方便框架进行一些对象化的操作。在Tag中tag_synonym是一个对象属性，你可以直接在where中使用该属性。
 他会转为为类似:
 
-```
+```java
 select * from Tag where tag_synonym_id=? 
 ```
 因为对象关联模型告诉了系统那个是外键。这不会带来任何性能方面的损耗。
 
 1.4 order
 
-```
+```java
 Tag.order("id desc")
 ```
 或者
 
-```
+```java
 Tag.order("id desc,name asc")
 ```
 
@@ -380,7 +380,7 @@ Tag.order("id desc,name asc")
 
 joins 语法也是对象化的，这也得益于我们之前简单的模型关系声明。你所操作的就是相应的模型属性。不管简单属性还是对象属性。
 
-```
+```java
 Tag.joins("tag_synonym").fetch();
 ```
 
@@ -388,14 +388,14 @@ Tag.joins("tag_synonym").fetch();
 
 你也可以join多个属性
 
-```
+```java
 Tag.joins("tag_synonym left join fetch tag_groups left join blog_tags").fetch();
 ```
 当然，对于互联网应用，这么多join毫无疑问会拖垮你的数据库。我们只是举个例子，你不应该这么做。
 
 1.6 offset,limit
 
-```
+```java
 Tag.offset(10).limit(15);
 //这相当于
 select * from Tag limit 10,15;
@@ -405,13 +405,13 @@ select * from Tag limit 10,15;
 
 这通常用于你不想获取所有的字段的场合
 
-```
+```java
  List<Object[]> results =Tag.select("name").fetch();
 ```
 
 这通常返回是一个数组。当然，如果你想让它填充进一个模型也是可以的。
 
-```
+```java
  List<Tag> results =Tag.select("new Tag(name)").fetch();
 ```
 需要注意的是，你需要在Tag填充一个相应的构造方法。希望不久就能去掉这个限制。嗯，应该尽力去掉。
@@ -419,7 +419,7 @@ select * from Tag limit 10,15;
 1.8 group
 说实话，真不应该提供这个，性能杀手。不过还是提供了….
 
-```
+```java
 Tag.where("id>10").group("name").fetch();
 ```
 
@@ -427,7 +427,7 @@ Tag.where("id>10").group("name").fetch();
 假设tag需要审核。只有审核通过的才应该被查询出来。如果每次查询的时候都要加这个条件岂不是
 太麻烦？我们可以定义一个方法：
 
-```
+```java
 @Entity
 public class Tag extends Model {
     public static JPQL active(){
@@ -438,7 +438,7 @@ public class Tag extends Model {
 
 之后你就可以这么用了
 
-```
+```java
 Tag.active().where("id>10").join("tag_groups").offset(0).limit(15).fetch();
 ```
 
@@ -447,6 +447,7 @@ Tag.active().where("id>10").join("tag_groups").offset(0).limit(15).fetch();
 
 在ServiceFramework中。一旦你定义了模型类，那么该模型类会自动拥有众多的方法。一些静态方法:
 
+```java
   Tag.create(map)
 	Tag.deleteAll()
 	Tag.count()
@@ -462,31 +463,34 @@ Tag.active().where("id>10").join("tag_groups").offset(0).limit(15).fetch();
 	Tag.offset(int offset)
 	Tag.limit(int limit)
 	Tag.select(String select)
-	
+```
+
 一些实例方法
 
+```java
     tag.save()
 	tag.valid()
 	tag.update()
 	tag.refresh()
 	tag.delete()
+```
 	
 ServiceFramework还会为你生成很多你看不见的"模型实例方法"。你需要特定语法去调用他。这里使用"m" 方法。
 这主要针对关联关系。
 对于类似这种申明:
 
-```
+```java
 @ManyToMany
 private List<Tag> tags = new ArrayList<Tag>();
 ```
 那么你能获得tags方法。
 
-```
+```java
 tagGroup.m("tags",Tag.create(map("name","jack")));
 ```
 这段代码的含义是，调用tags方法，该方法接受tag实例作为参数。实际上tags方法等价于下面的方法(只是你看不到这个方法，但是能通过"m”调用他)
 
-```
+```java
   public TagGroup tags(Tag tag){
        this.tags.add(tag);
        tag.getTag_groups().add(this);
@@ -501,7 +505,7 @@ tagGroup.m("tags",Tag.create(map("name","jack")));
 
 ServiceFramework提供了声明式的validator语法。
 
-```
+```java
 @Validate
     private final static Map $name = map(
          presence, map("message", "{}字段不能为空"),
@@ -528,7 +532,7 @@ ServiceFramework提供了声明式的validator语法。
 你可以显式调用一个模型的valid()方法。你也可以直接调用save()方法。该方法返回boolean.false代表没有通过验证。
 验证结果你可以通过直接使用模型的validateResults属性获取。
 
-```
+```java
  if(!tag.save()){
    render(HTTP_400,tag.validateResults);
  }
@@ -542,7 +546,7 @@ ServiceFramework提供了声明式的validator语法。
 
 对于save方法，你也可以跳过验证
 
-```
+```java
 tag.save(false)
 ```
 参数 false 表示不需要验证就进行保存。
@@ -550,7 +554,7 @@ tag.save(false)
 1.1 prensence
 
 
-```
+```java
 @Validate
 private final static Map $name = map(presence, map("message", "{}字段不能为空"));
 
@@ -558,14 +562,14 @@ private final static Map $name = map(presence, map("message", "{}字段不能为
 
 1.2 uniqueness
 
-```
+```java
 @Validate
 private final static Map $name = map(uniqueness, map("message", ""));
 ```
 
 1.3 numericality
 
-```
+```java
 @Validate
 private final static Map $id = map(numericality, map("greater_than",10,"message":""));
 ```
@@ -581,7 +585,7 @@ private final static Map $id = map(numericality, map("greater_than",10,"message"
 
 1.4 length
 
-```
+```java
 @Validate
 private final static Map $name = map(length, map("minimum",10));
 ```
@@ -603,7 +607,7 @@ ServiceFramework中，你可以使用标准的JPA回调注解。但是我们依�
 * @BeforeDestory
 * @AfterLoad
 
-```
+```java
 @Entity
 public class Tag extends Model {
     @AfterUpdate
@@ -621,7 +625,7 @@ ServiceFramework 任何一个模型类都能通过findService 方法获得有用
 2. 回调函数被包装在一个事务中，执行完后会被立即提交
 
 
-```
+```java
 @Entity
 public class Tag extends Model {
     @AfterUpdate
@@ -632,7 +636,7 @@ public class Tag extends Model {
 
 我们期望的是你能定义在模型内。但是如果你想给所有模型方法共用的话，你可以通过类的声明方式。
 
-```
+```java
 @Entity
 @EntityListeners(UpdateCallback.class)
 public class Tag extends Model {
@@ -640,7 +644,7 @@ public class Tag extends Model {
 
 相应的类为:
 
-```
+```java
 class UpdateCallback{
    @AfterUpdate
     public void afterUpdate() {
@@ -659,7 +663,7 @@ class UpdateCallback{
 
 一个简答的示例如下:
 
-```
+```java
 public class TagTest extends IocTest {
 
 
@@ -693,7 +697,7 @@ ServiceFramework  强烈建议：
 
 下面是一个典型的ServiceFramework Controller.
 
-```
+```java
 
 public class TagController extends ApplicationController {
 
@@ -872,7 +876,7 @@ ServiceFramework 目前支持两种过滤器
 
 
 
-```
+```java
   @BeforeFilter
     private final static Map $checkParam = map(only, list("save", "search"));
 ```
@@ -890,7 +894,7 @@ Controller是多线程安全的。这意味着，你可以安全的使用实例�
 
 路径配置使用的也是注解配置。
 
-```
+```java
 @At(path = "/tag_group/tag", types = {PUT, POST})
 ```
 
@@ -900,7 +904,7 @@ path 代表请求路径。 types则是表示接受的请求方法的,默认是GE
 
 path 支持占位符，比如:
 
-```
+```java
 @At(path = "/{tag}/blog_tags", types = PUT)
 ```
 tag这个值会被自动填充到请求对象中。你可以通过 param("tag")获取。
@@ -910,7 +914,7 @@ tag这个值会被自动填充到请求对象中。你可以通过 param("tag")�
 
 在ServiceFramework 中 提供了一个非常便利的获取request参数的方式。不管是form表单,get请求，还是url中的数据，都可以统一通过param() 方法获取。
 
-```
+```java
 int id = paramAsInt("id");
 //或者
 String id = param("id");
@@ -919,7 +923,7 @@ String id = param("id");
 比如这就可以获取 id 参数，并且将其转换为int类型。
 如果你确认传递过来的是json或者xml格式，你可以调用下面的方式
 
-```
+```java
 JSON obj = paramAsJSON();
 //或者
 JSON obj = paramsAsXML();
@@ -930,7 +934,7 @@ ServiceFramework 尽量让事情简单而方便。
 
 方法列表:
 
-```
+```java
 params()
 param(key)
 param(key,defaultValue)
@@ -947,31 +951,31 @@ paramAsFloat(key)
 
 普通文本输出
 
-```
+```java
 render("hello word");
 ```
 
 如果传入的是对象，会自动呗转化为json格式
 
-```
+```java
 render(tag);
 ```
 
 你可以手动指定输出格式
 
-```
+```java
 render(tag,ViewType.xml);
 ```
 
 你还可以指定输出的http状态码
 
-```
+```java
 render(HTTP_200,tag,ViewType.xml);
 ```
 
 render 方法也可以在过滤器中使用。一旦调用render方法后，就会自动跳过action调用。
 
-```
+```java
 @At(path = "/tag_group/create", types = POST)
     public void createTagGroup() {
         TagGroup tagGroup = TagGroup.create(params());
@@ -987,7 +991,7 @@ render 方法也可以在过滤器中使用。一旦调用render方法后，就�
 
 ###ServiceFramework
 
-```
+```java
 @Inject
 private RemoteDataService remoteDataService;
 ```
@@ -998,7 +1002,7 @@ private RemoteDataService remoteDataService;
 
 在controller中，你天然会获取大量有用的工具方法。比如 isEmpty，字符串join。比如
 
-```
+```java
 JPQL query = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags, ",", "'") + ")");
 ```
 
@@ -1009,7 +1013,7 @@ ServiceFramework 所有的配置文件位于config目录下。其实只有两个
 
 一个完整的application.yml
 
-```
+```yaml
 #mode
 mode:
   development
