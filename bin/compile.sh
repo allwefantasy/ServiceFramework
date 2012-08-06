@@ -48,7 +48,7 @@ done
 echo "create build direcotry if it's not exits"
 s_mkdir "$S_HOME/build"
 
-copy_file_list="bin fingerprintdic lib config  dictionaries "
+copy_file_list="bin lib config"
 new_file_list="gateway data logs"
 
 for file in $copy_file_list
