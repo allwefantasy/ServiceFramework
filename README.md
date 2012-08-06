@@ -1,483 +1,1094 @@
-#ServiceFramework 
+#ServiceFramework Wiki
 
-09年的时候做了一个类似于"原创音乐基地"的音乐类网站。用的是SSH2开发的。当时没用好，代码臃肿，速度缓慢。这给我印象非常深刻。2010年接触了Rails，见识了开发速度,和印象中的SSH2形成了鲜明的对比，后来一直从事搜索方面的开发，对Web类应用便接触的少了。
-12年06月因为内部一个项目，让我重新开始对Java Web框架进行了思考。
-
-***一个框架自己应该做到：***
-
-* 约定大约配置
-* 约定大于配置，这个已经是广大coder的常识了。但是有多少人真正去思考其精髓呢？真正的含义应该是，
-‘用***最佳实践***来指导约定，用约定来规范项目和代码，完全去除***不必要***的配置’。当你尝试跳过
-某种约定去适应某种需求，就说明你已经开始误入歧途。因为，约定是"最佳实践"，当你企图跳过，你已经在增加复杂度了，你应该三思了。
-
-* 限定自己的使用范围
-* 每个框架都应该有自己的使用范围。就如同每个领域都有自己的专业工具。没有一个框架或者软件是所有领域的王者。
-* ServiceFramework 定位在移动互联网后端开发。作为APP后端开发的基石。
-
-* 在理念和实用中找到平衡点
-* 解耦，扩展，设计模式的应用等等，但是过度，过早去思考，设计这些都是不合理的。应该对这些“理念”和“实用”做好平衡。这样带来的一个额外好处是框架自己的代码会比较简单。而代码简单意味着以后较小的维护成本。
+##  创建一个新的ServiceFramework 项目
 
 
-***一个框架应该帮程序员做到：***
+###ServiceFramework 适合你吗？
 
-* 开箱即用
-* 好的框架应该是下载即可使用。Rails门槛已经越来越高，初学者甚至已经很难启动它的一个demo了。
-* SSH2 更是离奇，没有拷贝黏贴，新手或许怎么着得半天到一天才能把框架搭起来吧
+ServcieFramework 定位在**移动互联网后端**。
+所以ServcieFramework非常强调开发的高效性，其开发效率可以比肩Rails(不相信？可以体验一下哦)。
 
-* 规范项目结构和代码风格
-* 框架除了方便开发，提供必要的基础设施，我觉得最重要的是限制项目结构，规范代码风格。这点很重要。框架应该引导用户怎么做才是最合理的，而不是什么都需要用户去揣测，去定夺。框架应该提出应该怎么做，不应该怎么做。
+1. 拥有Java界最简单，非常高效，且规范的Model层
+2. Controller层有非常简洁的验证器，过滤器
+3. 简单但实用的View层，天然支持JSON,XMl格式输出
 
-* 尽量减少代码
-* ServiceFramework 能够让你豁然开朗，只要按照最佳实践，即使是Java这种语言，代码也是可以非常少的。少的代码意味着开发的高效，维护的便利。毕竟，很多Java框架都是很多年前的东西了，有很多过时的理念，这些都是历史负担。
+框架已经提供了对mysql,mongodb,redis的支持
 
+如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于一个全新的项目中使用它。相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
 
-首先 ServiceFramework 是一个一站式的框架。你下载下来就能用，只需要配置数据库连接，就能跑起来。你不需要掌握任何命令或者操作流程。
-
-ServiceFramework 详细规划了应用程序的目录。保证了你不会为如何组织项目而烦恼。你看到框架的时候就可以开始写你的代码了。根本不需要考虑如何规划Service,Model,Controller等。
-
-ServiceFramework 有一个强大的真正的富领域模型，便利的，规范化Query Interface，优秀的声明式模型校验语法。线程安全的控制器，真正便利的前置过滤器和环绕过滤器的实现,一个目前还比较简单但实用的***函数库***。在ServiceFramework上面写代码，你会发现,代码如此之少，实现如此只简洁。
+现在让我们开始 ServiceFramework 十五分钟旅程吧。
 
 
 
+### 搭起来，跑起来
 
-##对Model层封装的思考
+在终端下赋值黏贴运行该命令:
 
-传统的Java ORM框架真的是复杂繁琐。以Hibernate为例
-
-1. 不熟悉的人大部分特性不敢用，只是用来操作简单的POJO。其他特性不敢碰
-2. 也有一开始就上去啥特性都用，结果各种性能陷阱，死的很难看
-3. 你当然想成为熟悉Hibernate的人咯，于是你可能要去看一本书，而不是一个简单的tutorial.
-4. 即使你不惧怕Hibernate各种性能陷阱，你依然呗Hibernate 各种繁琐代码所困扰。Session的打开关闭，这和原始社会的时候要打开数据库和关闭数据库有区别吗？
-5. 所以，你又会对Hibernate进行一次封装，或者采用Spring的胶水。但是，依然云里雾里。
-6. 因为ORM的问题，导致 Java 衍生出了DAO层('贫血模型')。大部分情况下，Service层只是DAO层的简单调用。这增加了大量代码和层次，无形增加了项目的复杂度。而且很难把握好DAO和Service层次的封装调用。除非你是个老手，否则写的代码可能就会比较凌乱。
-
-
-
-就Hibernate实现而言，也是问题多多。
-
-1. hql 语法
-* 和sql相似，又和sql具有不同点，让人困惑。
-* 添加的大量面向对象语法，比如"from Blog where user.info.range>200" 这种调用往往有性能陷阱。
-* hql避免不了sql最本质的问题。你可能需要拼接sql语句，不同的程序员以不同的方式将sql片段散落到各个角落。同时以不同的方式给sql传参数。而hibernate对该问题的解决是提出新的一套API: Criteria.这绝对是件愚蠢的方式。即增加学习成本，又给代码造成混乱，不同的程序员偏好不一样，有的喜好hql,有的喜好criteria.而且程序员还要去思考criteria和hql分别应该试用什么场景。需要根据条件拼凑hql的话使用Criteria？其他场景都使用hql?
-
-2. 调用语法，每次都需要打开session,然后使用完还需要关闭session.callback里面不能直观的使用数据库操作(解决方案使用了拙略的open temp session的方式)
-
-3. hibernate的校验框架也是没有任何设计可言。就是简单的叠加Annotation到Model层的属性上。加上一些关联属性和column属性，这个时候，属性就如同就好像一个戴着19世纪英国绅士带的那种高帽，当然，现在的魔术师也常带。
-
-
-
-
-ServiceFramework提供了一套完整的解决方案：
-
-1. 简化hql语法，使得hql更加像sql.譬如hql通常需要别名，为什么我可以用id=1非要写成blog.id=1呢？
-2. 提供一个统一的查询接口，使得sql语句规范化，同时具有原生hql和Criteria的有点，而且基本不需要学习成本。
-
-总而言之，ServiceFramework 有一个强大的真正的富领域模型，便利的，规范化Query Interface，优秀的声明式模型校验语法。
-
-整个设计过程基本原则是：
-
-1. 尽量提供一个'最佳实践'给用户，而不是让用户做大量的选择题
-2. 用一个方案覆盖80%的问题(简化后的hql)
-3. 用另一个可选方案覆盖另外20%的问题(就是使用原生的Sql)
-
-
-常规的例子是:
-
-```java
-//前面还需要获取session
-Query query = session.createQuery("from Stock where stockCode = :code ");
-query.setParameter("code", "7277");
-List list = query.list();
-//别忘了关闭session
+```shell
+git clone https://github.com/service_framework/service_framework.git tag_engine
 ```
-你会发现这和我们传统的sql查询没有区别。并且如果是插入更新删除，你还需要显示加入事物代码。当然，如果你加入
-spring等则可通过配置的方式避免显式加入事务代码。
+此时你就获得一个开箱即用的项目。所有的目录和结构都是规范化的。
 
-你可以做的更漂亮些
+####我们先看看目录结构:
 
-举个例子:
+<table>
+  <tbody><tr>
+		<th>文件/目录</th>
+		<th>作用</th>
+	</tr>
+	<tr>
+		<td>src/</td>
+		<td>包含 controllers, models, views。也就是项目源码的存放地。 在之后的教程中，我们会聚焦于这个目录</td>
+	</tr>
+	<tr>
+		<td>config/</td>
+		<td>配置文件。整个ServiceFramework只有两个配置文件，分别为application.yml 和logging.yml  更详细的配置介绍参看:<a href="configuring.html">配置 ServiceFramework 应用</a></td>
+	</tr>
+	<tr>
+		<td>bin</td>
+		<td>存放编译，部署，运行脚本</td>
+	</tr>
+	<tr>
+		<td>sql/</td>
+		<td>项目的数据库结构文件。通常是sql文件</td>
+	</tr>
+	<tr>
+		<td>doc/</td>
+		<td>项目的文档存放地</td>
+	</tr>
+	<tr>
+		<td>lib</td>
+		<td>应用本身，以及包括ServiceFramework依赖的jar包都会存放在这里</td>
+	</tr>
+	
+	<tr>
+		<td>logs/</td>
+		
+		<td>应用程序日志文件</td>
+	</tr>
+	<tr>
+		<td>script/</td>
+		<td>一些shell脚本之类的</td>
+	</tr>
+	<tr>
+		<td>client</td>
+		<td>你可以写一些客户端，比如使用某种脚本语言，做数据迁移啥的</td>
+	</tr>
+	<tr>
+		<td><span class="caps">README</span>.html</td>
+		<td>请对你的项目做一个简要的介绍</td>
+	</tr>
+	
+	<tr>
+		<td>test/</td>
+		<td>单元测试目录。详细参看:<a href="testing.html">如何测试ServiceFramework应用</a></td>
+	</tr>
+	
+</tbody></table>
 
-```java
-Stock.find(
-"from Stock where stockCode = :code", "7277"
-);
+项目在src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
+在test 中的 test.com.example 有example项目的测试代码。
+你可以在IDE环境运行 test 根目录下的
+
+DynamicSuiteRunner 文件。
+
+你可以可以运行 net.csdn.bootstrap.Application
+启动HttpServer.
+然后通过curl 进行访问。
+
+## Model 
+这个章节，我们会知道 ServiceFramework 模型层 完整的使用。
+
+首先，建立四张示例表:
+
 ```
+--标签表
+CREATE TABLE `Tag` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `tag_synonym_id` int(11) DEFAULT NULL,
+  `weight` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-其实from Stock 是没有必要的。所以可以简化
+--标签组。一个标签可以属于多个标签组。一个标签组包含多个标签
+CREATE TABLE `TagGroup` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id` (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-```java
-Stock.find(
-"where stockCode = :code", "7277"
-);
-```
+--博客和标签的关联表。存有 博客id和标签id
+CREATE TABLE `BlogTag` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `tag_id` int(11) DEFAULT NULL,
+  `object_id` int(11) DEFAULT NULL,
+  `created_at` bigint(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-但是这并不是最好的方式
-
-最佳的方式是
-
-```java
-Stock.where("stockCode=:code",map("code","7277")).fetch();
-```
-
-那他是如何替代Criteria呢？假设有个status属性是需要根据用户提交来确定是否添加的，那么代码如下
-
-
-```java
-JPQL query = Stock.where("stockCode=:code",map("code","7277"));
-
-if(status!=null){
-query.where("status=:status",map("status",status));
-}
-
-if(limit!=0){
-query.limit(limit);
-}
-
-List<Stock> result = query.fetch();
-```
-
-我们可以看出如下几个优势：
-
-1. 天然按照sql 语句的不同结构进行拆分，比如where,join,limit,query等
-2. 可以非常方便的进行hql拼接。你可以多次调用where.默认关系为 'and'
-3. 强制使用命名参数
-4. 通过语法使得查询变得异常简洁。假如我想找到stockCode为“7277”。那么就是天然的
-
-```java
-Stock.where("stockCode=:code",map("code","7277"));
-```
-而不是每次重复类似下面的代码
-
-```java
-Query query = session.createQuery("from Stock where stockCode = :code ");
-query.setParameter("code", "7277");
+--标签近义词组。一个标签只可能属于一个标签近义词
+CREATE TABLE `TagSynonym` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ```
 
 
-Java ORM框架的关联关系配置也是非常的不友好。
-一个较为完整的ManyToMany配置
+对应的类文件:
 
-```java
-
-@Entity
-@Table(name="EMPLOYEE")
-public class Employee {
-@ManyToMany(cascade = {CascadeType.ALL})
-@JoinTable(name="EMPLOYEE_MEETING",
-joinColumns={@JoinColumn(name="EMPLOYEE_ID")},
-inverseJoinColumns={@JoinColumn(name="MEETING_ID")})
-private Set<Meeting> meetings = new HashSet<Meeting>();
-}
-// Meeting Entity
-
-@Entity
-@Table(name="MEETING")
-public class Meeting {
-@ManyToMany(mappedBy="meetings")
-private Set<Employee> employees = new HashSet<Employee>();
-}
 ```
-
-非常的复杂，你要配置主控端(通过mappedBy),你还要配置关联表，在ServiceFramework中，这一切都是不必要的。
-
-
-```java
+/**
+ * User: WilliamZhu
+ * Date: 12-7-23
+ * Time: 下午4:52
+ */
 @Entity
 public class Tag extends Model {
-@ManyToMany
-private List<TagGroup> tag_groups = list();
+    @Validate
+    private final static Map $name = map(
+    presence, map("message", "{}字段不能为空"),
+    uniqueness, map("message", "{}字段不能重复")
+    );
+
+    @OneToMany
+    private List<BlogTag> blog_tags = list();
+
+    @ManyToMany
+    private List<TagGroup> tag_groups = list();
+}
+
+
+@Entity
+public class BlogTag extends Model {
+
+    @ManyToOne
+    private Tag tag;
 }
 
 @Entity
 public class TagGroup extends Model {
+    @ManyToMany
+    private List<Tag> tags = list();
+}
+
+@Entity
+public class TagSynonym extends Model {
+    @OneToMany
+    private List<Tag> tags = list();
+}
+
+
+```
+
+初看模型，你可能会惊讶于代码之少，关联配置之简单。是的，上面就是我们对模型类所有的配置了。甚至，连属性都没有，但是就是这些代码实现了非常多的事情。哈哈，那让我们
+一步一步来看ServiceFrame是如何为你带来这些魔法的。
+
+模型关系介绍:
+
+1. TagGroup 和 Tag是多对多关系
+2. Tag和BlogTag是一对多关系。
+3. TagSynonym 和Tag 是多对一关系
+
+建立模型类只需要三步:
+
+1. 继承 Model 基类
+2. 添加 Entity 注解
+3. 声明集合属性时需要初始化它
+
+ServiceFramework 为你提供了大量便利方法。比如建立map/list
+
+```
+Map newMap = map();
+Map newMap2 = map("key1","value1","key2","value2")
+List newList = list();
+List newList2 = list("value1","value2","value3");
+```
+所以集合初始化的时候也变得很简洁，比如示例代码中
+
+```
 @ManyToMany
 private List<Tag> tags = list();
+```
+
+### 表和模型之间的映射关系
+前面的例子可以看到，我们不需要进行任何表和模型之间的映射配置。当然，你也可以使用标准的JPA进行配置。
+但是我们强烈建议你使用默认的命名约定。这些规则包括：
+
+1. 表名和类名相同
+2. 外键名称 = 属性名+"_id"
+3. 属性名 = 小写 加 下划线的形式。比如示例中的 tag_groups 等。 这和传统java会有些区别。这主要是为了数据库字段和Model属性名保持一致。如果你使用"tagGroups"这种传统的驼峰命名方式，,那么数据库中的字段名就会很丑陋了。遵循现在的方式你会发现这是相当便利的一种方式。
+4. 根据语义区分单复数形式 
+
+***关于主键ID***    
+ServiceFramework 强烈推荐使用自增id,名称为id,并且为interge类型。这可以省掉很多麻烦。
+
+
+### 模型属性
+
+Model类会自动根据数据库获取信息。
+比如Tag 含有一个name 属性，可以这样获取它。
+
+```
+String name = tag.attr("name",String.class);
+```
+将其赋值为jack 则为:
+
+```
+tag.attr("name","jack");
+```
+
+当然你也可以手动定义这些属性，这不会带来任何问题，而且可以获取IDE工具的代码提示。
+
+### 关联关系
+
+关联关系可以做两件事情:
+
+1. 告诉框架模型(表)之间的外键关系
+2. 可以方便的级联保存，更新操作
+
+***WARNING***: 关联关系不应该用来查询。比如 你不应该通过 tag.getBlogTags()获取相关的BlogTag.即使是blogTag.getTag() 这样获取一个对象也不行。在后续的文档中你会看到一个可控性更好，不需要你具有任何ORM知识，规范的查询方式。
+
+ServiceFramework 支持标准的三种种关系。
+
+* OneToOne
+* OneToMany
+* ManyToMany
+
+在ServiceFramework中，所有关系都是双向的。当然，你不必担心这些，你了解这些细节固然好，但是
+不了解也没有关系。你只要按照直觉通过四个注解声明模型类的关系即可。
+
+
+给一个***已经存在的***同义词组添加一个同义词，我们可以这样做:
+
+```
+ tagSynonym.associate("tags").add(Tag.create(map("name","i am tag "));
+```
+这个时候会创建一个tag并且设置好与TagSynonym的关系。相应的
+
+```
+tagSynonym.associate("tags").remove(tag);
+```
+
+可以将同义词组和标签解除关系。当然，这并不会删除tag在数据库里的记录。而只是吧他们之间的关系抹除了
+
+我们可以看到 “tags“  就是我们定义在TagSynonym 中的一个属性。ServiceFramework默认会为
+这种集合映射属性添加一个同名的方法，并且返回Association。
+
+类似于:
+
+```
+public Association tags(){throw new AutoGeneration();}
+```
+
+associate 只是帮你调用这些看不到的方法。
+为了获得IDE提示的好处，
+你可以把上面那段代码写进你的模型类中。ServiceFramework会去实现里面具体的细节。
+
+```
+@Entity
+public class TagSynonym extends Model {
+    @OneToMany
+    private List<Tag> tags = list();
+    public Association tags(){throw new AutoGeneration();}
 }
 ```
 
-第一，ServiceFramework 会根据类名组合 TagGroup_Tag 或者 Tag_TagGroup 来找到中间表。
+现在假设我们要获取一个同义词组所有的d>10的tag，我们可以这么做
 
-第二，关联表的外键属性，ServiceFramework 会尝试拿属性名+"_id"的方式。所以在中间表中，分别是 tags_id 和 tag_groups_id 两个字段。
-
-通过上面的方式就将JoinTable等注解去掉了。
-
-第三 ServiceFramework 中关联关系天然是双向的。ServiceFramework会随机挑选一个类配置mappedBy作为被控端。同理ManyToOne(或者OneToMany)则主控端为多的一方。这些事情ServiceFramework都会为你做掉。
-
-传统的解除多对多双向关系，你必须这样：
-
-```java
-tag_group.getTags().remove(tag);
-tag.getTag_groups().remove(tag_group);
 ```
+List<Tag> tags = tagSynonym.tags().where("id>10").fetch(); 
+```
+当然，你依然可以写成
 
-而ServiceFramework则极大的简化了这类关系的操作。
+```
+List<Tag> tags = tagSynonym.associate("tags").where("id>10").fetch(); 
+```
+结果是一样的。对于这种只是为了代码提示而创建的方法，我们推荐方法内部 填充 'throw new AutoGeneration()'来标记它会被框架自动实现。虽然，即使它不存在，系统也会创建它。
 
-```java
-tag_group.associate("tags").remove(tag);
+经过上面的例子可以看出模型的关联关系可以给我们带来很多便利。这包括从表单获取多个model进行级联保存。
+
+WARNNING: 集合属性的名称都会有一个同名的方法。这个方法名会被框架保留使用。所以，不要用这个名称来定义对你来说有其他用处的方法。
+
+### 查询接口
+
+ServiceFramework 提供了一套便利，规范，高效，且拥有部分HQL对象特色的查询功能。如果你熟悉Rails框架，那么你便能看到ServiceFramework 借鉴了他那套优秀的 "Query Interface"。
+
+为了高效，规范化的操作数据库, ServiceFramework 提供了众多的查询方法. 每个查询方法允许你传递参数执行特定的查询而不需要你写令人烦躁的sql语句。
+
+方法列表:
+
+* where
+* select
+* group
+* order
+* limit
+* offset
+* joins
+* from
+
+以后我们会继续完善。添加更多方法，譬如 lock,having等。
+
+从这些关键字可以看出，这些方法基本是以Sql关键字为基础的。所有这些方法最终返回的是JPQL对象(ServiceFramework内部组装sql语句的一个类)。
+
+1.1 根据ID获得对象
+
+```
+Tag.findById(10)
 //或者
-tag.associate("tag_groups").remove(tag_group);
+Tag.find(10)
 ```
-即可。同理你可以添加关系。同样的规则适合 一对多 的情况。
+1.2 根据多个ID获取
 
-对于sessionFilter,标准的hibernate 写法是:
-
-```java
-Query filterQuery = session.createFilter(tag_group.getTags(), "where this.name like 'S%'");
 ```
-
-ServiceFramework 则更加直观
-
-```java
-tag_group.associate("tags").where("name like 'S%'"));
+Tag.find(list(1,2,,4,5))
 ```
+1.3 条件查询
 
-最为有意思的是，你可以定义tags方法，内部你可以任意实现。我们要的只是这个方法签名。
-
-```java
-@Entity
-public class TagGroup extends Model {
-@ManyToMany
-private List<Tag> tags = list();
-
-public Association tags(){
-throw  new AutoGeneration()
-}
-}
 ```
-
-接着你可以这样调用上面的例子：
-
-
-```java
-tag_group.tags().where("name like 'S%'"));
+Tag.where("id=:id",map("id",7)).fetch();
 ```
+map 是一个创建Map的一个便利方法。
 
-浑然天成，对吗？
+你也可以使用一个更复杂的例子:
 
-其实上面的移除关系之类的操作也可以用这个方法签名。
+```
+Tag.where("tag_synonym=:tag_synonym",map("tag_synonym",tag_synonym));
+```
+还记得之前提到的，对象关联关系的建立，可以方便框架进行一些对象化的操作。在Tag中tag_synonym是一个对象属性，你可以直接在where中使用该属性。
+他会转为为类似:
 
-```java
-tag_group.tags().remove(tag);
+```
+select * from Tag where tag_synonym_id=? 
+```
+因为对象关联模型告诉了系统那个是外键。这不会带来任何性能方面的损耗。
+
+1.4 order
+
+```
+Tag.order("id desc")
+```
+或者
+
+```
+Tag.order("id desc,name asc")
 ```
 
+1.5 joins
 
+joins 语法也是对象化的，这也得益于我们之前简单的模型关系声明。你所操作的就是相应的模型属性。不管简单属性还是对象属性。
 
-此外 ServiceFramework 还提供了更加灵活的回调，比如：
-
-```java
-@AfterUpdate
-public void afterUpdate() {
-findService(RedisClient.class).expire(this.id().toString());
-BlogTag.create(map("object_id", 19)).save();
-}
+```
+Tag.joins("tag_synonym").fetch();
 ```
 
-你可以在对象更新后接着进行其他数据库操作，或者获取Service进行缓存清除操作。就这个例子而言你可以很方便的实现对象缓存。
+那么 tag对象的tag_synonym 属性会自动得到填充。这不会有n+1问题。因为一条SQL语句就搞定了
 
-校验器，对了，更简单，只是一个声明即可：
+你也可以join多个属性
 
-```java
+```
+Tag.joins("tag_synonym left join fetch tag_groups left join blog_tags").fetch();
+```
+当然，对于互联网应用，这么多join毫无疑问会拖垮你的数据库。我们只是举个例子，你不应该这么做。
+
+1.6 offset,limit
+
+```
+Tag.offset(10).limit(15);
+//这相当于
+select * from Tag limit 10,15;
+```
+
+1.7 select 
+
+这通常用于你不想获取所有的字段的场合
+
+```
+ List<Object[]> results =Tag.select("name").fetch();
+```
+
+这通常返回是一个数组。当然，如果你想让它填充进一个模型也是可以的。
+
+```
+ List<Tag> results =Tag.select("new Tag(name)").fetch();
+```
+需要注意的是，你需要在Tag填充一个相应的构造方法。希望不久就能去掉这个限制。嗯，应该尽力去掉。
+
+1.8 group
+说实话，真不应该提供这个，性能杀手。不过还是提供了….
+
+```
+Tag.where("id>10").group("name").fetch();
+```
+
+###Name_Scope
+假设tag需要审核。只有审核通过的才应该被查询出来。如果每次查询的时候都要加这个条件岂不是
+太麻烦？我们可以定义一个方法：
+
+```
 @Entity
 public class Tag extends Model {
+    public static JPQL active(){
+      return where("status=1");
+    }
+}
+```
+
+之后你就可以这么用了
+
+```
+Tag.active().where("id>10").join("tag_groups").offset(0).limit(15).fetch();
+```
+
+
+### 模型方法
+
+在ServiceFramework中。一旦你定义了模型类，那么该模型类会自动拥有众多的方法。一些静态方法:
+
+  Tag.create(map)
+	Tag.deleteAll()
+	Tag.count()
+	Tag.count(String query, Object... params)
+	Tag.findAll()
+	Tag.findById(Object id)
+	Tag.all() 
+	Tag.delete(String query, Object... params)
+	
+	Tag.where(String whereCondition, Object... params)
+	Tag.join(String join)
+	Tag.order(String order)
+	Tag.offset(int offset)
+	Tag.limit(int limit)
+	Tag.select(String select)
+	
+一些实例方法
+
+    tag.save()
+	tag.valid()
+	tag.update()
+	tag.refresh()
+	tag.delete()
+	
+ServiceFramework还会为你生成很多你看不见的"模型实例方法"。你需要特定语法去调用他。这里使用"m" 方法。
+这主要针对关联关系。
+对于类似这种申明:
+
+```
+@ManyToMany
+private List<Tag> tags = new ArrayList<Tag>();
+```
+那么你能获得tags方法。
+
+```
+tagGroup.m("tags",Tag.create(map("name","jack")));
+```
+这段代码的含义是，调用tags方法，该方法接受tag实例作为参数。实际上tags方法等价于下面的方法(只是你看不到这个方法，但是能通过"m”调用他)
+
+```
+  public TagGroup tags(Tag tag){
+       this.tags.add(tag);
+       tag.getTag_groups().add(this);
+       return this;
+  }
+```
+配置了关联关系的字段都会自动生成一个同名的方法，通过调用他们，会自动将对象之间的关联关系设置好，从而可以直接使用包括级联保存等ORM特性。
+
+
+
+###Validator
+
+ServiceFramework提供了声明式的validator语法。
+
+```
 @Validate
-private final static Map $name = map(
-presence, map("message", "{}字段不能为空"),
-uniqueness, map("message", "{}字段不能重复"));
+    private final static Map $name = map(
+         presence, map("message", "{}字段不能为空"),
+         uniqueness, map("message", "{}字段不能重复")
+    );
 
+```
+
+验证器:
+
+* presence  值不能为null或者空
+* uniqueness 值具有唯一性
+* numericality 是数字，且可以设置范围
+* format  正则
+* associated  关联对象验证
+* length 长度校验
+
+你会发现valiator具有以下几个特点:
+
+1. 想成validator的必要条件是，声明为 private final static 添加 @Validate 注解，并且字段名以$开始 。通常，@Validate注解只是让你知道，这个字段是验证器。否则你可能会对这种以$开头的字段感到疑惑。
+2. validator 是一个Map类型的字段
+3. $name 中的name 为需要验证的字段名。这里 我们要求Tag中的name不能为空，并且需要具有唯一性。
+
+你可以显式调用一个模型的valid()方法。你也可以直接调用save()方法。该方法返回boolean.false代表没有通过验证。
+验证结果你可以通过直接使用模型的validateResults属性获取。
+
+```
+ if(!tag.save()){
+   render(HTTP_400,tag.validateResults);
+ }
+ 
+ //或者
+ 
+ if(tag.valid()){
+   tag.save();
+ }
+```
+
+对于save方法，你也可以跳过验证
+
+```
+tag.save(false)
+```
+参数 false 表示不需要验证就进行保存。
+
+1.1 prensence
+
+
+```
 @Validate
-private final static Map $associated = map(associated, list("blog_tags"));
+private final static Map $name = map(presence, map("message", "{}字段不能为空"));
+
+```
+
+1.2 uniqueness
+
+```
+@Validate
+private final static Map $name = map(uniqueness, map("message", ""));
+```
+
+1.3 numericality
+
+```
+@Validate
+private final static Map $id = map(numericality, map("greater_than",10,"message":""));
+```
+拥有的选项为:
+
+* greater_than
+* greater_than_or_equal_to
+* equal_to
+* less_than
+* less_than_or_equal_to
+* odd
+* even
+
+1.4 length
+
+```
+@Validate
+private final static Map $name = map(length, map("minimum",10));
+```
+拥有的选项:
+
+* minimum
+* maximum
+* too_short
+* too_long
+
+###回调
+
+ServiceFramework中，你可以使用标准的JPA回调注解。但是我们依然希望你使用我们替你增强过的回调
+
+* @BeforeSave
+* @AfterSave
+* @BeforeUpdate
+* @AfterUpdate
+* @BeforeDestory
+* @AfterLoad
+
+```
+@Entity
+public class Tag extends Model {
+    @AfterUpdate
+    public void afterUpdate() {
+        findService(RedisClient.class).expire(this.id().toString());
+    }
+```
+需要注意的是，接受注解的方法必须没有参数。
+ServiceFramework 任何一个模型类都能通过findService 方法获得有用的Service,Util服务。例子中
+当更新一个对象的时候，我们就让redis缓存中的对象过期。
+
+在回调中你依然可调用模型类进行持久化操作。但是需要注意的是 
+
+1. 不能对本身进行相关的持久化，更新操作。但是可以进行查询动作。
+2. 回调函数被包装在一个事务中，执行完后会被立即提交
+
+
+```
+@Entity
+public class Tag extends Model {
+    @AfterUpdate
+    public void afterUpdate() {
+        BlogTag.create(map("object_id",10)).save();
+    }
+```
+
+我们期望的是你能定义在模型内。但是如果你想给所有模型方法共用的话，你可以通过类的声明方式。
+
+```
+@Entity
+@EntityListeners(UpdateCallback.class)
+public class Tag extends Model {
+```
+
+相应的类为:
+
+```
+class UpdateCallback{
+   @AfterUpdate
+    public void afterUpdate() {
+        findService(RedisClient.class).expire(this.id().toString());
+    }
 }
 ```
 
-总之，ServiceFramework 在一下几个方面进行了简化：
 
-1. 属性声明。你不需要显示显式声明普通属性和设置get/set方法。
-2. 极度简化了关联关系配置
-3. 使得关联关系操作真的好用了。也让你敢用了。
-4. 完善简洁的声明式校验器
-5. 增强并且简单的回调操作。
+其实，从上面的介绍可以看出，ServiceFramework的Model层是真正富领域模型。关于数据库大部分逻辑操作都应该定义在model层。
+当然，Service层依然是需要的。DAO层则被完全摒弃了。通常我们建议，对model调用
+可以直接在controller中。而Service则提供其他服务，譬如远程调用，复杂的逻辑判断。当然，
+我们完全赞同在Service里调用model。这样对事物也具有较好的控制。
+
+### 模型类的单元测试
+
+一个简答的示例如下:
+
+```
+public class TagTest extends IocTest {
 
 
-##对Controller层封装的思考
+   @Test
+    public void associationJPQLTest() {
+        setUpTagAndTagSynonymData();
 
-PHP之类的函数式编程语言(当然，从5.0开始也是面向对象了)有一个很大的优点，就是你按流程调用一定数量的函数，基本就能把逻辑走下来。Java一直缺乏这方面的觉悟。比如一个 isEmpty判断，你要么自己写个工具类，要嘛调用StringUtils(apache commons里)的。
-总之不方便，天哪，为啥不能直接这么用，在你写代码的时候，你只是习惯性的调用isEmpty,然后你惊奇的发现框架已经给你提供好了，无需任何包的导入!
+        TagSynonym tagSynonym = TagSynonym.where("name=:name", map("name", "java")).single_fetch();
+        List<Tag> tags = tagSynonym.associate("tags").where("name=:name", map("name", "tag_1")).limit(1).fetch();
+        assertTrue(tags.size() == 1);
 
-```java
-if (!isEmpty(param("channelIds"))) {
-…..
+        tearDownTagAndTagSynonymData();
+    }
+   
 }
 ```
-所以，一个用起来清爽的Controller应该是，你一旦继承了父类，就能够从父类获得大量的有用的方法，比如join,isEmpty,map,list等。
-我甚至在想，我们应该实现一套PHP的函数库放到ApplicationController中。继承了它，你就获得了一个函数库。
 
-这个，随着ServiceFramework的进一步开发，会有更多函数加入。当然我希望有一天能够实现php的函数库，这可以作为一个目标。
+你可以继承IocTest以获取必要的测试框架支持。当然，如果你希望测试是clean的也可以不继承它。
 
+ServiceFramework  强烈建议：
 
-### 方便的参数获取
-目前Java的框架提供了各种获取参数的方式。
+***测试要么全部运行，要不都不运行***
 
-最传统的是:
+这意味着目前你没法只运行一个测试单元。你必须运行所有测试集。
+为此，ServiceFramework在test目录下提供了DynamicSuiteRunner 类。
+你可以直接使用支持JUnit的IDE或者通过脚本运行该类即可。该类会自动运行所有配置文件指定package下的所有的测试类。
+  
+这种方式带来的一个额外好处是，他可以保证你做的任何修改不至于让别人的或者自己写的其他测试奔溃。如果你有机会只运行自己的测试，估计没有多少人会主动去运行所有的测试。在那种情况下，测试就没有意义了。
 
-```java
-String abc= request.getParameter("abc");
+## Controller
+
+下面是一个典型的ServiceFramework Controller.
+
 ```
 
-先进点的通过参数，比如SpringMVC 就是通过这种方式进行的。
+public class TagController extends ApplicationController {
 
-```java
-public class TagAdminController extends ApplicationController {
+    @BeforeFilter
+    private final static Map $checkParam = map(only, list("save", "search"));
+    @BeforeFilter
+    private final static Map $findTag = map(only, list("addTagToTagGroup", "deleteTagToTagGroup","createBlogTag"));
 
-public void action1(@param("abc") String abc){
+
+    @AroundFilter
+    private final static Map $print_action_execute_time2 = map();
+
+   
+    @At(path = "/tag_group/create", types = POST)
+    public void createTagGroup() {
+        TagGroup tagGroup = TagGroup.create(params());
+        if (!tagGroup.save()) {
+            render(HTTP_400, tagGroup.validateResults);
+        }
+        render(OK);
+    }
+
+
+    @At(path = "/tag_group/tag", types = {PUT, POST})
+    public void addTagToTagGroup() {
+        TagGroup tagGroup = TagGroup.findById(paramAsInt("id"));
+        tagGroup.associate("tags").add(tag);
+        render(OK);
+    }
+
+    @At(path = "/tag_group/tag", types = {DELETE})
+    public void deleteTagToTagGroup() {
+        TagGroup tagGroup = TagGroup.findById(paramAsInt("id"));
+        tagGroup.associate("tags").remove(tag);
+        tagGroup.save();
+        render(OK);
+    }
+
+
+    @At(path = "/{tag}/blog_tags", types = PUT)
+    public void createBlogTag() {
+        tag.associate("blog_tags").add(BlogTag.create(map("object_id", paramAsInt("object_id"))));
+        render(OK);
+    }
+
+
+   
+    @At(path = "/doc/{type}/insert", types = POST)
+    public void save() {
+
+        for (String tagStr : tags) {
+            Model model = (Model) invoke_model(param("type"), "create", selectMapWithAliasName(paramAsJSON("jsonData"), "id", "object_id", "created_at", "created_at"));
+            model.m("tag", Tag.create(map("name", tagStr)));
+            if (!model.save()) {
+                render(HTTP_400, model.validateResults);
+            }
+        }
+        render(OK);
+    }
+
+    @Inject
+    private RemoteDataService remoteDataService;
+
+    
+    @At(path = "/doc/{type}/search", types = GET)
+    public void search() {
+
+        Set<String> newTags = Tag.synonym(param("tags"));
+
+
+        JPQL query = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags, ",", "'") + ")");
+
+        if (!isEmpty(param("channelIds"))) {
+            String channelIds = join(param("channelIds").split(","), ",", "'");
+            query.where("channel_id in (" + channelIds + ")");
+        }
+
+        if (!isEmpty(param("blockedTagsNames"))) {
+            String blockedTagsNames = join(param("blockedTagsNames").split(","), ",", "'");
+            String abc = "select object_id from " + param("type") + " where  tag.name in (" + blockedTagsNames + ")";
+            query.where("object_id not in (" + abc + ")");
+        }
+
+        long count = query.count_fetch("count(distinct object_id ) as count");
+
+        if (!isEmpty("orderFields")) {
+            query.order(order());
+        }
+
+        List<Model> models = query.offset(paramAsInt("start", 0)).limit(paramAsInt("size", 15)).fetch();
+
+        // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetchObjectIds(models));
+
+        render(map("total", count, "data", map()));
+    }
+
+
+    private String[] tags;
+
+    private void checkParam() {
+        tags = param("tags", " ").split(",");
+        if (tags.length == 0) {
+            render(HTTP_400, format(FAIL, "必须传递标签"));
+        }
+    }
+
+    private Tag tag;
+
+    private void findTag() {
+        tag = Tag.where("name=:name", map("name", param("tag"))).single_fetch();
+        if (tag == null) {
+            render(HTTP_400, format(FAIL, "必须传递tag参数"));
+        }
+    }
+
+    private String fetchObjectIds(List<Model> models) {
+        List<Integer> ids = new ArrayList<Integer>(models.size());
+        for (Model model : models) {
+            ids.add(model.attr("object_id", Integer.class));
+        }
+        return join(ids, ",");
+    }
+
+    private String order() {
+        String[] orderFields = param("orderFields").split(",");
+        String[] orderFieldsDescAsc = param("orderFieldsDescAsc", "").split(",");
+        List<String> temp = new ArrayList<String>();
+        int i = 0;
+        for (String str : orderFields) {
+            if (orderFieldsDescAsc.length < i) {
+                temp.add(str + " " + orderFieldsDescAsc[i]);
+            } else {
+                temp.add(str + " " + "desc");
+            }
+
+        }
+        return join(temp, ",");
+    }
+
+    private Object invoke_model(String type, String method, Object... params) {
+        return ReflectHelper.method(const_model_get(type), method, params);
+    }
+    
+     private void print_action_execute_time2(RestController.WowAroundFilter wowAroundFilter) {
+        long time1 = System.currentTimeMillis();
+
+        wowAroundFilter.invoke();
+        logger.info("execute time2:[" + (System.currentTimeMillis() - time1) + "]");
+
+    }
+
+
 }
+```
+这个类有点长，主要是为了较为全面的展示Controller的使用，希望不要引起你的不适。
+我们再来分析ServiceFramework的controller有什么特点。
+
+1. 成为Controller的必要条件是继承 ApplicationController
+2. 类似Model验证器，你可以以相似的方式添加过滤器
+3. 通过At配置路径以及接受的Http 请求方式
+4. 所有其他的Service或者Util推荐采用使用IOC容器管理。譬如例子里的RemoteDataService
+5. filter只是一个简单的私有方法。如果申明在ApplicationController。那么对所有controller有效
+
+
+###过滤器
+
+ServiceFramework 目前支持两种过滤器
+
+1. BeforeFilter 前置过滤器
+2. AroundFilter 环绕过滤器
+
+如同示例，过滤的器声明非常简单
+
+* private,final static 三个修饰符
+* 过滤器 @BeforeFilter 或者 @AroundFilter 注解声明
+
+
 
 ```
-
-好处是非常便于单元测试。
-
-当然还有通过实例变量，以及定义一个Pojo类然后通过一定机制接受参数。
-
-我们来分析下上面的缺点：
-
-* 第一种毫无疑问，一塌糊涂。引入了Servlet API.
-* 第二种 在参数很多的情况下会疯掉。而且很多人会引入一个复杂的对象接受参数，这就是第二种方式和后面的Pojo接受参数方法的杂交。
-
-* 通过实例变量则更加愚蠢，到头来会在Controller中一大堆你都不知道用来干嘛的实例变量。
-
-* 通过Pojo来接受参数也太复杂了吧？是不是我只有一个参数也需要构建一个Pojo模型？
-
-其实深入一点，接受参数无非就是为了构造查询条件或者将其存入持久层。
-构造查询条件很简单，如果这样子你能觉得合理吗？
-
-```java
-Tag.find("name=:name",map("name",params("name")));
-```
-这我们只是为了获得name 这个参数，最直观的方式就是有个方法传入name这个key,就能获得用户传来的name.最简单，最直观。
-
-ServiceFramework 采用了 params函数。他还有很多变种，方便类型转换，比如
-
-```java
-int id = paramsAsInt("id");
+  @BeforeFilter
+    private final static Map $checkParam = map(only, list("save", "search"));
 ```
 
-那么对于数据存入呢？如何方便的构造一个模型？
+filter是声明在一个map属性上的。map 接受两个属性，only,except。如果没有这两个属性，那么表示过滤当前Controller中所有Action。
+属性依然以$开头，后面的属性名其实是一个方法的名称。比如你会发现在上面的controller中确实包含一个checkParam 方法。
 
-```java
-Tag tag = Tag.create(params());
+例子的含义是，只有save,search两个Action方法在调用前会先调用checkParam。
+
+Controller是多线程安全的。这意味着，你可以安全的使用实例变量。示例中"addTagToTagGroup", "deleteTagFromoTagGroup","createBlogTag" 三个Action在调用前都需要事先获得tag对象。你可以使用findTag过滤器先填充 tag实例变量。如果用户没有传递tag名，就可以在过滤器中直接告诉用户参数问题。
+
+需要注意的一点是，BeforeFilter 比 AroundFilter 运行的更早。Filter 也可以调用render 方法，进行结果输出。
+
+###路径配置
+
+路径配置使用的也是注解配置。
+
+```
+@At(path = "/tag_group/tag", types = {PUT, POST})
 ```
 
-create 方式是任何模型类都具有的一个方法。不需要用户自己实现。
-params() 返回一个键值对，类似
+@At注解接受两个参数，path 和 types
 
-```java
-request.getParameterMap();
+path 代表请求路径。 types则是表示接受的请求方法的,默认是GET.
+
+path 支持占位符，比如:
+
+```
+@At(path = "/{tag}/blog_tags", types = PUT)
+```
+tag这个值会被自动填充到请求对象中。你可以通过 param("tag")获取。
+
+
+#### request 参数获取
+
+在ServiceFramework 中 提供了一个非常便利的获取request参数的方式。不管是form表单,get请求，还是url中的数据，都可以统一通过param() 方法获取。
+
+```
+int id = paramAsInt("id");
+//或者
+String id = param("id");
 ```
 
-然后模型类会根据键值对填充模型类。安全方面则由模型类的验证器负责。
+比如这就可以获取 id 参数，并且将其转换为int类型。
+如果你确认传递过来的是json或者xml格式，你可以调用下面的方式
 
-对于名称匹配的问题，比如：
-用户传递过来的是tag_name,但是模型类中的字段名是name.这个时候是函数库起作用的时候了。仍然以
-上面的tag为例子。
-
-```java
-Tag tag = Tag.create(selectMapWithAliasName(params(),"tag_name","name"));
 ```
-selectMapWithAliasName会将tag_name 替换成name.其他不变。并且，selectMapWithAliasName是继承ApplicationController后就直接可用的。这也是我一直强调的函数库的好处。
+JSON obj = paramAsJSON();
+//或者
+JSON obj = paramsAsXML();
+```
+其中,xml文本的数据会自动转化json格式,便与操作。
 
-并且通过params方法获取参数的方式也非常方便单元测试，没有和Server进行任何耦合。params()只不过是调用父类的一个map的get方法而已。所以测试时你只要实现填充该map即可。
+ServiceFramework 尽量让事情简单而方便。
+
+方法列表:
+
+```
+params()
+param(key)
+param(key,defaultValue)
+paramAsInt(key)
+paramAsLong(key)
+paramAsFloat(key)
+//还有更多….
+```
 
 
+#### 渲染输出
 
-Controller 基本设计目标是：
+所有渲染输出统一使用render 方法。
 
-1. 便利的url 组织。Rest的风格声明
-2. 方便的过滤器，比如前置，环绕和后置过滤器。
-3. 声明式的Service，Util引入。
-4. 线程安全
-5. 渲染要能方便的指定HttpStatus,指定输出格式。
-6. 大量的函数可用。
+普通文本输出
 
-看看ServiceFramework是如何实现这些既定目标的。
+```
+render("hello word");
+```
 
-一个典型的示例如下：
+如果传入的是对象，会自动呗转化为json格式
 
-```java
-public class TagAdminController extends ApplicationController {
+```
+render(tag);
+```
 
-//过滤器声明
-@BeforeFilter
-private final static Map $find_tag = map(only, list("add_tag_to_tag_group", "destroy_tag","destroy_tag_from_tag_group"));
+你可以手动指定输出格式
 
-@AroundFilter
-private final static Map $print_action_execute_time2 = map(only, list("search"));
+```
+render(tag,ViewType.xml);
+```
 
-//Service 引入
+你还可以指定输出的http状态码
+
+```
+render(HTTP_200,tag,ViewType.xml);
+```
+
+render 方法也可以在过滤器中使用。一旦调用render方法后，就会自动跳过action调用。
+
+```
+@At(path = "/tag_group/create", types = POST)
+    public void createTagGroup() {
+        TagGroup tagGroup = TagGroup.create(params());
+        if (!tagGroup.save()) {
+            render(HTTP_400, tagGroup.validateResults);
+        }
+        render(OK);
+    }
+```
+
+在上面的示例代码中，你无需render之后再调用return 语句。
+
+
+###ServiceFramework
+
+```
 @Inject
-private TagService tagService;
-
-//一个请求
-@At(path = "/tag_group", types = POST)
-public void create_tag_group() {
-TagGroup tagGroup = TagGroup.create(params());
-if (!tagGroup.save()) {
-render(HTTP_400, tagGroup.validateResults);
-}
-render(ok());
-}
-
-//环形过滤器实现
-private void print_action_execute_time2(RestController.WowAroundFilter aroundFilter) {
-long time1 = System.currentTimeMillis();
-aroundFilter.invoke();
-logger.info("time:[" + (System.currentTimeMillis() - time1) + "]");
-
-}
-}
+private RemoteDataService remoteDataService;
 ```
-这一段代码实现的功能包括：
 
-* 对 add_tag_to_tag_group等三个Action方法添加前置过滤器，过滤器也是一个函数，find_tag.
-* 环形过滤器实现了调用时间打印
-* @At 可方便的配置路径
-* 每个Action调用都会实例化一个TagAdminController 从而实现线程安全。
-* 渲染的话只有一个简单的render方法。如果错误，可指定 HTTP_400 状态值
-* Service服务可以通过声明实例变量的方式引入。
+之后你就可以在Action中直接使用remoteDataService了。
 
-如果你希望某个过滤器全局生效，你可以放到ApplicationController中。
+#### Controller提供的便利的方法集
 
+在controller中，你天然会获取大量有用的工具方法。比如 isEmpty，字符串join。比如
 
+```
+JPQL query = (JPQL) invoke_model(param("type"), "where", "tag.name in (" + join(newTags, ",", "'") + ")");
+```
 
+## 配置文件
 
-## 项目组织的思考
-ServiceFramewrok 天然分为四部分:
+ServiceFramework 所有的配置文件位于config目录下。其实只有两个配置文件，一个application.yml,
+一个logging.yml.分别配置应用和日志。
 
-* controller
-* service
-* util
-* model
+一个完整的application.yml
 
-我们的目标是给你一个最佳的实践来组织你的项目结构。让你不用烦心代码应该如何放置。
-你可以在配置文件配置他们的位置。典型配置为:
+```
+#mode
+mode:
+  development
+#mode=production
 
-```yaml
+###############datasource config##################
+#mysql,mongodb,redis等数据源配置方式
+development:
+    datasources:
+        mysql:
+           host: 127.0.0.1
+           port: 3306
+           database: tag_engine
+           username: tag
+           password: tag
+        mongodb:
+           host: 127.0.0.1
+           port: 27017
+           database: tag_engine
+        redis:
+            host: 127.0.0.1
+            port: 6379
+
+production:
+    datasources:
+        mysql:
+           host: 127.0.0.1
+           port: 3306
+           database: tag_engine
+           username: tag
+           password: tag
+        mongodb:
+           host: 127.0.0.1
+           port: 27017
+           database: tag_engine
+        redis:
+            host: 127.0.0.1
+            port: 6379
+
+orm:
+    show_sql: true
+    pool_min_size: 5
+    pool_max_size: 10
+    timeout: 300
+    max_statements: 50
+    idle_test_period: 3000
 ###############application config##################
 application:
-controller: com.example.controller
-model:      com.example.model
-service:    com.example.service
-util:       com.example.util
+    controller: com.example.controller
+    model:      com.example.model
+    service:    com.example.service
+    util:       com.example.util
+    test:       test.com.example
+
+
+###############http config##################
+http:
+    port: 9400
+
+
+
+###############validator config##################
+#如果需要添加验证器，只要配置好类全名即可
+#替换验证器实现，则替换相应的类名即可
+#warning: 自定义验证器实现需要线程安全
+
+validator:
+   format:        net.csdn.validate.impl.Format
+   numericality:  net.csdn.validate.impl.Numericality
+   presence:      net.csdn.validate.impl.Presence
+   uniqueness:    net.csdn.validate.impl.Uniqueness
+   length:        net.csdn.validate.impl.Length
+   associated:    net.csdn.validate.impl.Associated
+
+################ 数据库类型映射 ####################
+type_mapping:  net.csdn.jpa.type.impl.MysqlType
 
 ```
 
-同时这样也获得另外一个好处，框架可以为根据你的类的不同作用进行相应的代码增强。便于你获得更多的可用功能
+对于数据库等的配置是区分开发或者生产环境的
 
-我们希望通过这种组织方式使得项目天然获得规范化，而不是不同的额程序员开发而导致项目的结构五花八门。
-
-
-
-##总结
-
-上面我们只是讨论了Model,Controller的设计问题。其实还有Service和Util的设计问题。这个应该通过IOC来处理。至于静态资源文件则不在讨论方位之内。
-
-
-
+里面有个join 方法。表示将newTags集合的元素以","进行分割，并且用"'"wrap起来组成一个字符串。
