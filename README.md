@@ -185,10 +185,11 @@ public class TagSynonym extends Model {
 
 ```
 
-初看模型，你可能会惊讶于代码之少，关联配置之简单。是的，上面就是我们对模型类所有的配置了。甚至，连属性都没有，但是就是这些代码已经可以满足你80%的需求了。哈哈，那让我们
+初看模型，你可能会惊讶于代码之少，关联配置之简单。是的，上面就是我们对模型类所有的配置了。你不需要显示声明属性和设置get/set方法，
+但是就是这些代码已经可以满足你80%的需求了。哈哈，那让我们
 一步一步来看ServiceFrame是如何为你带来这些魔法的。
 
-模型关系介绍:
+我们先介绍一下示例中模型的关系:
 
 1. TagGroup 和 Tag是多对多关系
 2. Tag和BlogTag是一对多关系。
@@ -216,27 +217,27 @@ private List<Tag> tags = list();
 ```
 
 ### 表和模型之间的映射关系
-前面的例子可以看到，我们不需要进行任何表和模型之间的映射配置。当然，你也可以使用标准的JPA进行配置。
-但是我们强烈建议你使用默认的命名约定。这些规则包括：
+前面的例子可以看到，我们不需要进行任何表和模型之间的映射配置。这依赖于默认的命名约定。这些规则包括：
 
 1. 表名和类名相同
 2. 外键名称 = 属性名+"_id"
 3. 属性名 = 小写 加 下划线的形式。比如示例中的 tag_groups 等。 这和传统java会有些区别。这主要是为了数据库字段和Model属性名保持一致。如果你使用"tagGroups"这种传统的驼峰命名方式，,那么数据库中的字段名就会很丑陋了。遵循现在的方式你会发现这是相当便利的一种方式。
 4. 根据语义区分单复数形式 
-
-***关于主键ID***    
-ServiceFramework 强烈推荐使用自增id,名称为id,并且为interge类型。这可以省掉很多麻烦。
+5.强烈推荐使用自增id,名称为id,并且为interge类型。这可以省掉很多麻烦
 
 
 ### 模型属性
 
-Model类会自动根据数据库获取信息。
-比如Tag 含有一个name 属性，可以这样获取它。
+Model类会自动根据数据库获取信息。所以你无需在Model中定义大量的属性。ServiceFramework会根据数据库表信息
+自动生成这些字段。
+
+假设Tag 含有一个name 属性，可以这样获取它。
 
 ```java
+Tag tag = Tag.find(17);
 String name = tag.attr("name",String.class);
 ```
-将其赋值为jack 则为:
+赋值的话可以这么做:
 
 ```java
 tag.attr("name","jack");
@@ -262,21 +263,33 @@ ServiceFramework 支持标准的三种种关系。
 在ServiceFramework中，所有关系都是双向的。当然，你不必担心这些，你了解这些细节固然好，但是
 不了解也没有关系。你只要按照直觉通过四个注解声明模型类的关系即可。
 
-
-给一个***已经存在的***同义词组添加一个同义词，我们可以这样做:
-
-```java
- tagSynonym.associate("tags").add(Tag.create(map("name","i am tag "));
-```
-这个时候会创建一个tag并且设置好与TagSynonym的关系。相应的
+通常的ORM框架，比如Hibernate,进行关系操作是比较复杂的。比如多对多关系，如果你添加一个关系，你需要
+这样做:
 
 ```java
-tagSynonym.associate("tags").remove(tag);
+tagGroup.getTags().add(tag);
+tag.getTagGroups.add(tagGroup);
+tag.save();
 ```
 
-可以将同义词组和标签解除关系。当然，这并不会删除tag在数据库里的记录。而只是吧他们之间的关系抹除了
+另外你可能还需要小心主控端。因为某些情况只有对主控端持久化，才会将关联关系(外键)设置好。
 
-我们可以看到 “tags“  就是我们定义在TagSynonym 中的一个属性。ServiceFramework默认会为
+但是在ServiceFramework 你完全不用担心什么主控端什么的额。对于刚才的示例，ServiceFramework可以这样：
+
+
+```java
+ tagGroup.associate("tags").add(tag);
+```
+这个时候tag与tagGroup的关系就已经建立在中间表了。相应的
+
+```java
+ tagGroup.associate("tags").remove(tag);
+```
+
+会删除中间表相关的记录。
+你也可以用 将tagGroup添加到tag的tagGroups中。效果是一样的。这说明你不需要区分主控端。
+
+另外，上面的associate的参数 “tags“  就是我们定义在TagGroup 中的一个属性。ServiceFramework默认会为
 这种集合映射属性添加一个同名的方法，并且返回Association。
 
 类似于:
