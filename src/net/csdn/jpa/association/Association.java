@@ -140,6 +140,12 @@ public class Association {
                 object.attr(field, Collection.class).add(targetObject);
                 targetObject.attr(targetField, object);
             }
+
+            if (type.equals("javax.persistence.OneToOne")) {
+                object.attr(field, targetObject);
+                targetObject.attr(targetField, object);
+            }
+
             if (type.equals("javax.persistence.ManyToOne")) {
                 object.attr(field, targetObject);
                 targetObject.attr(targetField, Collection.class).add(object);

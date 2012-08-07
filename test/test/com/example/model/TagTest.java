@@ -1,9 +1,6 @@
 package test.com.example.model;
 
-import com.example.model.BlogTag;
-import com.example.model.Tag;
-import com.example.model.TagGroup;
-import com.example.model.TagSynonym;
+import com.example.model.*;
 import net.csdn.junit.IocTest;
 import net.csdn.reflect.ReflectHelper;
 import org.junit.Test;
@@ -21,14 +18,26 @@ import static org.junit.Assert.assertTrue;
 public class TagTest extends IocTest {
 
     @Test
+    public void testOneToOne() {
+        Tag tag = Tag.create(map("name", "java"));
+        TagWiki tagWiki = TagWiki.create(map("content", "我是java说明"));
+        tag.associate("tag_wiki").add(tagWiki);
+        tag.save();
+        dbCommit();
+        assertTrue(tagWiki.attr("tag", Tag.class) != null);
+
+        Tag.deleteAll();
+        TagWiki.deleteAll();
+
+    }
+
+    @Test
     public void testFormatValidate() {
 
         setUpTagAndTagSynonymData();
-        System.out.println("begin:---------");
         TagSynonym tagSynonym = TagSynonym.where("name=:name", map("name", "java")).single_fetch();
         List<Tag> list = (List<Tag>) ReflectHelper.method(tagSynonym, "getTags");
         System.out.println(list.size());
-        System.out.print("end:---------");
 
         tearDownTagAndTagSynonymData();
 
@@ -51,7 +60,6 @@ public class TagTest extends IocTest {
         Tag.delete("name='java'");
         BlogTag.delete("object_id=10");
     }
-
 
 
     @Test

@@ -60,6 +60,51 @@ public class InstanceMethodEnhancer implements BitEnhancer {
         for (CtField ctField : fields) {
 
 
+            if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.OneToOne")) {
+                DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
+                Map<String, String> columns = dbInfo.tableColumns.get(ctClass.getSimpleName());
+                String clzzName = findAssociatedClassName(ctField);
+                CtField mappedByField = findAssociatedField(ctClass, clzzName);
+                if (!columns.containsKey(ctField.getName() + "_id")) {
+                    setMappedBy(ctField, mappedByField.getName(), "OneToOne");
+
+                } else {
+                    setMappedBy(mappedByField, mappedByField.getName(), "OneToOne");
+
+                }
+                setCascad(mappedByField, "OneToOne");
+                setCascad(ctField, "OneToOne");
+
+                String mappedByClassName = clzzName;
+                String mappedByFieldName = mappedByField.getName();
+
+                findAndRemoveMethod(ctClass, ctField, mappedByClassName);
+                findAndRemoveMethod(ctClass, ctField.getName());
+
+
+                CtMethod wow = CtMethod.make(
+                        format("public net.csdn.jpa.association.Association {}() {" +
+                                "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
+                                "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.OneToOne"
+                        )
+                        ,
+                        ctClass);
+                ctClass.addMethod(wow);
+
+
+                CtMethod wow2 = CtMethod.make(
+                        format("public {} {}({} obj) {" +
+                                "        this.attr(\"{}\",obj);" +
+                                "        obj.attr(\"{}\",this);" +
+                                "        return this;" +
+                                "    }", ctClass.getName(), ctField.getName(), mappedByClassName, ctField.getName(),mappedByFieldName
+                        )
+                        ,
+                        ctClass);
+                ctClass.addMethod(wow2);
+
+            }
+
             if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.OneToMany")) {
 
 

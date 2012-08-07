@@ -4,10 +4,7 @@ import net.csdn.annotation.jpa.callback.AfterSave;
 import net.csdn.annotation.validate.Validate;
 import net.csdn.jpa.model.Model;
 
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +26,9 @@ public class Tag extends Model {
     @Validate
     private final static Map $associated = map(associated, list("blog_tags"));
 
+
+    @OneToOne
+    private TagWiki tag_wiki;
 
     @ManyToOne
     private TagSynonym tag_synonym;
