@@ -86,16 +86,25 @@ git clone https://github.com/service_framework/service_framework.git service_fra
 	
 </tbody></table>
 
+##如何运行测试
 项目src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
 在test 目录中 test.com.example 有example项目的测试代码。
 你可以在IDE环境运行 test 根目录下的
 
 DynamicSuiteRunner 文件。
 
-如果你要启动HttpServer
+## 如何启动应用。
 
-你可以运行 net.csdn.bootstrap.Application
+你可以在IDE运行 net.csdn.bootstrap.Application .
+当然你也可以写一个类继承它。然后运行这个新的类。
 
+如果你不希望使用IDE.你可以直接进入项目，然后运行:
+
+```shell
+./bin/run.sh start
+```
+
+默认开启9400端口。你可以修改config/application.yml文件修改端口。
 接着可以通过curl 进行测试访问。
 
 ## Model 
