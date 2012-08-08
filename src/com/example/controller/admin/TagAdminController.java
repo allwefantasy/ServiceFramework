@@ -36,8 +36,11 @@ public class TagAdminController extends ApplicationController {
         if (!tagGroup.save()) {
             render(HTTP_400, tagGroup.validateResults);
         }
+
         render(ok());
     }
+
+
 
     @At(path = "/tag_group", types = DELETE)
     public void destroy_tag_group() {

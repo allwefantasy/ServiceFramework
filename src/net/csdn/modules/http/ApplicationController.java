@@ -76,6 +76,19 @@ public abstract class ApplicationController {
     }
 
 
+    public class OutPutConfig extends JsonConfig {
+        private boolean pretty = false;
+
+        public boolean isPretty() {
+            return pretty;
+        }
+
+        public void setPretty(boolean pretty) {
+            this.pretty = pretty;
+        }
+    }
+
+
     public void render(String content, ViewType viewType) {
         restResponse.originContent(content);
         restResponse.write(content, viewType);
@@ -91,13 +104,18 @@ public abstract class ApplicationController {
 
 
     public String toJson(Object obj) {
-        return _toJson(obj).toString();
+        if (config.isPretty()) {
+            return _toJson(obj).toString(2);
+        }
+        return obj.toString();
     }
+
+    protected OutPutConfig config = new OutPutConfig();
 
     public JSON _toJson(Object obj) {
         JsonConfig config = new JsonConfig();
         config.setIgnoreDefaultExcludes(false);
-        config.setCycleDetectionStrategy(CycleDetectionStrategy.NOPROP);
+        config.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);
         config.registerJsonValueProcessor(Date.class, new DateJsonValueProcessor());
         if (obj instanceof Collection) {
             return JSONArray.fromObject(obj, config);

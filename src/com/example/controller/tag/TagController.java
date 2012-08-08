@@ -96,8 +96,10 @@ public class TagController extends ApplicationController {
 
         List<Model> models = query.offset(paramAsInt("start", 0)).limit(paramAsInt("size", 15)).fetch();
 
+        //设置json输出
+        config.setExcludes(new String[]{"blog_tags"});
+        config.setPretty(true);
         // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetch_object_ids(models));
-
         render(map("total", count, "data", models));
     }
 

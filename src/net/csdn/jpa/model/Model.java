@@ -145,6 +145,9 @@ public class Model extends JPABase {
         throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
     }
 
+    public static void transaction(){
+
+    }
 
     public static class JPAQuery {
 
