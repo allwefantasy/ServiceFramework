@@ -14,7 +14,8 @@ ServcieFramework 定位在 **移动互联网后端** 领域。
 
 框架提供了对mysql,mongodb,redis的支持
 
-如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于在一个全新的项目中使用它。相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
+如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于在一个全新的项目中使用它。
+相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
 
 现在让我们了解下 ServiceFramework 吧。
 
@@ -89,13 +90,21 @@ git clone https://github.com/service_framework/service_framework.git service_fra
 ##如何运行测试
 项目src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
 在test 目录中 test.com.example 有example项目的测试代码。
-你可以在IDE环境运行 test 根目录下的
+test 根目录下的有个文件叫
 
-DynamicSuiteRunner 文件。
+```java
+DynamicSuiteRunner 
+```
+
+你可以在IDE中启动它来运行整个测试集。
 
 ## 如何启动应用。
 
-你可以在IDE运行 net.csdn.bootstrap.Application .
+你可以在IDE运行
+
+```java
+net.csdn.bootstrap.Application 
+```
 当然你也可以写一个类继承它。然后运行这个新的类。
 
 如果你不希望使用IDE.你可以直接进入项目，然后运行:
@@ -104,7 +113,7 @@ DynamicSuiteRunner 文件。
 ./bin/run.sh start
 ```
 
-默认开启9400端口。你可以修改config/application.yml文件修改端口。
+默认开启9400端口。你可以修改config/application.yml文件来改变端口。
 接着可以通过curl 进行测试访问。
 
 ## Model 
@@ -228,9 +237,12 @@ private List<Tag> tags = list();
 ### 表和模型之间的映射关系
 前面的例子可以看到，我们不需要进行任何表和模型之间的映射配置。这依赖于默认的命名约定。这些规则包括：
 
-1. 表名和类名相同
-2. 外键名称 = 属性名+"_id"
-3. 属性名 = 小写 加 下划线的形式。比如示例中的 tag_groups 等。 这和传统java会有些区别。这主要是为了数据库字段和Model属性名保持一致。如果你使用"tagGroups"这种传统的驼峰命名方式，,那么数据库中的字段名就会很丑陋了。遵循现在的方式你会发现这是相当便利的一种方式。
+1. 表名和类名相同。比如Tag 在数据库相应的表明也为 Tag
+2. 外键名称 = 属性名+"_id".
+3. 属性名 = 小写 加 下划线的形式。比如示例中的 tag_groups 等。 这和java的传统命名会有些区别。
+这主要是为了数据库字段和Model属性名保持一致。如果你使用"tagGroups"这种传统的驼峰命名方式,
+那么数据库中的字段名就会很丑陋了。遵循现在的方式你会发现这是相当便利的一种方式。
+
 4. 根据语义区分单复数形式 
 5.强烈推荐使用自增id,名称为id,并且为interge类型。这可以省掉很多麻烦
 
@@ -298,7 +310,13 @@ tag.save();
 会删除中间表相关的记录。
 你也可以用 将tagGroup添加到tag的tagGroups中。效果是一样的。这说明你不需要区分主控端。
 
-另外，上面的associate的参数 “tags“  就是我们定义在TagGroup 中的一个属性。ServiceFramework默认会为
+上面我们举的是多对多的例子，实际上也适用于一对多和一对一的关系。
+
+常见的应用场景是，当你创建一个tag的时候，你需要把它添加到一个已经存在的tagGroup中。
+上面的关联关系就可以帮上忙了。
+
+
+associate方法的参数 “tags“  就是我们定义在TagGroup 中的一个属性。ServiceFramework默认会为
 这种集合映射属性添加一个同名的方法，并且返回Association。
 
 类似于:
@@ -335,6 +353,56 @@ List<Tag> tags = tagSynonym.associate("tags").where("id>10").fetch();
 经过上面的例子可以看出模型的关联关系可以给我们带来很多便利。这包括从表单获取多个model进行级联保存。
 
 WARNNING: 集合属性的名称都会有一个同名的方法。这个方法名会被框架保留使用。所以，不要用这个名称来定义对你来说有其他用处的方法。
+
+
+###表单和模型类
+
+通常表单需要填充模型类。这就和Controller层扯上了关系。为了不使得后面的例子让你困惑，
+我们先提一点Controller的预备知识。
+
+ServiceFramework Contoller层获取参数的方式是通过params()函数。
+
+比如:
+
+```java
+   String name = param("name");
+```
+
+如果不传递key值。那么
+
+```
+ Map params = params();
+```
+
+这类似于
+
+```
+ Map params = request.getParamsAsMap();
+```
+
+好。Controller我们就讲到这。
+
+假设我们要创建一个tag
+
+```
+Tag tag = Tag.create(params());
+```
+
+每个模型类默认就会有一个接受map对象的create静态方法。该类会利用map自动填充模型类。
+
+另外，参数支持子对象属性填充。
+假设 Tag 有个属性是 tag_wiki的对象属性，你想同时填充它，传参可以这样：
+
+```
+name=java&tag_wiki.name=这真的是一个java标签
+```
+目前ServiceFramework支持两级填充，这意味着
+
+```
+tag_wiki.tag_info.name 
+```
+这种形式是不被支持的。
+
 
 ### 查询接口
 
