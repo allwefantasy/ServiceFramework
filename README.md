@@ -365,7 +365,7 @@ ServiceFramework Contoller层获取参数的方式是通过params()函数。
 比如:
 
 ```java
-   String name = param("name");
+   String name = params("name");
 ```
 
 如果不传递key值。那么
@@ -592,10 +592,40 @@ tagGroup.m("tags",Tag.create(map("name","jack")));
 配置了关联关系的字段都会自动生成一个同名的方法，通过调用他们，会自动将对象之间的关联关系设置好，从而可以直接使用包括级联保存等ORM特性。
 
 
+关于查询，我们强烈建议你使用这一套优美的Query Interface。
 
-###Validator
+但是复杂的查询依然是有的。这属于%20的不常见需求。
 
-ServiceFramework提供了声明式的validator语法。
+但是ServiceFramework 依然提供了原生sql的支持。
+
+这个时候你需要MysqlClient对象。我们提供两种方式引用该类。
+
+1 通过声明注入的方式(IOC)。适用在Controller层或者Service层使用。
+2 直接在Model层可以通过nativeSqlClient()方法获取MysqlClient对象
+
+MysqlClient 提供的常用接口:
+
+```java
+
+//查询
+public List<Map> query(String sql, Object... params) ；
+public Map single_query(String sql, Object... params) ；
+
+//批量插入或者更新
+public void executeBatch(String sql, BatchSqlCallback callback) 
+```
+
+值得注意的是，任何一个Model类都提供了 
+
+```java
+List<Map> findBySql(String sql,Object...params)
+```
+方法。方便你直接使用Sql查询。
+
+
+###Validator(模型校验器)
+
+ServiceFramework提供了声明式的validator
 
 ```java
 @Validate
