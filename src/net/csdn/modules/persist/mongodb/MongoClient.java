@@ -29,7 +29,6 @@ public class MongoClient {
         dbName = settings.get("mongo.database", "csdn_data_center");
         try {
             this.mongo = new Mongo(settings.get("mongo.host", "127.0.0.1"), settings.getAsInt("mongo.port", 27017));
-
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }

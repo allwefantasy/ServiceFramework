@@ -24,9 +24,8 @@ pre code {
 }
 </style>
 
-#ServiceFramework 开发日志
+#ServiceFramework
 
-##为啥要开发这个玩意
 
 09年的时候做了一个类似于"原创音乐基地"的音乐类网站。用的是SSH2开发的。当时没用好，代码臃肿，速度缓慢。这给我印象非常深刻。2010年接触了Rails，见识了开发速度,和印象中的SSH2形成了鲜明的对比，后来一直从事搜索方面的开发，对Web类应用便接触的少了。
 12年06月因为内部一个项目，让我重新开始对Java Web框架进行了思考。
@@ -413,6 +412,45 @@ Tag tag = Tag.create(selectMapWithAliasName(params(),"tag_name","name"));
 selectMapWithAliasName会将tag_name 替换成name.其他不变。并且，selectMapWithAliasName是继承ApplicationController后就直接可用的。这也是我一直强调的函数库的好处。
 
 并且通过params方法获取参数的方式也非常方便单元测试，没有和Server进行任何耦合。params()只不过是调用父类的一个map的get方法而已。所以测试时你只要实现填充该map即可。
+
+###方便的拦截器
+
+struts的过滤器配置就是误入歧途。为了添加一个过滤器，你需要做以下几件事情：
+
+1. 定义一个拦截器类
+2. 接着将其配置到struts.xml文件中
+3. 接着还要将这个拦截器放到你想拦截的action配置中
+
+神那，搞什么…. 一个拦截器而已….
+
+还有一种普遍的需求是，几个Action方法调用前都要获取一个对象A，然后这个对象在action中接着用。这个时候struts的机制就有点为难了。
+在我看来，拦截器也是可以在使用普通的方法和声明来实现的。比如同一个类里
+
+```
+class C
+{
+   @BeforeFilter
+   private final static Map $b = map(only, list("a","c"));
+   
+   public void a(){
+   }
+   
+   public void c(){
+   }
+   
+   public void d(){
+   }
+   
+   private void b(){
+   }
+}
+```
+   @BeforeFilter 声明，当执行a,c方法的时候，先调用b方法。我们可以看到，拦截器就是一个简单的私有方法。通过@BeforeFilter 声明拦截
+   那些方法。把这些被拦截的方法升级为action的时候，这个私有的b方法就是一个纯种的拦截器了。
+   
+   对于跨controller的拦截器，你可以定义在父类。其实就是把b移动到父类上即可。
+   
+   是否非常简单呢？而且能解决我之前提到的对象共享的问题。
 
 
 

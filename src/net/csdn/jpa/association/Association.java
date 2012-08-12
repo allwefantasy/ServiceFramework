@@ -154,7 +154,8 @@ public class Association {
                 object.attr(field, Collection.class).add(targetObject);
                 targetObject.attr(targetField, Collection.class).add(object);
             }
-            object.save();
+            //object.save();
+            targetObject.save();
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -22,6 +22,11 @@ public class Model extends JPABase {
         return ServiceFramwork.injector.getInstance(MysqlClient.class).query(sql, params);
     }
 
+    public static MysqlClient nativeSqlClient() {
+        //TODO:竟然在这里使用了  ServiceFramwork.injector 疯掉了....  去掉，去掉....
+        return ServiceFramwork.injector.getInstance(MysqlClient.class);
+    }
+
     //----------------------------------------------------------------------------------
 
     public static <T extends JPABase> T find(Integer id) {

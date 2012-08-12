@@ -2,10 +2,12 @@ package test.com.example.model;
 
 import com.example.model.*;
 import net.csdn.junit.IocTest;
+import net.csdn.modules.persist.mysql.MysqlClient;
 import net.csdn.reflect.ReflectHelper;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.map;
 import static org.junit.Assert.assertTrue;
@@ -17,11 +19,36 @@ import static org.junit.Assert.assertTrue;
  */
 public class TagTest extends IocTest {
 
+
+    @Test
+    public void testSqlQuery2() {
+        Tag tag = Tag.create(map("name", "java"));
+        tag.save();
+        dbCommit();
+        List<Map> lists = Tag.findBySql("select * from Tag");
+        assertTrue(lists.size() == 1);
+        Tag.deleteAll();
+
+    }
+
+    @Test
+    public void testSqlQuery() {
+        Tag tag = Tag.create(map("name", "java"));
+        tag.save();
+        dbCommit();
+        MysqlClient mysqlClient = injector.getInstance(MysqlClient.class);
+        List<Map> lists = mysqlClient.query("select * from Tag");
+        assertTrue(lists.size() == 1);
+        Tag.deleteAll();
+
+    }
+
     @Test
     public void testOneToOne() {
+
         Tag tag = Tag.create(map("name", "java"));
         TagWiki tagWiki = TagWiki.create(map("content", "我是java说明"));
-        tag.associate("tag_wiki").add(tagWiki);
+        tag.associate("tag_wiki").set(tagWiki);
         tag.save();
         dbCommit();
         assertTrue(tagWiki.attr("tag", Tag.class) != null);

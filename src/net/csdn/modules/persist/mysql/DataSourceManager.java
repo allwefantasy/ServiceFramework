@@ -35,20 +35,14 @@ public class DataSourceManager {
         return dataSourceMap;
     }
 
-    //only for test
-    public void buildDataSourceMap(String prefix) {
-        dataSourceMap.clear();
-        Map<String, Settings> groups = settings.getGroups(prefix);
-        for (Map.Entry<String, Settings> group : groups.entrySet()) {
-            dataSourceMap.put(group.getKey(), buildPool(group.getValue()));
-        }
-    }
 
     private Map<String, DataSource> buildDataSourceMap() {
         Map<String, DataSource> tempDataSourceMap = new HashMap<String, DataSource>();
-        Map<String, Settings> groups = settings.getGroups("datasources");
+        Map<String, Settings> groups = settings.getGroups("production.datasources");
         for (Map.Entry<String, Settings> group : groups.entrySet()) {
-            tempDataSourceMap.put(group.getKey(), buildPool(group.getValue()));
+            if (group.getKey().equals("mysql")) {
+                tempDataSourceMap.put(group.getKey(), buildPool(group.getValue()));
+            }
         }
         return tempDataSourceMap;
     }
