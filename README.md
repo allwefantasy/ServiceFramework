@@ -365,18 +365,18 @@ ServiceFramework Contoller层获取参数的方式是通过params()函数。
 比如:
 
 ```java
-   String name = params("name");
+   String name = param("name");
 ```
 
 如果不传递key值。那么
 
-```
+```java
  Map params = params();
 ```
 
 这类似于
 
-```
+```java
  Map params = request.getParamsAsMap();
 ```
 
@@ -384,7 +384,7 @@ ServiceFramework Contoller层获取参数的方式是通过params()函数。
 
 假设我们要创建一个tag
 
-```
+```java
 Tag tag = Tag.create(params());
 ```
 
@@ -393,16 +393,23 @@ Tag tag = Tag.create(params());
 另外，参数支持子对象属性填充。
 假设 Tag 有个属性是 tag_wiki的对象属性，你想同时填充它，传参可以这样：
 
-```
+```java
 name=java&tag_wiki.name=这真的是一个java标签
 ```
 目前ServiceFramework支持两级填充，这意味着
 
-```
+```java
 tag_wiki.tag_info.name 
 ```
 这种形式是不被支持的。
 
+form表单和Model类的字段命名会有差别，我们提供了一个简单的方法来解决
+
+```java
+Tag tag = Tag.create(selectMapWithAliasName(params(),"tag_name","name")); 
+```
+
+selectMapWithAliasName会将tag_name 替换成name.其他不变。
 
 ### 查询接口
 
@@ -756,26 +763,6 @@ public class Tag extends Model {
     }
 ```
 
-我们期望的是你能定义在模型内。但是如果你想给所有模型方法共用的话，你可以通过类的声明方式。
-
-```java
-@Entity
-@EntityListeners(UpdateCallback.class)
-public class Tag extends Model {
-```
-
-相应的类为:
-
-```java
-class UpdateCallback{
-   @AfterUpdate
-    public void afterUpdate() {
-        findService(RedisClient.class).expire(this.id().toString());
-    }
-}
-```
-
-
 其实，从上面的介绍可以看出，ServiceFramework的Model层是真正富领域模型。关于数据库大部分逻辑操作都应该定义在model层。
 当然，Service层依然是需要的。DAO层则被完全摒弃了。通常我们建议，对model调用
 可以直接在controller中。而Service则提供其他服务，譬如远程调用，复杂的逻辑判断。当然，
@@ -1109,6 +1096,20 @@ render 方法也可以在过滤器中使用。一旦调用render方法后，就�
 ```
 
 在上面的示例代码中，你无需render之后再调用return 语句。
+
+###Json格式输出控制
+对于json输出的控制是非常有必要，因为某些字段你可能不想展示给用户，不同权限的人可以看到不同的字段，等等，
+你还可能希望某些情况下格式化json，便于阅读。在Controller层，这些很容易实现。
+
+```java
+ //设置json输出,排除字段blog_tags
+ jsonConfig.setExcludes(new String[]{"blog_tags"});
+ //格式化输出json
+ jsonConfig.setPretty(true);
+```
+
+jsonConfig对象来自 父类。本质上就是json-lib 中的JsonConfig。对json控制非常的完善。能够满足大部分输出要求。
+
 
 
 ###ServiceFramework
