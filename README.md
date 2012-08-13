@@ -26,7 +26,7 @@ ServcieFramework 定位在 **移动互联网后端** 领域。
 在终端下赋值黏贴运行该命令:
 
 ```shell
-git clone https://github.com/service_framework/service_framework.git service_framework
+git clone git://github.com/allwefantasy/ServiceFramework.git ServiceFramework
 ```
 此时你就获得一个开箱即用的项目。所有的目录和结构都是规范化的。
 
