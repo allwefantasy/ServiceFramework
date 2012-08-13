@@ -173,11 +173,6 @@ public class RestController {
             this.applicationController = applicationController;
         }
 
-        public boolean shouldInvokeAction() {
-            if (next == null) return true;
-            return false;
-        }
-
         public void invoke() {
             try {
                 WowAroundFilter wowAroundFilter = this.next;

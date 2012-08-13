@@ -5,6 +5,7 @@ import net.csdn.common.Unicode;
 import net.csdn.common.io.Streams;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
+import net.sf.json.util.JSONUtils;
 import org.apache.commons.lang.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
@@ -53,7 +54,7 @@ public class DefaultRestRequest implements RestRequest {
         String wow = contentAsString();
         if (wow == null) return;
         wow = wow.trim();
-        if (wow.startsWith("{|[") && wow.endsWith("}|]")) {
+        if (JSONUtils.mayBeJSON(wow)) {
             //我们猜测是json数据什么都不做
             return;
         }
