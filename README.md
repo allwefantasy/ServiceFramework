@@ -1103,12 +1103,12 @@ render 方法也可以在过滤器中使用。一旦调用render方法后，就�
 
 ```java
  //设置json输出,排除字段blog_tags
- jsonConfig.setExcludes(new String[]{"blog_tags"});
+ config.setExcludes(new String[]{"blog_tags"});
  //格式化输出json
- jsonConfig.setPretty(true);
+ config.setPretty(true);
 ```
 
-jsonConfig对象来自 父类。本质上就是json-lib 中的JsonConfig。对json控制非常的完善。能够满足大部分输出要求。
+config对象来自 父类。本质上就是json-lib 中的JsonConfig。对json控制非常的完善。能够满足大部分输出要求。
 
 
 
