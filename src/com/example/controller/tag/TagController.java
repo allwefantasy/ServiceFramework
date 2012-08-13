@@ -90,7 +90,7 @@ public class TagController extends ApplicationController {
 
         long count = query.count_fetch("count(distinct object_id ) as count");
 
-        if (!isEmpty("orderFields")) {
+        if (!isEmpty(param("orderFields"))) {
             query.order(order());
         }
 
