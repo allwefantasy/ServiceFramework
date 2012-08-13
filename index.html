@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Serviceframework : Java MVC framework, agile, fast, rich domain model, made especially for server side of mobile application (一个敏捷，快速，富领域模型的Java MVC 框架，专为 移动应用后端量身定做)" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Serviceframework</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/allwefantasy/ServiceFramework">View on GitHub</a>
+
+          <h1 id="project_title">Serviceframework</h1>
+          <h2 id="project_tagline">Java MVC framework, agile, fast, rich domain model, made especially for server side of mobile application (一个敏捷，快速，富领域模型的Java MVC 框架，专为 移动应用后端量身定做)</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/allwefantasy/ServiceFramework/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/allwefantasy/ServiceFramework/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>ServiceFramework Wiki</h1>
+
+<h2>创建一个新的ServiceFramework 项目</h2>
+
+<h3>ServiceFramework 适合你吗？</h3>
+
+<p>ServcieFramework 定位在 <strong>移动互联网后端</strong> 领域。
+所以ServcieFramework非常强调开发的高效性，其开发效率可以比肩Rails(不相信？可以体验一下哦)。</p>
+
+<ol>
+<li>拥有Java界最简单，非常高效，且真正的富Model层</li>
+<li>Controller层含有便利的函数库，简洁高效的验证器，过滤器</li>
+<li>简单但实用的View层，天然支持JSON,XMl格式输出</li>
+</ol><p>框架提供了对mysql,mongodb,redis的支持</p>
+
+<p>如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于在一个全新的项目中使用它。
+相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。</p>
+
+<p>现在让我们了解下 ServiceFramework 吧。</p>
+
+<h3>搭起来，跑起来</h3>
+
+<p>在终端下赋值黏贴运行该命令:</p>
+
+<div class="highlight"><pre>git clone https://github.com/service_framework/service_framework.git service_framework
+</pre></div>
+
+<p>此时你就获得一个开箱即用的项目。所有的目录和结构都是规范化的。</p>
+
+<h4>我们先看看目录结构:</h4>
+
+<table>
+<tr>
+<th>文件/目录</th>
+        <th>作用</th>
+    </tr>
+<tr>
+<td>src/</td>
+        <td>包含 controllers, models, views。也就是项目源码的存放地。 在之后的教程中，我们会聚焦于这个目录</td>
+    </tr>
+<tr>
+<td>config/</td>
+        <td>配置文件。整个ServiceFramework只有两个配置文件，分别为application.yml 和logging.yml  更详细的配置介绍参看:<a href="#">配置 ServiceFramework 应用</a>
+</td>
+    </tr>
+<tr>
+<td>bin</td>
+        <td>存放编译，部署，运行脚本</td>
+    </tr>
+<tr>
+<td>sql/</td>
+        <td>项目的数据库结构文件。通常是sql文件</td>
+    </tr>
+<tr>
+<td>doc/</td>
+        <td>项目的文档存放地</td>
+    </tr>
+<tr>
+<td>lib</td>
+        <td>应用本身，以及包括ServiceFramework依赖的jar包都会存放在这里</td>
+    </tr>
+<tr>
+<td>logs/</td>
+        
+        <td>应用程序日志文件</td>
+    </tr>
+<tr>
+<td>script/</td>
+        <td>一些shell脚本之类的</td>
+    </tr>
+<tr>
+<td>client</td>
+        <td>你可以写一些客户端，比如使用某种脚本语言，做数据迁移啥的</td>
+    </tr>
+<tr>
+<td>README.html</td>
+        <td>请对你的项目做一个简要的介绍</td>
+    </tr>
+<tr>
+<td>test/</td>
+        <td>单元测试目录。详细参看:<a href="#">如何测试ServiceFramework应用</a>
+</td>
+    </tr>
+</table><h2>如何运行测试</h2>
+
+<p>项目src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
+在test 目录中 test.com.example 有example项目的测试代码。
+test 根目录下的有个文件叫</p>
+
+<div class="highlight"><pre><span class="n">DynamicSuiteRunner</span> 
+</pre></div>
+
+<p>你可以在IDE中启动它来运行整个测试集。</p>
+
+<h2>如何启动应用。</h2>
+
+<p>你可以在IDE运行</p>
+
+<div class="highlight"><pre><span class="n">net</span><span class="o">.</span><span class="na">csdn</span><span class="o">.</span><span class="na">bootstrap</span><span class="o">.</span><span class="na">Application</span> 
+</pre></div>
+
+<p>当然你也可以写一个类继承它。然后运行这个新的类。</p>
+
+<p>如果你不希望使用IDE.你可以直接进入项目，然后运行:</p>
+
+<div class="highlight"><pre>./bin/run.sh start
+</pre></div>
+
+<p>默认开启9400端口。你可以修改config/application.yml文件来改变端口。
+接着可以通过curl 进行测试访问。</p>
+
+<h2>Model</h2>
+
+<p>这个章节，我们会知道 ServiceFramework 模型层 完整的使用。</p>
+
+<p>首先，建立四张示例表:</p>
+
+<div class="highlight"><pre><span class="c1">--标签表</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">Tag</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="n">id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">name</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">tag_synonym_id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">weight</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span>  <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span>
+
+<span class="c1">--标签组。一个标签可以属于多个标签组。一个标签组包含多个标签</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">TagGroup</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="n">id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">name</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">),</span>
+  <span class="k">UNIQUE</span> <span class="k">KEY</span> <span class="o">`</span><span class="n">id</span><span class="o">`</span> <span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span>  <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span>
+
+<span class="c1">--博客和标签的关联表。存有 博客id和标签id</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">BlogTag</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="n">id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">tag_id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">object_id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">created_at</span><span class="o">`</span> <span class="nb">bigint</span><span class="p">(</span><span class="mi">20</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span> <span class="k">COLLATE</span><span class="o">=</span><span class="n">utf8_unicode_ci</span><span class="p">;</span>
+
+<span class="c1">--标签近义词组。一个标签只可能属于一个标签近义词</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="o">`</span><span class="n">TagSynonym</span><span class="o">`</span> <span class="p">(</span>
+  <span class="o">`</span><span class="n">id</span><span class="o">`</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">AUTO_INCREMENT</span><span class="p">,</span>
+  <span class="o">`</span><span class="n">name</span><span class="o">`</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="k">DEFAULT</span> <span class="k">NULL</span><span class="p">,</span>
+  <span class="k">PRIMARY</span> <span class="k">KEY</span> <span class="p">(</span><span class="o">`</span><span class="n">id</span><span class="o">`</span><span class="p">)</span>
+<span class="p">)</span> <span class="n">ENGINE</span><span class="o">=</span><span class="n">InnoDB</span> <span class="k">DEFAULT</span> <span class="n">CHARSET</span><span class="o">=</span><span class="n">utf8</span><span class="p">;</span>
+</pre></div>
+
+<p>对应的类文件:</p>
+
+<div class="highlight"><pre><span class="cm">/**</span>
+<span class="cm"> * User: WilliamZhu</span>
+<span class="cm"> * Date: 12-7-23</span>
+<span class="cm"> * Time: 下午4:52</span>
+<span class="cm"> */</span>
+<span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Tag</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+    <span class="nd">@Validate</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$name</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span>
+    <span class="n">presence</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"message"</span><span class="o">,</span> <span class="s">"{}字段不能为空"</span><span class="o">),</span>
+    <span class="n">uniqueness</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"message"</span><span class="o">,</span> <span class="s">"{}字段不能重复"</span><span class="o">)</span>
+    <span class="o">);</span>
+
+    <span class="nd">@OneToMany</span>
+    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">BlogTag</span><span class="o">&gt;</span> <span class="n">blog_tags</span> <span class="o">=</span> <span class="n">list</span><span class="o">();</span>
+
+    <span class="nd">@ManyToMany</span>
+    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">TagGroup</span><span class="o">&gt;</span> <span class="n">tag_groups</span> <span class="o">=</span> <span class="n">list</span><span class="o">();</span>
+<span class="o">}</span>
+
+
+<span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BlogTag</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+
+    <span class="nd">@ManyToOne</span>
+    <span class="kd">private</span> <span class="n">Tag</span> <span class="n">tag</span><span class="o">;</span>
+<span class="o">}</span>
+
+<span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TagGroup</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+    <span class="nd">@ManyToMany</span>
+    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">list</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TagSynonym</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+    <span class="nd">@OneToMany</span>
+    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">list</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>初看模型，你可能会惊讶于代码之少，关联配置之简单。是的，上面就是我们对模型类所有的配置了。你不需要显示声明属性和设置get/set方法，
+但是就是这些代码已经可以满足你80%的需求了。哈哈，那让我们
+一步一步来看ServiceFrame是如何为你带来这些魔法的。</p>
+
+<p>我们先介绍一下示例中模型的关系:</p>
+
+<ol>
+<li>TagGroup 和 Tag是多对多关系</li>
+<li>Tag和BlogTag是一对多关系。</li>
+<li>TagSynonym 和Tag 是多对一关系</li>
+</ol><p>建立模型类只需要三步:</p>
+
+<ol>
+<li>继承 Model 基类</li>
+<li>添加 Entity 注解</li>
+<li>声明集合属性时需要初始化它</li>
+</ol><p>ServiceFramework 为你提供了大量便利方法。比如建立map/list</p>
+
+<div class="highlight"><pre><span class="n">Map</span> <span class="n">newMap</span> <span class="o">=</span> <span class="n">map</span><span class="o">();</span>
+<span class="n">Map</span> <span class="n">newMap2</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="s">"key1"</span><span class="o">,</span><span class="s">"value1"</span><span class="o">,</span><span class="s">"key2"</span><span class="o">,</span><span class="s">"value2"</span><span class="o">)</span>
+<span class="n">List</span> <span class="n">newList</span> <span class="o">=</span> <span class="n">list</span><span class="o">();</span>
+<span class="n">List</span> <span class="n">newList2</span> <span class="o">=</span> <span class="n">list</span><span class="o">(</span><span class="s">"value1"</span><span class="o">,</span><span class="s">"value2"</span><span class="o">,</span><span class="s">"value3"</span><span class="o">);</span>
+</pre></div>
+
+<p>所以集合初始化的时候也变得很简洁，比如示例代码中</p>
+
+<div class="highlight"><pre><span class="nd">@ManyToMany</span>
+<span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">list</span><span class="o">();</span>
+</pre></div>
+
+<h3>表和模型之间的映射关系</h3>
+
+<p>前面的例子可以看到，我们不需要进行任何表和模型之间的映射配置。这依赖于默认的命名约定。这些规则包括：</p>
+
+<ol>
+<li>表名和类名相同。比如Tag 在数据库相应的表明也为 Tag</li>
+<li>外键名称 = 属性名+"_id".</li>
+<li><p>属性名 = 小写 加 下划线的形式。比如示例中的 tag_groups 等。 这和java的传统命名会有些区别。
+这主要是为了数据库字段和Model属性名保持一致。如果你使用"tagGroups"这种传统的驼峰命名方式,
+那么数据库中的字段名就会很丑陋了。遵循现在的方式你会发现这是相当便利的一种方式。</p></li>
+<li><p>根据语义区分单复数形式 
+5.强烈推荐使用自增id,名称为id,并且为interge类型。这可以省掉很多麻烦</p></li>
+</ol><h3>模型属性</h3>
+
+<p>Model类会自动根据数据库获取信息。所以你无需在Model中定义大量的属性。ServiceFramework会根据数据库表信息
+自动生成这些字段。</p>
+
+<p>假设Tag 含有一个name 属性，可以这样获取它。</p>
+
+<div class="highlight"><pre><span class="n">Tag</span> <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="na">find</span><span class="o">(</span><span class="mi">17</span><span class="o">);</span>
+<span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">tag</span><span class="o">.</span><span class="na">attr</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span><span class="n">String</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</pre></div>
+
+<p>赋值的话可以这么做:</p>
+
+<div class="highlight"><pre><span class="n">tag</span><span class="o">.</span><span class="na">attr</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span><span class="s">"jack"</span><span class="o">);</span>
+</pre></div>
+
+<p>当然你也可以手动定义这些属性，这不会带来任何问题，而且可以获取IDE工具的代码提示。</p>
+
+<h3>关联关系</h3>
+
+<p>关联关系可以做两件事情:</p>
+
+<ol>
+<li>告诉框架模型(表)之间的外键关系</li>
+<li>可以方便的级联保存，更新操作</li>
+</ol><p><strong><em>WARNING</em></strong>: 关联关系不应该用来查询。比如 你不应该通过 tag.getBlogTags()获取相关的BlogTag.即使是blogTag.getTag() 这样获取一个对象也不行。在后续的文档中你会看到一个可控性更好，不需要你具有任何ORM知识，规范的查询方式。</p>
+
+<p>ServiceFramework 支持标准的三种种关系。</p>
+
+<ul>
+<li>OneToOne</li>
+<li>OneToMany</li>
+<li>ManyToMany</li>
+</ul><p>在ServiceFramework中，所有关系都是双向的。当然，你不必担心这些，你了解这些细节固然好，但是
+不了解也没有关系。你只要按照直觉通过四个注解声明模型类的关系即可。</p>
+
+<p>通常的ORM框架，比如Hibernate,进行关系操作是比较复杂的。比如多对多关系，如果你添加一个关系，你需要
+这样做:</p>
+
+<div class="highlight"><pre><span class="n">tagGroup</span><span class="o">.</span><span class="na">getTags</span><span class="o">().</span><span class="na">add</span><span class="o">(</span><span class="n">tag</span><span class="o">);</span>
+<span class="n">tag</span><span class="o">.</span><span class="na">getTagGroups</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">tagGroup</span><span class="o">);</span>
+<span class="n">tag</span><span class="o">.</span><span class="na">save</span><span class="o">();</span>
+</pre></div>
+
+<p>另外你可能还需要小心主控端。因为某些情况只有对主控端持久化，才会将关联关系(外键)设置好。</p>
+
+<p>但是在ServiceFramework 你完全不用担心什么主控端什么的额。对于刚才的示例，ServiceFramework可以这样：</p>
+
+<div class="highlight"><pre> <span class="n">tagGroup</span><span class="o">.</span><span class="na">associate</span><span class="o">(</span><span class="s">"tags"</span><span class="o">).</span><span class="na">add</span><span class="o">(</span><span class="n">tag</span><span class="o">);</span>
+</pre></div>
+
+<p>这个时候tag与tagGroup的关系就已经建立在中间表了。相应的</p>
+
+<div class="highlight"><pre> <span class="n">tagGroup</span><span class="o">.</span><span class="na">associate</span><span class="o">(</span><span class="s">"tags"</span><span class="o">).</span><span class="na">remove</span><span class="o">(</span><span class="n">tag</span><span class="o">);</span>
+</pre></div>
+
+<p>会删除中间表相关的记录。
+你也可以用 将tagGroup添加到tag的tagGroups中。效果是一样的。这说明你不需要区分主控端。</p>
+
+<p>上面我们举的是多对多的例子，实际上也适用于一对多和一对一的关系。</p>
+
+<p>常见的应用场景是，当你创建一个tag的时候，你需要把它添加到一个已经存在的tagGroup中。
+上面的关联关系就可以帮上忙了。</p>
+
+<p>associate方法的参数 “tags“  就是我们定义在TagGroup 中的一个属性。ServiceFramework默认会为
+这种集合映射属性添加一个同名的方法，并且返回Association。</p>
+
+<p>类似于:</p>
+
+<div class="highlight"><pre><span class="kd">public</span> <span class="n">Association</span> <span class="nf">tags</span><span class="o">(){</span><span class="k">throw</span> <span class="k">new</span> <span class="n">AutoGeneration</span><span class="o">();}</span>
+</pre></div>
+
+<p>associate 只是帮你调用这些看不到的方法。
+为了获得IDE提示的好处，
+你可以把上面那段代码写进你的模型类中。ServiceFramework会去实现里面具体的细节。</p>
+
+<div class="highlight"><pre><span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TagSynonym</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+    <span class="nd">@OneToMany</span>
+    <span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">list</span><span class="o">();</span>
+    <span class="kd">public</span> <span class="n">Association</span> <span class="nf">tags</span><span class="o">(){</span><span class="k">throw</span> <span class="k">new</span> <span class="n">AutoGeneration</span><span class="o">();}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>现在假设我们要获取一个同义词组所有的d&gt;10的tag，我们可以这么做</p>
+
+<div class="highlight"><pre><span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">tagSynonym</span><span class="o">.</span><span class="na">tags</span><span class="o">().</span><span class="na">where</span><span class="o">(</span><span class="s">"id&gt;10"</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span> 
+</pre></div>
+
+<p>当然，你依然可以写成</p>
+
+<div class="highlight"><pre><span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">tagSynonym</span><span class="o">.</span><span class="na">associate</span><span class="o">(</span><span class="s">"tags"</span><span class="o">).</span><span class="na">where</span><span class="o">(</span><span class="s">"id&gt;10"</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span> 
+</pre></div>
+
+<p>结果是一样的。对于这种只是为了代码提示而创建的方法，我们推荐方法内部 填充 'throw new AutoGeneration()'来标记它会被框架自动实现。虽然，即使它不存在，系统也会创建它。</p>
+
+<p>经过上面的例子可以看出模型的关联关系可以给我们带来很多便利。这包括从表单获取多个model进行级联保存。</p>
+
+<p>WARNNING: 集合属性的名称都会有一个同名的方法。这个方法名会被框架保留使用。所以，不要用这个名称来定义对你来说有其他用处的方法。</p>
+
+<h3>表单和模型类</h3>
+
+<p>通常表单需要填充模型类。这就和Controller层扯上了关系。为了不使得后面的例子让你困惑，
+我们先提一点Controller的预备知识。</p>
+
+<p>ServiceFramework Contoller层获取参数的方式是通过params()函数。</p>
+
+<p>比如:</p>
+
+<div class="highlight"><pre>   <span class="n">String</span> <span class="n">name</span> <span class="o">=</span> <span class="n">params</span><span class="o">(</span><span class="s">"name"</span><span class="o">);</span>
+</pre></div>
+
+<p>如果不传递key值。那么</p>
+
+<pre><code> Map params = params();
+</code></pre>
+
+<p>这类似于</p>
+
+<pre><code> Map params = request.getParamsAsMap();
+</code></pre>
+
+<p>好。Controller我们就讲到这。</p>
+
+<p>假设我们要创建一个tag</p>
+
+<pre><code>Tag tag = Tag.create(params());
+</code></pre>
+
+<p>每个模型类默认就会有一个接受map对象的create静态方法。该类会利用map自动填充模型类。</p>
+
+<p>另外，参数支持子对象属性填充。
+假设 Tag 有个属性是 tag_wiki的对象属性，你想同时填充它，传参可以这样：</p>
+
+<pre><code>name=java&amp;tag_wiki.name=这真的是一个java标签
+</code></pre>
+
+<p>目前ServiceFramework支持两级填充，这意味着</p>
+
+<pre><code>tag_wiki.tag_info.name 
+</code></pre>
+
+<p>这种形式是不被支持的。</p>
+
+<h3>查询接口</h3>
+
+<p>ServiceFramework 提供了一套便利，规范，高效，且拥有部分HQL对象特色的查询功能。如果你熟悉Rails框架，那么你便能看到ServiceFramework 借鉴了他那套优秀的 "Query Interface"。</p>
+
+<p>为了高效，规范化的操作数据库, ServiceFramework 提供了众多的查询方法. 每个查询方法允许你传递参数执行特定的查询而不需要你写令人烦躁的sql语句。</p>
+
+<p>方法列表:</p>
+
+<ul>
+<li>where</li>
+<li>select</li>
+<li>group</li>
+<li>order</li>
+<li>limit</li>
+<li>offset</li>
+<li>joins</li>
+<li>from</li>
+</ul><p>以后我们会继续完善。添加更多方法，譬如 lock,having等。</p>
+
+<p>从这些关键字可以看出，这些方法基本是以Sql关键字为基础的。所有这些方法最终返回的是JPQL对象(ServiceFramework内部组装sql语句的一个类)。</p>
+
+<p>1.1 根据ID获得对象</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+<span class="c1">//或者</span>
+<span class="n">Tag</span><span class="o">.</span><span class="na">find</span><span class="o">(</span><span class="mi">10</span><span class="o">)</span>
+</pre></div>
+
+<p>1.2 根据多个ID获取</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">find</span><span class="o">(</span><span class="n">list</span><span class="o">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="o">,,</span><span class="mi">4</span><span class="o">,</span><span class="mi">5</span><span class="o">))</span>
+</pre></div>
+
+<p>1.3 条件查询</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">"id=:id"</span><span class="o">,</span><span class="n">map</span><span class="o">(</span><span class="s">"id"</span><span class="o">,</span><span class="mi">7</span><span class="o">)).</span><span class="na">fetch</span><span class="o">();</span>
+</pre></div>
+
+<p>map 是一个创建Map的一个便利方法。</p>
+
+<p>你也可以使用一个更复杂的例子:</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">"tag_synonym=:tag_synonym"</span><span class="o">,</span><span class="n">map</span><span class="o">(</span><span class="s">"tag_synonym"</span><span class="o">,</span><span class="n">tag_synonym</span><span class="o">));</span>
+</pre></div>
+
+<p>还记得之前提到的，对象关联关系的建立，可以方便框架进行一些对象化的操作。在Tag中tag_synonym是一个对象属性，你可以直接在where中使用该属性。
+他会转为为类似:</p>
+
+<div class="highlight"><pre><span class="n">select</span> <span class="o">*</span> <span class="n">from</span> <span class="n">Tag</span> <span class="n">where</span> <span class="n">tag_synonym_id</span><span class="o">=?</span> 
+</pre></div>
+
+<p>因为对象关联模型告诉了系统那个是外键。这不会带来任何性能方面的损耗。</p>
+
+<p>1.4 order</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">order</span><span class="o">(</span><span class="s">"id desc"</span><span class="o">)</span>
+</pre></div>
+
+<p>或者</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">order</span><span class="o">(</span><span class="s">"id desc,name asc"</span><span class="o">)</span>
+</pre></div>
+
+<p>1.5 joins</p>
+
+<p>joins 语法也是对象化的，这也得益于我们之前简单的模型关系声明。你所操作的就是相应的模型属性。不管简单属性还是对象属性。</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">joins</span><span class="o">(</span><span class="s">"tag_synonym"</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span>
+</pre></div>
+
+<p>那么 tag对象的tag_synonym 属性会自动得到填充。这不会有n+1问题。因为一条SQL语句就搞定了</p>
+
+<p>你也可以join多个属性</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">joins</span><span class="o">(</span><span class="s">"tag_synonym left join  tag_groups left join blog_tags"</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span>
+</pre></div>
+
+<p>当然，对于互联网应用，这么多join毫无疑问会拖垮你的数据库。我们只是举个例子，你不应该这么做。</p>
+
+<p>1.6 offset,limit</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">offset</span><span class="o">(</span><span class="mi">10</span><span class="o">).</span><span class="na">limit</span><span class="o">(</span><span class="mi">15</span><span class="o">);</span>
+<span class="c1">//这相当于</span>
+<span class="n">select</span> <span class="o">*</span> <span class="n">from</span> <span class="n">Tag</span> <span class="n">limit</span> <span class="mi">10</span><span class="o">,</span><span class="mi">15</span><span class="o">;</span>
+</pre></div>
+
+<p>1.7 select </p>
+
+<p>这通常用于你不想获取所有的字段的场合</p>
+
+<div class="highlight"><pre> <span class="n">List</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">[]&gt;</span> <span class="n">results</span> <span class="o">=</span><span class="n">Tag</span><span class="o">.</span><span class="na">select</span><span class="o">(</span><span class="s">"name"</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span>
+</pre></div>
+
+<p>这通常返回是一个数组。当然，如果你想让它填充进一个模型也是可以的。</p>
+
+<div class="highlight"><pre> <span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">results</span> <span class="o">=</span><span class="n">Tag</span><span class="o">.</span><span class="na">select</span><span class="o">(</span><span class="s">"new Tag(name)"</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span>
+</pre></div>
+
+<p>需要注意的是，你需要在Tag填充一个相应的构造方法。希望不久就能去掉这个限制。嗯，应该尽力去掉。</p>
+
+<p>1.8 group
+说实话，真不应该提供这个，性能杀手。不过还是提供了….</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">"id&gt;10"</span><span class="o">).</span><span class="na">group</span><span class="o">(</span><span class="s">"name"</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span>
+</pre></div>
+
+<h3>Name_Scope</h3>
+
+<p>假设tag需要审核。只有审核通过的才应该被查询出来。如果每次查询的时候都要加这个条件岂不是
+太麻烦？我们可以定义一个方法：</p>
+
+<div class="highlight"><pre><span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Tag</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">JPQL</span> <span class="nf">active</span><span class="o">(){</span>
+      <span class="k">return</span> <span class="nf">where</span><span class="o">(</span><span class="s">"status=1"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>之后你就可以这么用了</p>
+
+<div class="highlight"><pre><span class="n">Tag</span><span class="o">.</span><span class="na">active</span><span class="o">().</span><span class="na">where</span><span class="o">(</span><span class="s">"id&gt;10"</span><span class="o">).</span><span class="na">join</span><span class="o">(</span><span class="s">"tag_groups"</span><span class="o">).</span><span class="na">offset</span><span class="o">(</span><span class="mi">0</span><span class="o">).</span><span class="na">limit</span><span class="o">(</span><span class="mi">15</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span>
+</pre></div>
+
+<h3>模型方法</h3>
+
+<p>在ServiceFramework中。一旦你定义了模型类，那么该模型类会自动拥有众多的方法。一些静态方法:</p>
+
+<div class="highlight"><pre>  <span class="n">Tag</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">map</span><span class="o">)</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">deleteAll</span><span class="o">()</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">count</span><span class="o">()</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">count</span><span class="o">(</span><span class="n">String</span> <span class="n">query</span><span class="o">,</span> <span class="n">Object</span><span class="o">...</span> <span class="n">params</span><span class="o">)</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">findAll</span><span class="o">()</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">Object</span> <span class="n">id</span><span class="o">)</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">all</span><span class="o">()</span> 
+    <span class="n">Tag</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">String</span> <span class="n">query</span><span class="o">,</span> <span class="n">Object</span><span class="o">...</span> <span class="n">params</span><span class="o">)</span>
+
+    <span class="n">Tag</span><span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="n">String</span> <span class="n">whereCondition</span><span class="o">,</span> <span class="n">Object</span><span class="o">...</span> <span class="n">params</span><span class="o">)</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">join</span><span class="o">(</span><span class="n">String</span> <span class="n">join</span><span class="o">)</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">order</span><span class="o">(</span><span class="n">String</span> <span class="n">order</span><span class="o">)</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">offset</span><span class="o">(</span><span class="kt">int</span> <span class="n">offset</span><span class="o">)</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">limit</span><span class="o">(</span><span class="kt">int</span> <span class="n">limit</span><span class="o">)</span>
+    <span class="n">Tag</span><span class="o">.</span><span class="na">select</span><span class="o">(</span><span class="n">String</span> <span class="n">select</span><span class="o">)</span>
+</pre></div>
+
+<p>一些实例方法</p>
+
+<div class="highlight"><pre>    <span class="n">tag</span><span class="o">.</span><span class="na">save</span><span class="o">()</span>
+    <span class="n">tag</span><span class="o">.</span><span class="na">valid</span><span class="o">()</span>
+    <span class="n">tag</span><span class="o">.</span><span class="na">update</span><span class="o">()</span>
+    <span class="n">tag</span><span class="o">.</span><span class="na">refresh</span><span class="o">()</span>
+    <span class="n">tag</span><span class="o">.</span><span class="na">delete</span><span class="o">()</span>
+</pre></div>
+
+<p>ServiceFramework还会为你生成很多你看不见的"模型实例方法"。你需要特定语法去调用他。这里使用"m" 方法。
+这主要针对关联关系。
+对于类似这种申明:</p>
+
+<div class="highlight"><pre><span class="nd">@ManyToMany</span>
+<span class="kd">private</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;();</span>
+</pre></div>
+
+<p>那么你能获得tags方法。</p>
+
+<div class="highlight"><pre><span class="n">tagGroup</span><span class="o">.</span><span class="na">m</span><span class="o">(</span><span class="s">"tags"</span><span class="o">,</span><span class="n">Tag</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">map</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span><span class="s">"jack"</span><span class="o">)));</span>
+</pre></div>
+
+<p>这段代码的含义是，调用tags方法，该方法接受tag实例作为参数。实际上tags方法等价于下面的方法(只是你看不到这个方法，但是能通过"m”调用他)</p>
+
+<div class="highlight"><pre>  <span class="kd">public</span> <span class="n">TagGroup</span> <span class="nf">tags</span><span class="o">(</span><span class="n">Tag</span> <span class="n">tag</span><span class="o">){</span>
+       <span class="k">this</span><span class="o">.</span><span class="na">tags</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">tag</span><span class="o">);</span>
+       <span class="n">tag</span><span class="o">.</span><span class="na">getTag_groups</span><span class="o">().</span><span class="na">add</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+       <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+  <span class="o">}</span>
+</pre></div>
+
+<p>配置了关联关系的字段都会自动生成一个同名的方法，通过调用他们，会自动将对象之间的关联关系设置好，从而可以直接使用包括级联保存等ORM特性。</p>
+
+<p>关于查询，我们强烈建议你使用这一套优美的Query Interface。</p>
+
+<p>但是复杂的查询依然是有的。这属于%20的不常见需求。</p>
+
+<p>但是ServiceFramework 依然提供了原生sql的支持。</p>
+
+<p>这个时候你需要MysqlClient对象。我们提供两种方式引用该类。</p>
+
+<p>1 通过声明注入的方式(IOC)。适用在Controller层或者Service层使用。
+2 直接在Model层可以通过nativeSqlClient()方法获取MysqlClient对象</p>
+
+<p>MysqlClient 提供的常用接口:</p>
+
+<div class="highlight"><pre><span class="c1">//查询</span>
+<span class="kd">public</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">&gt;</span> <span class="n">query</span><span class="o">(</span><span class="n">String</span> <span class="n">sql</span><span class="o">,</span> <span class="n">Object</span><span class="o">...</span> <span class="n">params</span><span class="o">)</span> <span class="err">；</span>
+<span class="kd">public</span> <span class="n">Map</span> <span class="nf">single_query</span><span class="o">(</span><span class="n">String</span> <span class="n">sql</span><span class="o">,</span> <span class="n">Object</span><span class="o">...</span> <span class="n">params</span><span class="o">)</span> <span class="err">；</span>
+
+<span class="c1">//批量插入或者更新</span>
+<span class="kd">public</span> <span class="kt">void</span> <span class="nf">executeBatch</span><span class="o">(</span><span class="n">String</span> <span class="n">sql</span><span class="o">,</span> <span class="n">BatchSqlCallback</span> <span class="n">callback</span><span class="o">)</span> 
+</pre></div>
+
+<p>值得注意的是，任何一个Model类都提供了 </p>
+
+<div class="highlight"><pre><span class="n">List</span><span class="o">&lt;</span><span class="n">Map</span><span class="o">&gt;</span> <span class="n">findBySql</span><span class="o">(</span><span class="n">String</span> <span class="n">sql</span><span class="o">,</span><span class="n">Object</span><span class="o">...</span><span class="na">params</span><span class="o">)</span>
+</pre></div>
+
+<p>方法。方便你直接使用Sql查询。</p>
+
+<h3>Validator(模型校验器)</h3>
+
+<p>ServiceFramework提供了声明式的validator</p>
+
+<div class="highlight"><pre><span class="nd">@Validate</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$name</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span>
+         <span class="n">presence</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"message"</span><span class="o">,</span> <span class="s">"{}字段不能为空"</span><span class="o">),</span>
+         <span class="n">uniqueness</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"message"</span><span class="o">,</span> <span class="s">"{}字段不能重复"</span><span class="o">)</span>
+    <span class="o">);</span>
+</pre></div>
+
+<p>验证器:</p>
+
+<ul>
+<li>presence  值不能为null或者空</li>
+<li>uniqueness 值具有唯一性</li>
+<li>numericality 是数字，且可以设置范围</li>
+<li>format  正则</li>
+<li>associated  关联对象验证</li>
+<li>length 长度校验</li>
+</ul><p>你会发现valiator具有以下几个特点:</p>
+
+<ol>
+<li>想成validator的必要条件是，声明为 private final static 添加 @Validate 注解，并且字段名以$开始 。通常，@Validate注解只是让你知道，这个字段是验证器。否则你可能会对这种以$开头的字段感到疑惑。</li>
+<li>validator 是一个Map类型的字段</li>
+<li>$name 中的name 为需要验证的字段名。这里 我们要求Tag中的name不能为空，并且需要具有唯一性。</li>
+</ol><p>你可以显式调用一个模型的valid()方法。你也可以直接调用save()方法。该方法返回boolean.false代表没有通过验证。
+验证结果你可以通过直接使用模型的validateResults属性获取。</p>
+
+<div class="highlight"><pre> <span class="k">if</span><span class="o">(!</span><span class="n">tag</span><span class="o">.</span><span class="na">save</span><span class="o">()){</span>
+   <span class="n">render</span><span class="o">(</span><span class="n">HTTP_400</span><span class="o">,</span><span class="n">tag</span><span class="o">.</span><span class="na">validateResults</span><span class="o">);</span>
+ <span class="o">}</span>
+
+ <span class="c1">//或者</span>
+
+ <span class="k">if</span><span class="o">(</span><span class="n">tag</span><span class="o">.</span><span class="na">valid</span><span class="o">()){</span>
+   <span class="n">tag</span><span class="o">.</span><span class="na">save</span><span class="o">();</span>
+ <span class="o">}</span>
+</pre></div>
+
+<p>对于save方法，你也可以跳过验证</p>
+
+<div class="highlight"><pre><span class="n">tag</span><span class="o">.</span><span class="na">save</span><span class="o">(</span><span class="kc">false</span><span class="o">)</span>
+</pre></div>
+
+<p>参数 false 表示不需要验证就进行保存。</p>
+
+<p>1.1 prensence</p>
+
+<div class="highlight"><pre><span class="nd">@Validate</span>
+<span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$name</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="n">presence</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"message"</span><span class="o">,</span> <span class="s">"{}字段不能为空"</span><span class="o">));</span>
+</pre></div>
+
+<p>1.2 uniqueness</p>
+
+<div class="highlight"><pre><span class="nd">@Validate</span>
+<span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$name</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="n">uniqueness</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"message"</span><span class="o">,</span> <span class="s">""</span><span class="o">));</span>
+</pre></div>
+
+<p>1.3 numericality</p>
+
+<div class="highlight"><pre><span class="nd">@Validate</span>
+<span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$id</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="n">numericality</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"greater_than"</span><span class="o">,</span><span class="mi">10</span><span class="o">,</span><span class="s">"message"</span><span class="o">:</span><span class="s">""</span><span class="o">));</span>
+</pre></div>
+
+<p>拥有的选项为:</p>
+
+<ul>
+<li>greater_than</li>
+<li>greater_than_or_equal_to</li>
+<li>equal_to</li>
+<li>less_than</li>
+<li>less_than_or_equal_to</li>
+<li>odd</li>
+<li>even</li>
+</ul><p>1.4 length</p>
+
+<div class="highlight"><pre><span class="nd">@Validate</span>
+<span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$name</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="n">length</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"minimum"</span><span class="o">,</span><span class="mi">10</span><span class="o">));</span>
+</pre></div>
+
+<p>拥有的选项:</p>
+
+<ul>
+<li>minimum</li>
+<li>maximum</li>
+<li>too_short</li>
+<li>too_long</li>
+</ul><h3>回调</h3>
+
+<p>ServiceFramework中，你可以使用标准的JPA回调注解。但是我们依然希望你使用我们替你增强过的回调</p>
+
+<ul>
+<li>@BeforeSave</li>
+<li>@AfterSave</li>
+<li>@BeforeUpdate</li>
+<li>@AfterUpdate</li>
+<li>@BeforeDestory</li>
+<li>@AfterLoad</li>
+</ul><div class="highlight"><pre><span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Tag</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+    <span class="nd">@AfterUpdate</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">afterUpdate</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">findService</span><span class="o">(</span><span class="n">RedisClient</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">expire</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">().</span><span class="na">toString</span><span class="o">());</span>
+    <span class="o">}</span>
+</pre></div>
+
+<p>需要注意的是，接受注解的方法必须没有参数。
+ServiceFramework 任何一个模型类都能通过findService 方法获得有用的Service,Util服务。例子中
+当更新一个对象的时候，我们就让redis缓存中的对象过期。</p>
+
+<p>在回调中你依然可调用模型类进行持久化操作。但是需要注意的是 </p>
+
+<ol>
+<li>不能对本身进行相关的持久化，更新操作。但是可以进行查询动作。</li>
+<li>回调函数被包装在一个事务中，执行完后会被立即提交</li>
+</ol><div class="highlight"><pre><span class="nd">@Entity</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Tag</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+    <span class="nd">@AfterUpdate</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">afterUpdate</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">BlogTag</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">map</span><span class="o">(</span><span class="s">"object_id"</span><span class="o">,</span><span class="mi">10</span><span class="o">)).</span><span class="na">save</span><span class="o">();</span>
+    <span class="o">}</span>
+</pre></div>
+
+<p>我们期望的是你能定义在模型内。但是如果你想给所有模型方法共用的话，你可以通过类的声明方式。</p>
+
+<div class="highlight"><pre><span class="nd">@Entity</span>
+<span class="nd">@EntityListeners</span><span class="o">(</span><span class="n">UpdateCallback</span><span class="o">.</span><span class="na">class</span><span class="o">)</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Tag</span> <span class="kd">extends</span> <span class="n">Model</span> <span class="o">{</span>
+</pre></div>
+
+<p>相应的类为:</p>
+
+<div class="highlight"><pre><span class="kd">class</span> <span class="nc">UpdateCallback</span><span class="o">{</span>
+   <span class="nd">@AfterUpdate</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">afterUpdate</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">findService</span><span class="o">(</span><span class="n">RedisClient</span><span class="o">.</span><span class="na">class</span><span class="o">).</span><span class="na">expire</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">id</span><span class="o">().</span><span class="na">toString</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+<p>其实，从上面的介绍可以看出，ServiceFramework的Model层是真正富领域模型。关于数据库大部分逻辑操作都应该定义在model层。
+当然，Service层依然是需要的。DAO层则被完全摒弃了。通常我们建议，对model调用
+可以直接在controller中。而Service则提供其他服务，譬如远程调用，复杂的逻辑判断。当然，
+我们完全赞同在Service里调用model。这样对事物也具有较好的控制。</p>
+
+<h3>模型类的单元测试</h3>
+
+<p>一个简答的示例如下:</p>
+
+<div class="highlight"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TagTest</span> <span class="kd">extends</span> <span class="n">IocTest</span> <span class="o">{</span>
+
+
+   <span class="nd">@Test</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">associationJPQLTest</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">setUpTagAndTagSynonymData</span><span class="o">();</span>
+
+        <span class="n">TagSynonym</span> <span class="n">tagSynonym</span> <span class="o">=</span> <span class="n">TagSynonym</span><span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">"name=:name"</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="s">"java"</span><span class="o">)).</span><span class="na">single_fetch</span><span class="o">();</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">Tag</span><span class="o">&gt;</span> <span class="n">tags</span> <span class="o">=</span> <span class="n">tagSynonym</span><span class="o">.</span><span class="na">associate</span><span class="o">(</span><span class="s">"tags"</span><span class="o">).</span><span class="na">where</span><span class="o">(</span><span class="s">"name=:name"</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="s">"tag_1"</span><span class="o">)).</span><span class="na">limit</span><span class="o">(</span><span class="mi">1</span><span class="o">).</span><span class="na">fetch</span><span class="o">();</span>
+        <span class="n">assertTrue</span><span class="o">(</span><span class="n">tags</span><span class="o">.</span><span class="na">size</span><span class="o">()</span> <span class="o">==</span> <span class="mi">1</span><span class="o">);</span>
+
+        <span class="n">tearDownTagAndTagSynonymData</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+
+<p>你可以继承IocTest以获取必要的测试框架支持。当然，如果你希望测试是clean的也可以不继承它。</p>
+
+<p>ServiceFramework  强烈建议：</p>
+
+<p><strong><em>测试要么全部运行，要不都不运行</em></strong></p>
+
+<p>这意味着目前你没法只运行一个测试单元。你必须运行所有测试集。
+为此，ServiceFramework在test目录下提供了DynamicSuiteRunner 类。
+你可以直接使用支持JUnit的IDE或者通过脚本运行该类即可。该类会自动运行所有配置文件指定package下的所有的测试类。</p>
+
+<p>这种方式带来的一个额外好处是，他可以保证你做的任何修改不至于让别人的或者自己写的其他测试奔溃。如果你有机会只运行自己的测试，估计没有多少人会主动去运行所有的测试。在那种情况下，测试就没有意义了。</p>
+
+<h2>Controller</h2>
+
+<p>下面是一个典型的ServiceFramework Controller.</p>
+
+<div class="highlight"><pre><span class="kd">public</span> <span class="kd">class</span> <span class="nc">TagController</span> <span class="kd">extends</span> <span class="n">ApplicationController</span> <span class="o">{</span>
+
+    <span class="nd">@BeforeFilter</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$checkParam</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="n">only</span><span class="o">,</span> <span class="n">list</span><span class="o">(</span><span class="s">"save"</span><span class="o">,</span> <span class="s">"search"</span><span class="o">));</span>
+    <span class="nd">@BeforeFilter</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$findTag</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="n">only</span><span class="o">,</span> <span class="n">list</span><span class="o">(</span><span class="s">"addTagToTagGroup"</span><span class="o">,</span> <span class="s">"deleteTagToTagGroup"</span><span class="o">,</span><span class="s">"createBlogTag"</span><span class="o">));</span>
+
+
+    <span class="nd">@AroundFilter</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$print_action_execute_time2</span> <span class="o">=</span> <span class="n">map</span><span class="o">();</span>
+
+
+    <span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/tag_group/create"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="n">POST</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createTagGroup</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">TagGroup</span> <span class="n">tagGroup</span> <span class="o">=</span> <span class="n">TagGroup</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">params</span><span class="o">());</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">tagGroup</span><span class="o">.</span><span class="na">save</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">render</span><span class="o">(</span><span class="n">HTTP_400</span><span class="o">,</span> <span class="n">tagGroup</span><span class="o">.</span><span class="na">validateResults</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">render</span><span class="o">(</span><span class="n">OK</span><span class="o">);</span>
+    <span class="o">}</span>
+
+
+    <span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/tag_group/tag"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="o">{</span><span class="n">PUT</span><span class="o">,</span> <span class="n">POST</span><span class="o">})</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addTagToTagGroup</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">TagGroup</span> <span class="n">tagGroup</span> <span class="o">=</span> <span class="n">TagGroup</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">paramAsInt</span><span class="o">(</span><span class="s">"id"</span><span class="o">));</span>
+        <span class="n">tagGroup</span><span class="o">.</span><span class="na">associate</span><span class="o">(</span><span class="s">"tags"</span><span class="o">).</span><span class="na">add</span><span class="o">(</span><span class="n">tag</span><span class="o">);</span>
+        <span class="n">render</span><span class="o">(</span><span class="n">OK</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/tag_group/tag"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="o">{</span><span class="n">DELETE</span><span class="o">})</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">deleteTagToTagGroup</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">TagGroup</span> <span class="n">tagGroup</span> <span class="o">=</span> <span class="n">TagGroup</span><span class="o">.</span><span class="na">findById</span><span class="o">(</span><span class="n">paramAsInt</span><span class="o">(</span><span class="s">"id"</span><span class="o">));</span>
+        <span class="n">tagGroup</span><span class="o">.</span><span class="na">associate</span><span class="o">(</span><span class="s">"tags"</span><span class="o">).</span><span class="na">remove</span><span class="o">(</span><span class="n">tag</span><span class="o">);</span>
+        <span class="n">tagGroup</span><span class="o">.</span><span class="na">save</span><span class="o">();</span>
+        <span class="n">render</span><span class="o">(</span><span class="n">OK</span><span class="o">);</span>
+    <span class="o">}</span>
+
+
+    <span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/{tag}/blog_tags"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="n">PUT</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createBlogTag</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">tag</span><span class="o">.</span><span class="na">associate</span><span class="o">(</span><span class="s">"blog_tags"</span><span class="o">).</span><span class="na">add</span><span class="o">(</span><span class="n">BlogTag</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">map</span><span class="o">(</span><span class="s">"object_id"</span><span class="o">,</span> <span class="n">paramAsInt</span><span class="o">(</span><span class="s">"object_id"</span><span class="o">))));</span>
+        <span class="n">render</span><span class="o">(</span><span class="n">OK</span><span class="o">);</span>
+    <span class="o">}</span>
+
+
+
+    <span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/doc/{type}/insert"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="n">POST</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">save</span><span class="o">()</span> <span class="o">{</span>
+
+        <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">tagStr</span> <span class="o">:</span> <span class="n">tags</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">Model</span> <span class="n">model</span> <span class="o">=</span> <span class="o">(</span><span class="n">Model</span><span class="o">)</span> <span class="n">invoke_model</span><span class="o">(</span><span class="n">param</span><span class="o">(</span><span class="s">"type"</span><span class="o">),</span> <span class="s">"create"</span><span class="o">,</span> <span class="n">selectMapWithAliasName</span><span class="o">(</span><span class="n">paramAsJSON</span><span class="o">(</span><span class="s">"jsonData"</span><span class="o">),</span> <span class="s">"id"</span><span class="o">,</span> <span class="s">"object_id"</span><span class="o">,</span> <span class="s">"created_at"</span><span class="o">,</span> <span class="s">"created_at"</span><span class="o">));</span>
+            <span class="n">model</span><span class="o">.</span><span class="na">m</span><span class="o">(</span><span class="s">"tag"</span><span class="o">,</span> <span class="n">Tag</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">map</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="n">tagStr</span><span class="o">)));</span>
+            <span class="k">if</span> <span class="o">(!</span><span class="n">model</span><span class="o">.</span><span class="na">save</span><span class="o">())</span> <span class="o">{</span>
+                <span class="n">render</span><span class="o">(</span><span class="n">HTTP_400</span><span class="o">,</span> <span class="n">model</span><span class="o">.</span><span class="na">validateResults</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="n">render</span><span class="o">(</span><span class="n">OK</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Inject</span>
+    <span class="kd">private</span> <span class="n">RemoteDataService</span> <span class="n">remoteDataService</span><span class="o">;</span>
+
+
+    <span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/doc/{type}/search"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="n">GET</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">search</span><span class="o">()</span> <span class="o">{</span>
+
+        <span class="n">Set</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">newTags</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="na">synonym</span><span class="o">(</span><span class="n">param</span><span class="o">(</span><span class="s">"tags"</span><span class="o">));</span>
+
+
+        <span class="n">JPQL</span> <span class="n">query</span> <span class="o">=</span> <span class="o">(</span><span class="n">JPQL</span><span class="o">)</span> <span class="n">invoke_model</span><span class="o">(</span><span class="n">param</span><span class="o">(</span><span class="s">"type"</span><span class="o">),</span> <span class="s">"where"</span><span class="o">,</span> <span class="s">"tag.name in ("</span> <span class="o">+</span> <span class="n">join</span><span class="o">(</span><span class="n">newTags</span><span class="o">,</span> <span class="s">","</span><span class="o">,</span> <span class="s">"'"</span><span class="o">)</span> <span class="o">+</span> <span class="s">")"</span><span class="o">);</span>
+
+        <span class="k">if</span> <span class="o">(!</span><span class="n">isEmpty</span><span class="o">(</span><span class="n">param</span><span class="o">(</span><span class="s">"channelIds"</span><span class="o">)))</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">channelIds</span> <span class="o">=</span> <span class="n">join</span><span class="o">(</span><span class="n">param</span><span class="o">(</span><span class="s">"channelIds"</span><span class="o">).</span><span class="na">split</span><span class="o">(</span><span class="s">","</span><span class="o">),</span> <span class="s">","</span><span class="o">,</span> <span class="s">"'"</span><span class="o">);</span>
+            <span class="n">query</span><span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">"channel_id in ("</span> <span class="o">+</span> <span class="n">channelIds</span> <span class="o">+</span> <span class="s">")"</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="k">if</span> <span class="o">(!</span><span class="n">isEmpty</span><span class="o">(</span><span class="n">param</span><span class="o">(</span><span class="s">"blockedTagsNames"</span><span class="o">)))</span> <span class="o">{</span>
+            <span class="n">String</span> <span class="n">blockedTagsNames</span> <span class="o">=</span> <span class="n">join</span><span class="o">(</span><span class="n">param</span><span class="o">(</span><span class="s">"blockedTagsNames"</span><span class="o">).</span><span class="na">split</span><span class="o">(</span><span class="s">","</span><span class="o">),</span> <span class="s">","</span><span class="o">,</span> <span class="s">"'"</span><span class="o">);</span>
+            <span class="n">String</span> <span class="n">abc</span> <span class="o">=</span> <span class="s">"select object_id from "</span> <span class="o">+</span> <span class="n">param</span><span class="o">(</span><span class="s">"type"</span><span class="o">)</span> <span class="o">+</span> <span class="s">" where  tag.name in ("</span> <span class="o">+</span> <span class="n">blockedTagsNames</span> <span class="o">+</span> <span class="s">")"</span><span class="o">;</span>
+            <span class="n">query</span><span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">"object_id not in ("</span> <span class="o">+</span> <span class="n">abc</span> <span class="o">+</span> <span class="s">")"</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="kt">long</span> <span class="n">count</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="na">count_fetch</span><span class="o">(</span><span class="s">"count(distinct object_id ) as count"</span><span class="o">);</span>
+
+        <span class="k">if</span> <span class="o">(!</span><span class="n">isEmpty</span><span class="o">(</span><span class="s">"orderFields"</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">query</span><span class="o">.</span><span class="na">order</span><span class="o">(</span><span class="n">order</span><span class="o">());</span>
+        <span class="o">}</span>
+
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">Model</span><span class="o">&gt;</span> <span class="n">models</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="na">offset</span><span class="o">(</span><span class="n">paramAsInt</span><span class="o">(</span><span class="s">"start"</span><span class="o">,</span> <span class="mi">0</span><span class="o">)).</span><span class="na">limit</span><span class="o">(</span><span class="n">paramAsInt</span><span class="o">(</span><span class="s">"size"</span><span class="o">,</span> <span class="mi">15</span><span class="o">)).</span><span class="na">fetch</span><span class="o">();</span>
+
+        <span class="c1">// JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetchObjectIds(models));</span>
+
+        <span class="n">render</span><span class="o">(</span><span class="n">map</span><span class="o">(</span><span class="s">"total"</span><span class="o">,</span> <span class="n">count</span><span class="o">,</span> <span class="s">"data"</span><span class="o">,</span> <span class="n">map</span><span class="o">()));</span>
+    <span class="o">}</span>
+
+
+    <span class="kd">private</span> <span class="n">String</span><span class="o">[]</span> <span class="n">tags</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">checkParam</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">param</span><span class="o">(</span><span class="s">"tags"</span><span class="o">,</span> <span class="s">" "</span><span class="o">).</span><span class="na">split</span><span class="o">(</span><span class="s">","</span><span class="o">);</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">tags</span><span class="o">.</span><span class="na">length</span> <span class="o">==</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">render</span><span class="o">(</span><span class="n">HTTP_400</span><span class="o">,</span> <span class="n">format</span><span class="o">(</span><span class="n">FAIL</span><span class="o">,</span> <span class="s">"必须传递标签"</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="n">Tag</span> <span class="n">tag</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">findTag</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="o">.</span><span class="na">where</span><span class="o">(</span><span class="s">"name=:name"</span><span class="o">,</span> <span class="n">map</span><span class="o">(</span><span class="s">"name"</span><span class="o">,</span> <span class="n">param</span><span class="o">(</span><span class="s">"tag"</span><span class="o">))).</span><span class="na">single_fetch</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">tag</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">render</span><span class="o">(</span><span class="n">HTTP_400</span><span class="o">,</span> <span class="n">format</span><span class="o">(</span><span class="n">FAIL</span><span class="o">,</span> <span class="s">"必须传递tag参数"</span><span class="o">));</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="n">String</span> <span class="nf">fetchObjectIds</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">Model</span><span class="o">&gt;</span> <span class="n">models</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">ids</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;(</span><span class="n">models</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">Model</span> <span class="n">model</span> <span class="o">:</span> <span class="n">models</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">ids</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">model</span><span class="o">.</span><span class="na">attr</span><span class="o">(</span><span class="s">"object_id"</span><span class="o">,</span> <span class="n">Integer</span><span class="o">.</span><span class="na">class</span><span class="o">));</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="nf">join</span><span class="o">(</span><span class="n">ids</span><span class="o">,</span> <span class="s">","</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="n">String</span> <span class="nf">order</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">String</span><span class="o">[]</span> <span class="n">orderFields</span> <span class="o">=</span> <span class="n">param</span><span class="o">(</span><span class="s">"orderFields"</span><span class="o">).</span><span class="na">split</span><span class="o">(</span><span class="s">","</span><span class="o">);</span>
+        <span class="n">String</span><span class="o">[]</span> <span class="n">orderFieldsDescAsc</span> <span class="o">=</span> <span class="n">param</span><span class="o">(</span><span class="s">"orderFieldsDescAsc"</span><span class="o">,</span> <span class="s">""</span><span class="o">).</span><span class="na">split</span><span class="o">(</span><span class="s">","</span><span class="o">);</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">temp</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;();</span>
+        <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">str</span> <span class="o">:</span> <span class="n">orderFields</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">orderFieldsDescAsc</span><span class="o">.</span><span class="na">length</span> <span class="o">&lt;</span> <span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">temp</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">str</span> <span class="o">+</span> <span class="s">" "</span> <span class="o">+</span> <span class="n">orderFieldsDescAsc</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="n">temp</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">str</span> <span class="o">+</span> <span class="s">" "</span> <span class="o">+</span> <span class="s">"desc"</span><span class="o">);</span>
+            <span class="o">}</span>
+
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="nf">join</span><span class="o">(</span><span class="n">temp</span><span class="o">,</span> <span class="s">","</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="n">Object</span> <span class="nf">invoke_model</span><span class="o">(</span><span class="n">String</span> <span class="n">type</span><span class="o">,</span> <span class="n">String</span> <span class="n">method</span><span class="o">,</span> <span class="n">Object</span><span class="o">...</span> <span class="n">params</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">ReflectHelper</span><span class="o">.</span><span class="na">method</span><span class="o">(</span><span class="n">const_model_get</span><span class="o">(</span><span class="n">type</span><span class="o">),</span> <span class="n">method</span><span class="o">,</span> <span class="n">params</span><span class="o">);</span>
+    <span class="o">}</span>
+
+     <span class="kd">private</span> <span class="kt">void</span> <span class="nf">print_action_execute_time2</span><span class="o">(</span><span class="n">RestController</span><span class="o">.</span><span class="na">WowAroundFilter</span> <span class="n">wowAroundFilter</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">long</span> <span class="n">time1</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+
+        <span class="n">wowAroundFilter</span><span class="o">.</span><span class="na">invoke</span><span class="o">();</span>
+        <span class="n">logger</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">"execute time2:["</span> <span class="o">+</span> <span class="o">(</span><span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">()</span> <span class="o">-</span> <span class="n">time1</span><span class="o">)</span> <span class="o">+</span> <span class="s">"]"</span><span class="o">);</span>
+
+    <span class="o">}</span>
+
+
+<span class="o">}</span>
+</pre></div>
+
+<p>这个类有点长，主要是为了较为全面的展示Controller的使用，希望不要引起你的不适。
+我们再来分析ServiceFramework的controller有什么特点。</p>
+
+<ol>
+<li>成为Controller的必要条件是继承 ApplicationController</li>
+<li>类似Model验证器，你可以以相似的方式添加过滤器</li>
+<li>通过At配置路径以及接受的Http 请求方式</li>
+<li>所有其他的Service或者Util推荐采用使用IOC容器管理。譬如例子里的RemoteDataService</li>
+<li>filter只是一个简单的私有方法。如果申明在ApplicationController。那么对所有controller有效</li>
+</ol><h3>过滤器</h3>
+
+<p>ServiceFramework 目前支持两种过滤器</p>
+
+<ol>
+<li>BeforeFilter 前置过滤器</li>
+<li>AroundFilter 环绕过滤器</li>
+</ol><p>如同示例，过滤的器声明非常简单</p>
+
+<ul>
+<li>private,final static 三个修饰符</li>
+<li>过滤器 @BeforeFilter 或者 @AroundFilter 注解声明</li>
+</ul><div class="highlight"><pre>  <span class="nd">@BeforeFilter</span>
+    <span class="kd">private</span> <span class="kd">final</span> <span class="kd">static</span> <span class="n">Map</span> <span class="n">$checkParam</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="n">only</span><span class="o">,</span> <span class="n">list</span><span class="o">(</span><span class="s">"save"</span><span class="o">,</span> <span class="s">"search"</span><span class="o">));</span>
+</pre></div>
+
+<p>filter是声明在一个map属性上的。map 接受两个属性，only,except。如果没有这两个属性，那么表示过滤当前Controller中所有Action。
+属性依然以$开头，后面的属性名其实是一个方法的名称。比如你会发现在上面的controller中确实包含一个checkParam 方法。</p>
+
+<p>例子的含义是，只有save,search两个Action方法在调用前会先调用checkParam。</p>
+
+<p>Controller是多线程安全的。这意味着，你可以安全的使用实例变量。示例中"addTagToTagGroup", "deleteTagFromoTagGroup","createBlogTag" 三个Action在调用前都需要事先获得tag对象。你可以使用findTag过滤器先填充 tag实例变量。如果用户没有传递tag名，就可以在过滤器中直接告诉用户参数问题。</p>
+
+<p>需要注意的一点是，BeforeFilter 比 AroundFilter 运行的更早。Filter 也可以调用render 方法，进行结果输出。</p>
+
+<h3>路径配置</h3>
+
+<p>路径配置使用的也是注解配置。</p>
+
+<div class="highlight"><pre><span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/tag_group/tag"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="o">{</span><span class="n">PUT</span><span class="o">,</span> <span class="n">POST</span><span class="o">})</span>
+</pre></div>
+
+<p><a href="https://github.com/at" class="user-mention">@at</a>注解接受两个参数，path 和 types</p>
+
+<p>path 代表请求路径。 types则是表示接受的请求方法的,默认是GET.</p>
+
+<p>path 支持占位符，比如:</p>
+
+<div class="highlight"><pre><span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/{tag}/blog_tags"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="n">PUT</span><span class="o">)</span>
+</pre></div>
+
+<p>tag这个值会被自动填充到请求对象中。你可以通过 param("tag")获取。</p>
+
+<h4>request 参数获取</h4>
+
+<p>在ServiceFramework 中 提供了一个非常便利的获取request参数的方式。不管是form表单,get请求，还是url中的数据，都可以统一通过param() 方法获取。</p>
+
+<div class="highlight"><pre><span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">paramAsInt</span><span class="o">(</span><span class="s">"id"</span><span class="o">);</span>
+<span class="c1">//或者</span>
+<span class="n">String</span> <span class="n">id</span> <span class="o">=</span> <span class="n">param</span><span class="o">(</span><span class="s">"id"</span><span class="o">);</span>
+</pre></div>
+
+<p>比如这就可以获取 id 参数，并且将其转换为int类型。
+如果你确认传递过来的是json或者xml格式，你可以调用下面的方式</p>
+
+<div class="highlight"><pre><span class="n">JSON</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">paramAsJSON</span><span class="o">();</span>
+<span class="c1">//或者</span>
+<span class="n">JSON</span> <span class="n">obj</span> <span class="o">=</span> <span class="n">paramsAsXML</span><span class="o">();</span>
+</pre></div>
+
+<p>其中,xml文本的数据会自动转化json格式,便与操作。</p>
+
+<p>ServiceFramework 尽量让事情简单而方便。</p>
+
+<p>方法列表:</p>
+
+<div class="highlight"><pre><span class="n">params</span><span class="o">()</span>
+<span class="n">param</span><span class="o">(</span><span class="n">key</span><span class="o">)</span>
+<span class="n">param</span><span class="o">(</span><span class="n">key</span><span class="o">,</span><span class="n">defaultValue</span><span class="o">)</span>
+<span class="n">paramAsInt</span><span class="o">(</span><span class="n">key</span><span class="o">)</span>
+<span class="n">paramAsLong</span><span class="o">(</span><span class="n">key</span><span class="o">)</span>
+<span class="n">paramAsFloat</span><span class="o">(</span><span class="n">key</span><span class="o">)</span>
+<span class="c1">//还有更多….</span>
+</pre></div>
+
+<h4>渲染输出</h4>
+
+<p>所有渲染输出统一使用render 方法。</p>
+
+<p>普通文本输出</p>
+
+<div class="highlight"><pre><span class="n">render</span><span class="o">(</span><span class="s">"hello word"</span><span class="o">);</span>
+</pre></div>
+
+<p>如果传入的是对象，会自动呗转化为json格式</p>
+
+<div class="highlight"><pre><span class="n">render</span><span class="o">(</span><span class="n">tag</span><span class="o">);</span>
+</pre></div>
+
+<p>你可以手动指定输出格式</p>
+
+<div class="highlight"><pre><span class="n">render</span><span class="o">(</span><span class="n">tag</span><span class="o">,</span><span class="n">ViewType</span><span class="o">.</span><span class="na">xml</span><span class="o">);</span>
+</pre></div>
+
+<p>你还可以指定输出的http状态码</p>
+
+<div class="highlight"><pre><span class="n">render</span><span class="o">(</span><span class="n">HTTP_200</span><span class="o">,</span><span class="n">tag</span><span class="o">,</span><span class="n">ViewType</span><span class="o">.</span><span class="na">xml</span><span class="o">);</span>
+</pre></div>
+
+<p>render 方法也可以在过滤器中使用。一旦调用render方法后，就会自动跳过action调用。</p>
+
+<div class="highlight"><pre><span class="nd">@At</span><span class="o">(</span><span class="n">path</span> <span class="o">=</span> <span class="s">"/tag_group/create"</span><span class="o">,</span> <span class="n">types</span> <span class="o">=</span> <span class="n">POST</span><span class="o">)</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createTagGroup</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">TagGroup</span> <span class="n">tagGroup</span> <span class="o">=</span> <span class="n">TagGroup</span><span class="o">.</span><span class="na">create</span><span class="o">(</span><span class="n">params</span><span class="o">());</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">tagGroup</span><span class="o">.</span><span class="na">save</span><span class="o">())</span> <span class="o">{</span>
+            <span class="n">render</span><span class="o">(</span><span class="n">HTTP_400</span><span class="o">,</span> <span class="n">tagGroup</span><span class="o">.</span><span class="na">validateResults</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">render</span><span class="o">(</span><span class="n">OK</span><span class="o">);</span>
+    <span class="o">}</span>
+</pre></div>
+
+<p>在上面的示例代码中，你无需render之后再调用return 语句。</p>
+
+<h3>ServiceFramework</h3>
+
+<div class="highlight"><pre><span class="nd">@Inject</span>
+<span class="kd">private</span> <span class="n">RemoteDataService</span> <span class="n">remoteDataService</span><span class="o">;</span>
+</pre></div>
+
+<p>之后你就可以在Action中直接使用remoteDataService了。</p>
+
+<h4>Controller提供的便利的方法集</h4>
+
+<p>在controller中，你天然会获取大量有用的工具方法。比如 isEmpty，字符串join。比如</p>
+
+<div class="highlight"><pre><span class="n">JPQL</span> <span class="n">query</span> <span class="o">=</span> <span class="o">(</span><span class="n">JPQL</span><span class="o">)</span> <span class="n">invoke_model</span><span class="o">(</span><span class="n">param</span><span class="o">(</span><span class="s">"type"</span><span class="o">),</span> <span class="s">"where"</span><span class="o">,</span> <span class="s">"tag.name in ("</span> <span class="o">+</span> <span class="n">join</span><span class="o">(</span><span class="n">newTags</span><span class="o">,</span> <span class="s">","</span><span class="o">,</span> <span class="s">"'"</span><span class="o">)</span> <span class="o">+</span> <span class="s">")"</span><span class="o">);</span>
+</pre></div>
+
+<h2>配置文件</h2>
+
+<p>ServiceFramework 所有的配置文件位于config目录下。其实只有两个配置文件，一个application.yml,
+一个logging.yml.分别配置应用和日志。</p>
+
+<p>一个完整的application.yml</p>
+
+<div class="highlight"><pre><span class="c1">#mode</span>
+<span class="l-Scalar-Plain">mode</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">development</span>
+<span class="c1">#mode=production</span>
+
+<span class="c1">###############datasource config##################</span>
+<span class="c1">#mysql,mongodb,redis等数据源配置方式</span>
+<span class="l-Scalar-Plain">development</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">datasources</span><span class="p-Indicator">:</span>
+        <span class="l-Scalar-Plain">mysql</span><span class="p-Indicator">:</span>
+           <span class="l-Scalar-Plain">host</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">127.0.0.1</span>
+           <span class="l-Scalar-Plain">port</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">3306</span>
+           <span class="l-Scalar-Plain">database</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tag_engine</span>
+           <span class="l-Scalar-Plain">username</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tag</span>
+           <span class="l-Scalar-Plain">password</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tag</span>
+        <span class="l-Scalar-Plain">mongodb</span><span class="p-Indicator">:</span>
+           <span class="l-Scalar-Plain">host</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">127.0.0.1</span>
+           <span class="l-Scalar-Plain">port</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">27017</span>
+           <span class="l-Scalar-Plain">database</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tag_engine</span>
+        <span class="l-Scalar-Plain">redis</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">host</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">127.0.0.1</span>
+            <span class="l-Scalar-Plain">port</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">6379</span>
+
+<span class="l-Scalar-Plain">production</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">datasources</span><span class="p-Indicator">:</span>
+        <span class="l-Scalar-Plain">mysql</span><span class="p-Indicator">:</span>
+           <span class="l-Scalar-Plain">host</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">127.0.0.1</span>
+           <span class="l-Scalar-Plain">port</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">3306</span>
+           <span class="l-Scalar-Plain">database</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tag_engine</span>
+           <span class="l-Scalar-Plain">username</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tag</span>
+           <span class="l-Scalar-Plain">password</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tag</span>
+        <span class="l-Scalar-Plain">mongodb</span><span class="p-Indicator">:</span>
+           <span class="l-Scalar-Plain">host</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">127.0.0.1</span>
+           <span class="l-Scalar-Plain">port</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">27017</span>
+           <span class="l-Scalar-Plain">database</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">tag_engine</span>
+        <span class="l-Scalar-Plain">redis</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">host</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">127.0.0.1</span>
+            <span class="l-Scalar-Plain">port</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">6379</span>
+
+<span class="l-Scalar-Plain">orm</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">show_sql</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+    <span class="l-Scalar-Plain">pool_min_size</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5</span>
+    <span class="l-Scalar-Plain">pool_max_size</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">10</span>
+    <span class="l-Scalar-Plain">timeout</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">300</span>
+    <span class="l-Scalar-Plain">max_statements</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">50</span>
+    <span class="l-Scalar-Plain">idle_test_period</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">3000</span>
+<span class="c1">###############application config##################</span>
+<span class="l-Scalar-Plain">application</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">controller</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">com.example.controller</span>
+    <span class="l-Scalar-Plain">model</span><span class="p-Indicator">:</span>      <span class="l-Scalar-Plain">com.example.model</span>
+    <span class="l-Scalar-Plain">service</span><span class="p-Indicator">:</span>    <span class="l-Scalar-Plain">com.example.service</span>
+    <span class="l-Scalar-Plain">util</span><span class="p-Indicator">:</span>       <span class="l-Scalar-Plain">com.example.util</span>
+    <span class="l-Scalar-Plain">test</span><span class="p-Indicator">:</span>       <span class="l-Scalar-Plain">test.com.example</span>
+
+
+<span class="c1">###############http config##################</span>
+<span class="l-Scalar-Plain">http</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">port</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">9400</span>
+
+
+
+<span class="c1">###############validator config##################</span>
+<span class="c1">#如果需要添加验证器，只要配置好类全名即可</span>
+<span class="c1">#替换验证器实现，则替换相应的类名即可</span>
+<span class="c1">#warning: 自定义验证器实现需要线程安全</span>
+
+<span class="l-Scalar-Plain">validator</span><span class="p-Indicator">:</span>
+   <span class="l-Scalar-Plain">format</span><span class="p-Indicator">:</span>        <span class="l-Scalar-Plain">net.csdn.validate.impl.Format</span>
+   <span class="l-Scalar-Plain">numericality</span><span class="p-Indicator">:</span>  <span class="l-Scalar-Plain">net.csdn.validate.impl.Numericality</span>
+   <span class="l-Scalar-Plain">presence</span><span class="p-Indicator">:</span>      <span class="l-Scalar-Plain">net.csdn.validate.impl.Presence</span>
+   <span class="l-Scalar-Plain">uniqueness</span><span class="p-Indicator">:</span>    <span class="l-Scalar-Plain">net.csdn.validate.impl.Uniqueness</span>
+   <span class="l-Scalar-Plain">length</span><span class="p-Indicator">:</span>        <span class="l-Scalar-Plain">net.csdn.validate.impl.Length</span>
+   <span class="l-Scalar-Plain">associated</span><span class="p-Indicator">:</span>    <span class="l-Scalar-Plain">net.csdn.validate.impl.Associated</span>
+
+<span class="c1">################ 数据库类型映射 ####################</span>
+<span class="l-Scalar-Plain">type_mapping</span><span class="p-Indicator">:</span>  <span class="l-Scalar-Plain">net.csdn.jpa.type.impl.MysqlType</span>
+</pre></div>
+
+<p>对于数据库等的配置是区分开发或者生产环境的</p>
+
+<p>里面有个join 方法。表示将newTags集合的元素以","进行分割，并且用"'"wrap起来组成一个字符串。</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Serviceframework maintained by <a href="https://github.com/allwefantasy">allwefantasy</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
