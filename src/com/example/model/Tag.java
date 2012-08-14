@@ -27,9 +27,6 @@ public class Tag extends Model {
     private final static Map $associated = map(associated, list("blog_tags"));
 
 
-    @OneToOne
-    private TagWiki tag_wiki;
-
     @ManyToOne
     private TagSynonym tag_synonym;
 
