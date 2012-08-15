@@ -2,6 +2,7 @@ package net.csdn.jpa.type;
 
 import com.google.inject.Inject;
 import net.csdn.ServiceFramwork;
+import net.csdn.common.Strings;
 import net.csdn.common.settings.Settings;
 
 import java.sql.*;
@@ -59,6 +60,7 @@ public class DBInfo {
 
             }
             tableColumns.put(tableName, columns);
+            tableColumns.put(Strings.toCamelCase(tableName,true), columns);
         }
         conn.close();
     }

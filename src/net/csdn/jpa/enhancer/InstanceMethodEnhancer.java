@@ -5,6 +5,7 @@ import javassist.bytecode.AnnotationsAttribute;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.association.ManyToManyHint;
 import net.csdn.annotation.jpa.callback.*;
+import net.csdn.common.Strings;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.AssociatedHelper;
 import net.csdn.enhancer.BitEnhancer;
@@ -97,7 +98,7 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                                 "        this.attr(\"{}\",obj);" +
                                 "        obj.attr(\"{}\",this);" +
                                 "        return this;" +
-                                "    }", ctClass.getName(), ctField.getName(), mappedByClassName, ctField.getName(),mappedByFieldName
+                                "    }", ctClass.getName(), ctField.getName(), mappedByClassName, ctField.getName(), mappedByFieldName
                         )
                         ,
                         ctClass);
@@ -196,8 +197,8 @@ public class InstanceMethodEnhancer implements BitEnhancer {
                 String otherClassSimpleName = findAssociatedClass(ctClass.getClassPool(), ctField).getSimpleName();
 
 
-                String maybeTable1 = ctClass.getSimpleName() + "_" + otherClassSimpleName;
-                String maybeTable2 = otherClassSimpleName + "_" + ctClass.getSimpleName();
+                String maybeTable1 = Strings.toUnderscoreCase(ctClass.getSimpleName()) + "_" + Strings.toUnderscoreCase(otherClassSimpleName);
+                String maybeTable2 = Strings.toUnderscoreCase(otherClassSimpleName) + "_" + Strings.toUnderscoreCase(ctClass.getSimpleName());
                 String finalTableName = dbInfo.tableNames.contains(maybeTable1) ? maybeTable1 : maybeTable2;
                 setCascad(ctField, "ManyToMany");
                 boolean isMaster = false;
