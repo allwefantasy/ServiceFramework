@@ -1,4 +1,4 @@
-CREATE TABLE `TagWiki` (
+CREATE TABLE `tag_wiki` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `content` varchar(255) DEFAULT NULL,
   `tag_id` int(11) DEFAULT NULL,
@@ -7,27 +7,27 @@ CREATE TABLE `TagWiki` (
   UNIQUE KEY `name` (`content`) USING HASH
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-CREATE TABLE `TagSynonym` (
+CREATE TABLE `tag_synonym` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-CREATE TABLE `TagGroup` (
+CREATE TABLE `tag_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-CREATE TABLE `Tag_TagGroup` (
+CREATE TABLE `tag_tag_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `tags_id` int(11) NOT NULL,
   `tag_groups_id` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `Tag` (
+CREATE TABLE `tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `tag_synonym_id` int(11) DEFAULT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE `Tag` (
   UNIQUE KEY `name` (`name`) USING HASH
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-CREATE TABLE `BlogTag` (
+CREATE TABLE `blog_tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `tag_id` int(11) DEFAULT NULL,
   `object_id` int(11) DEFAULT NULL,

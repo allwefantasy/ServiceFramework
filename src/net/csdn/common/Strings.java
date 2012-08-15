@@ -1434,13 +1434,27 @@ end
         }
     }
 
+
     public static String toCamelCase(String value) {
-        return toCamelCase(value, null);
+        return toCamelCase(value, null, false);
+    }
+
+
+    public static String toCamelCase(String value, boolean upperFirst) {
+        return toCamelCase(value, null, upperFirst);
     }
 
     public static String toCamelCase(String value, StringBuilder sb) {
+        return toCamelCase(value, sb, false);
+    }
+
+    public static String toCamelCase(String value, StringBuilder sb, boolean upperFirst) {
+        if (upperFirst) {
+            value = value.substring(0, 1).toUpperCase() + value.substring(1);
+        }
         boolean changed = false;
         for (int i = 0; i < value.length(); i++) {
+
             char c = value.charAt(i);
             if (c == '_') {
                 if (!changed) {
@@ -1457,6 +1471,7 @@ end
                 }
                 sb.append(Character.toUpperCase(value.charAt(++i)));
             } else {
+
                 if (changed) {
                     sb.append(c);
                 }

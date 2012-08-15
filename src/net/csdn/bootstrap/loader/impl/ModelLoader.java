@@ -12,6 +12,7 @@ import net.csdn.jpa.enhancer.JPAEnhancer;
 import net.csdn.jpa.model.Model;
 import net.csdn.modules.scan.ScanService;
 
+import javax.persistence.Entity;
 import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.List;

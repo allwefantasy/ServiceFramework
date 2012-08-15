@@ -24,32 +24,33 @@ public class MysqlType implements DBType {
     @Inject
     private Settings settings;
     private final static Map<String, String> typeToJava = map(
-            "CHAR", "String",
-            "MEDIUMTEXT", "String",
-            "LONGTEXT", "String",
-            "BIT", "Boolean",
-            "BOOLEAN", "Boolean",
-            "VARCHAR", "String",
-            "Text", "String",
-            "INT", "Integer",
-            "SMALLINT", "Integer",
-            "TINYINT", "Integer",
-            "BIGINT", "Long",
-            "FlOAT", "Float",
-            "DOUBLE", "Double",
-            "DATE", "java.util.Date",
-            "DATETIME", "java.util.Date",
-            "TIMESTAMP", "java.util.Date"
+            "CHAR".toLowerCase(), "String",
+            "MEDIUMTEXT".toLowerCase(), "String",
+            "LONGTEXT".toLowerCase(), "String",
+            "BIT".toLowerCase(), "Boolean",
+            "BOOLEAN".toLowerCase(), "Boolean",
+            "VARCHAR".toLowerCase(), "String",
+            "Text".toLowerCase(), "String",
+            "INT".toLowerCase(), "Integer",
+            "SMALLINT".toLowerCase(), "Integer",
+            "TINYINT".toLowerCase(), "Integer",
+            "BIGINT".toLowerCase(), "Long",
+            "FlOAT".toLowerCase(), "Float",
+            "DOUBLE".toLowerCase(), "Double",
+            "DATE".toLowerCase(), "java.util.Date",
+            "DATETIME".toLowerCase(), "java.util.Date",
+            "TIMESTAMP".toLowerCase(), "java.util.Date"
 
     );
 
     public Tuple<String, String> typeToJava(String sqlType) {
-        String type = typeToJava.get(sqlType);
+        String type = typeToJava.get(sqlType.toLowerCase());
         if (type == null) type = "byte[]";
         return new Tuple<String, String>(sqlType, type);
     }
 
     public Tuple<Class, Map> dateType(String type, ConstPool constPool) {
+        type = type.toUpperCase();
         EnumMemberValue emb = new EnumMemberValue(constPool);
         emb.setType("javax.persistence.TemporalType");
         if (type.equals("DATE")) {

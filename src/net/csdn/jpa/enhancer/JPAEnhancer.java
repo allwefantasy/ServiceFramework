@@ -4,13 +4,15 @@ import javassist.CtClass;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.BooleanMemberValue;
-import net.csdn.bootstrap.Bootstrap;
+import javassist.bytecode.annotation.StringMemberValue;
+import net.csdn.common.Strings;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
 import net.csdn.enhancer.Enhancer;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,14 +45,15 @@ public class JPAEnhancer extends Enhancer {
         }
 
         // Enhance only JPA entities
-        if (!hasAnnotation(ctClass, "javax.persistence.Entity")) {
-            return ctClass;
-        }
+//        if (!hasAnnotation(ctClass, "javax.persistence.Entity")) {
+//            return ctClass;
+//        }
 
         //Warning: here stick to hibernate
         ConstPool constPool = ctClass.getClassFile().getConstPool();
         AnnotationsAttribute attr = new AnnotationsAttribute(constPool, AnnotationsAttribute.visibleTag);
-        createAnnotation(attr, Entity.class);
+        createAnnotation(attr,Entity.class);
+        createAnnotation(attr, Table.class, map("name", new StringMemberValue(Strings.toUnderscoreCase(ctClass.getSimpleName()), constPool)));
         createAnnotation(attr, org.hibernate.annotations.Entity.class, map("dynamicInsert", new BooleanMemberValue(true, constPool)
         ));
         createAnnotation(attr, DynamicInsert.class);
@@ -64,7 +67,7 @@ public class JPAEnhancer extends Enhancer {
     public void enhanceThisClass2(List<CtClass> ctClasses) throws Exception {
         for (BitEnhancer bitEnhancer : bitEnhancers) {
             for (CtClass ctClass : ctClasses) {
-               // Bootstrap.isLoaded(ctClass.getName());
+                // Bootstrap.isLoaded(ctClass.getName());
                 bitEnhancer.enhance(ctClass);
             }
         }
