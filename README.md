@@ -165,7 +165,7 @@ CREATE TABLE `tag_synonym` (
  * Date: 12-7-23
  * Time: 下午4:52
  */
-@Entity
+
 public class Tag extends Model {
     @Validate
     private final static Map $name = map(
@@ -181,20 +181,20 @@ public class Tag extends Model {
 }
 
 
-@Entity
+
 public class BlogTag extends Model {
 
     @ManyToOne
     private Tag tag;
 }
 
-@Entity
+
 public class TagGroup extends Model {
     @ManyToMany
     private List<Tag> tags = list();
 }
 
-@Entity
+
 public class TagSynonym extends Model {
     @OneToMany
     private List<Tag> tags = list();
@@ -213,11 +213,10 @@ public class TagSynonym extends Model {
 2. Tag和BlogTag是一对多关系。
 3. TagSynonym 和Tag 是多对一关系
 
-建立模型类只需要三步:
+建立模型类只需要两步:
 
 1. 继承 Model 基类
-2. 添加 Entity 注解
-3. 声明集合属性时需要初始化它
+2. 声明集合属性时需要初始化它
 
 ServiceFramework 为你提供了大量便利方法。比如建立map/list
 
@@ -330,7 +329,7 @@ associate 只是帮你调用这些看不到的方法。
 你可以把上面那段代码写进你的模型类中。ServiceFramework会去实现里面具体的细节。
 
 ```java
-@Entity
+
 public class TagSynonym extends Model {
     @OneToMany
     private List<Tag> tags = list();
@@ -737,7 +736,7 @@ ServiceFramework中，你可以使用标准的JPA回调注解。但是我们依�
 * @AfterLoad
 
 ```java
-@Entity
+
 public class Tag extends Model {
     @AfterUpdate
     public void afterUpdate() {
@@ -755,7 +754,7 @@ ServiceFramework 任何一个模型类都能通过findService 方法获得有用
 
 
 ```java
-@Entity
+
 public class Tag extends Model {
     @AfterUpdate
     public void afterUpdate() {
