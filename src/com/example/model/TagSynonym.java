@@ -5,7 +5,6 @@ import net.csdn.annotation.validate.Validate;
 import net.csdn.jpa.association.Association;
 import net.csdn.jpa.model.Model;
 
-import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,6 @@ import static net.csdn.validate.ValidateHelper.uniqueness;
  * Date: 12-7-23
  * Time: 下午4:54
  */
-@Entity
 public class TagSynonym extends Model {
 
     @Validate

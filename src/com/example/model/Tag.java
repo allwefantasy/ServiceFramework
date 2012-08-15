@@ -19,7 +19,6 @@ import static net.csdn.validate.ValidateHelper.*;
  * Date: 12-7-23
  * Time: 下午4:52
  */
-@Entity
 public class Tag extends Model {
     @Validate
     private final static Map $name = map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复"));
