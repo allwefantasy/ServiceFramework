@@ -1,13 +1,20 @@
 package net.csdn.jpa;
 
 import net.csdn.ServiceFramwork;
+import net.csdn.common.collect.Tuple;
+import net.csdn.common.io.Streams;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.env.Environment;
 import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.model.Model;
 
+import java.io.FileWriter;
 import java.util.HashMap;
 import java.util.Map;
+
+import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
  * BlogInfo: WilliamZhu
@@ -19,7 +26,7 @@ import java.util.Map;
 public class JPA {
     private static JPAConfig jpaConfig;
 
-
+    private static CSLogger logger = Loggers.getLogger(JPA.class);
     private static Settings settings;
     private static Environment environment;
 
@@ -27,9 +34,29 @@ public class JPA {
 
     public static JPAConfig getJPAConfig() {
         if (jpaConfig == null) {
+            try {
+                modifyPersistenceXml(new Tuple<Settings, Environment>(settings, environment));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             jpaConfig = new JPAConfig(properties(), settings.get("datasources.mysql.database"));
         }
         return jpaConfig;
+    }
+
+    //自动同步application.xml文件的配置到persistence.xml
+    private static void modifyPersistenceXml(Tuple<Settings, Environment> tuple) throws Exception {
+
+        String fileContent = Streams.copyToStringFromClasspath(ServiceFramwork.class.getClassLoader(), "META-INF/persistence.xml");
+        Map<String, Settings> groups = tuple.v1().getGroups(ServiceFramwork.mode.name() + ".datasources");
+        Settings mysqlSetting = groups.get("mysql");
+        //
+        StringBuffer stringBuffer = new StringBuffer();
+        for (Class clzz : models.values()) {
+            stringBuffer.append(format("<class>{}</class>", clzz.getName()));
+        }
+        String path = ServiceFramwork.class.getClassLoader().getResource("META-INF/persistence.xml").getPath();
+        Streams.copy(format(fileContent, mysqlSetting.get("database"), stringBuffer.toString()), new FileWriter(path));
     }
 
     public static void setJPAConfig(JPAConfig _jpaConfig) {

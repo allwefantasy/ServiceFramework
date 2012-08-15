@@ -3,7 +3,6 @@ package com.example.model;
 import net.csdn.annotation.validate.Validate;
 import net.csdn.jpa.model.Model;
 
-import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import java.util.Map;
 
@@ -16,7 +15,6 @@ import static net.csdn.validate.ValidateHelper.numericality;
  * Date: 12-7-23
  * Time: 下午4:53
  */
-@Entity
 public class BlogTag extends Model {
 
     @Validate//这个限制只是为了展示用法

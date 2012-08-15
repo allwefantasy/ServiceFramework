@@ -5,19 +5,15 @@ import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.bootstrap.loader.impl.*;
 import net.csdn.common.collect.Tuple;
-import net.csdn.common.io.Streams;
 import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
 import net.csdn.env.Environment;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.HttpServer;
 
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import static net.csdn.common.logging.support.MessageFormat.format;
 import static net.csdn.common.settings.ImmutableSettings.Builder.EMPTY_SETTINGS;
 
 /**
@@ -57,7 +53,7 @@ public class Bootstrap {
         if (isSystemConfigured) return;
         Tuple<Settings, Environment> tuple = InternalSettingsPreparer.prepareSettings(EMPTY_SETTINGS);
         ServiceFramwork.mode = ServiceFramwork.Mode.valueOf(tuple.v1().get("mode"));
-        modifyPersistenceXml(tuple);
+
 
         List<Loader> loaders = new ArrayList<Loader>();
         loaders.add(new LoggerLoader());
@@ -76,15 +72,7 @@ public class Bootstrap {
     }
 
 
-    //自动同步application.xml文件的配置到persistence.xml
-    private static void modifyPersistenceXml(Tuple<Settings, Environment> tuple) throws Exception {
 
-        String fileContent = Streams.copyToStringFromClasspath(Bootstrap.class.getClassLoader(), "META-INF/persistence.xml");
-        Map<String, Settings> groups = tuple.v1().getGroups(ServiceFramwork.mode.name() + ".datasources");
-        Settings mysqlSetting = groups.get("mysql");
-        String path = Bootstrap.class.getClassLoader().getResource("META-INF/persistence.xml").getPath();
-        Streams.copy(format(fileContent, mysqlSetting.get("database")), new FileWriter(path));
-    }
 
     public static void isLoaded(String name) {
         java.lang.reflect.Method m = null;
