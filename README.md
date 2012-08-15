@@ -87,8 +87,34 @@ git clone git://github.com/allwefantasy/ServiceFramework.git ServiceFramework
 	
 </tbody></table>
 
+##运行测试前或者启动应用的准备工作。
+
+- 在你的mysql中新建一个库，名称为：wow
+- 运行sql目录下的 wow.sql,把所有的表建好。
+
+这应该就是所有准备工作了。但是您的端口可能不是默认的3306,所以您还应该检查下
+
+```
+config/application.yml 
+```
+文件中的
+
+```yaml
+development:
+    datasources:
+        mysql:
+           host: 127.0.0.1
+           port: 3306
+           database: wow
+           username: root
+           password: root
+```
+
+部分，根据您的需求进行修改。
+
 ##如何运行测试
 项目src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
+
 在test 目录中 test.com.example 有example项目的测试代码。
 test 根目录下的有个文件叫
 
