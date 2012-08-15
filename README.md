@@ -123,7 +123,7 @@ net.csdn.bootstrap.Application
 
 ```sql
 --标签表
-CREATE TABLE `Tag` (
+CREATE TABLE `tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   `tag_synonym_id` int(11) DEFAULT NULL,
@@ -132,7 +132,7 @@ CREATE TABLE `Tag` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 --标签组。一个标签可以属于多个标签组。一个标签组包含多个标签
-CREATE TABLE `TagGroup` (
+CREATE TABLE `tag_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -140,7 +140,7 @@ CREATE TABLE `TagGroup` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 --博客和标签的关联表。存有 博客id和标签id
-CREATE TABLE `BlogTag` (
+CREATE TABLE `blog_tag` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `tag_id` int(11) DEFAULT NULL,
   `object_id` int(11) DEFAULT NULL,
@@ -149,7 +149,7 @@ CREATE TABLE `BlogTag` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --标签近义词组。一个标签只可能属于一个标签近义词
-CREATE TABLE `TagSynonym` (
+CREATE TABLE `tag_synonym` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -237,7 +237,7 @@ private List<Tag> tags = list();
 ### 表和模型之间的映射关系
 前面的例子可以看到，我们不需要进行任何表和模型之间的映射配置。这依赖于默认的命名约定。这些规则包括：
 
-1. 表名和类名相同。比如Tag 在数据库相应的表明也为 Tag
+1. 类名为驼峰命名法，表名则为UnderScore的形式。比如TagWiki 在数据库相应的表名也为 tag_wiki
 2. 外键名称 = 属性名+"_id".
 3. 属性名 = 小写 加 下划线的形式。比如示例中的 tag_groups 等。 这和java的传统命名会有些区别。
 这主要是为了数据库字段和Model属性名保持一致。如果你使用"tagGroups"这种传统的驼峰命名方式,
@@ -1218,4 +1218,54 @@ type_mapping:  net.csdn.jpa.type.impl.MysqlType
 
 对于数据库等的配置是区分开发或者生产环境的
 
-里面有个join 方法。表示将newTags集合的元素以","进行分割，并且用"'"wrap起来组成一个字符串。
+## 单元测试
+单元测试非常重要。这里我们会重点阐述如何进行Controller层的测试。
+
+```java
+    @Test
+    public void testSave() throws Exception {
+    
+        //获取你需呀测试的controller。injector就是google guice 的injector ^_^  
+        TagController tagController = injector.getInstance(TagController.class);
+        
+        //设置请求参数
+        tagController.mockRequest(
+        map(
+                "object_id", "17",
+                "tags", "java,google"
+
+        ),//这些参数会填充进request中，之后可以通过param方法获取。 
+        RestRequest.Method.PUT, //请求方法
+        null//post数据，通常当你要提交json或者xml数据时，填充该值
+        );
+
+        //调用你需要的过滤器  m 方法其实就是通过反射调用拦截器
+        tagController.m("check_params");
+
+
+        try {
+            //调用真实的action
+            tagController.save();
+        } catch (RenderFinish e) {
+           //这是测试唯一比较麻烦的地方。因为render方法会通过抛出RenderFinish异常来结束流程，所以这里你需要手动捕获
+           //下RenderFinish。
+        }
+
+        //获取render后的response对象
+        RestResponse restResponse = tagController.mockResponse();
+        
+        //拿到你传递给render的对象，这个时候你可以查看是否是否你想要的结果
+        JSONObject renderResult = JSONObject.fromObject((String) restResponse.originContent());
+        assertTrue(renderResult.getBoolean("ok"));
+
+        //手动提交数据操作
+        dbCommit();
+        List<BlogTag> blogTags = BlogTag.where("object_id=17").fetch();
+        assertTrue(blogTags.size() == 2);
+
+        //清理数据
+        Tag.delete(format("name in ({})", "'java','google'"));
+        BlogTag.delete("object_id=17");
+
+    }
+```
