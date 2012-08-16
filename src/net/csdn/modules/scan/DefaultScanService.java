@@ -1,5 +1,6 @@
 package net.csdn.modules.scan;
 
+import com.mysql.jdbc.StringUtils;
 import javassist.ClassPool;
 import net.csdn.ServiceFramwork;
 import net.csdn.modules.scan.component.ClasspathUrlFinder;
@@ -40,9 +41,12 @@ public class DefaultScanService implements ScanService {
         iterateDir(packageDir, files);
         for (File f : files) {
             String path = f.getPath();
-            classes.add(path.substring(class_file_base_url.getPath().length(), path.length() - 6).replaceAll(File.separator, "."));
+            String temp = packageName.replaceAll("\\.", File.separator);
+            int pos = StringUtils.indexOfIgnoreCase(path, temp);
+            if (pos == -1) pos = 0;
+            path = path.substring(pos, path.length() - 6).replaceAll(File.separator, "\\.");
+            classes.add(path);
         }
-        String obj = "";
         return classes;
     }
 
@@ -55,9 +59,12 @@ public class DefaultScanService implements ScanService {
         iterateDir(packageDir, files);
         for (File f : files) {
             String path = f.getPath();
-            classes.add(path.substring(class_file_base_url.getPath().length(), path.length() - 6).replaceAll(File.separator, "."));
+            String temp = packageName.replaceAll("\\.", File.separator);
+            int pos = StringUtils.indexOfIgnoreCase(path, temp);
+            if (pos == -1) pos = 0;
+            path = path.substring(pos, path.length() - 6).replaceAll(File.separator, "\\.");
+            classes.add(path);
         }
-        String obj = "";
         return classes;
     }
 
