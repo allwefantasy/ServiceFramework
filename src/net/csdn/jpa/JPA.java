@@ -32,7 +32,7 @@ public class JPA {
 
     public final static Map<String, Class<Model>> models = new HashMap<String, Class<Model>>();
 
-    public static JPAConfig getJPAConfig() {
+    public static synchronized JPAConfig getJPAConfig() {
         if (jpaConfig == null) {
             try {
                 modifyPersistenceXml(new Tuple<Settings, Environment>(settings, environment));
