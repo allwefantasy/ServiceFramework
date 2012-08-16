@@ -87,8 +87,34 @@ git clone git://github.com/allwefantasy/ServiceFramework.git ServiceFramework
 	
 </tbody></table>
 
+##运行测试前或者启动应用的准备工作。
+
+- 在你的mysql中新建一个库，名称为：wow
+- 运行sql目录下的 wow.sql,把所有的表建好。
+
+这应该就是所有准备工作了。但是您的端口可能不是默认的3306,所以您还应该检查下
+
+```
+config/application.yml 
+```
+文件中的
+
+```yaml
+development:
+    datasources:
+        mysql:
+           host: 127.0.0.1
+           port: 3306
+           database: wow
+           username: root
+           password: root
+```
+
+部分，根据您的需求进行修改。
+
 ##如何运行测试
 项目src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
+
 在test 目录中 test.com.example 有example项目的测试代码。
 test 根目录下的有个文件叫
 
@@ -165,7 +191,7 @@ CREATE TABLE `tag_synonym` (
  * Date: 12-7-23
  * Time: 下午4:52
  */
-@Entity
+
 public class Tag extends Model {
     @Validate
     private final static Map $name = map(
@@ -181,20 +207,20 @@ public class Tag extends Model {
 }
 
 
-@Entity
+
 public class BlogTag extends Model {
 
     @ManyToOne
     private Tag tag;
 }
 
-@Entity
+
 public class TagGroup extends Model {
     @ManyToMany
     private List<Tag> tags = list();
 }
 
-@Entity
+
 public class TagSynonym extends Model {
     @OneToMany
     private List<Tag> tags = list();
@@ -213,11 +239,10 @@ public class TagSynonym extends Model {
 2. Tag和BlogTag是一对多关系。
 3. TagSynonym 和Tag 是多对一关系
 
-建立模型类只需要三步:
+建立模型类只需要两步:
 
 1. 继承 Model 基类
-2. 添加 Entity 注解
-3. 声明集合属性时需要初始化它
+2. 声明集合属性时需要初始化它
 
 ServiceFramework 为你提供了大量便利方法。比如建立map/list
 
@@ -330,7 +355,7 @@ associate 只是帮你调用这些看不到的方法。
 你可以把上面那段代码写进你的模型类中。ServiceFramework会去实现里面具体的细节。
 
 ```java
-@Entity
+
 public class TagSynonym extends Model {
     @OneToMany
     private List<Tag> tags = list();
@@ -737,7 +762,7 @@ ServiceFramework中，你可以使用标准的JPA回调注解。但是我们依�
 * @AfterLoad
 
 ```java
-@Entity
+
 public class Tag extends Model {
     @AfterUpdate
     public void afterUpdate() {
@@ -755,7 +780,7 @@ ServiceFramework 任何一个模型类都能通过findService 方法获得有用
 
 
 ```java
-@Entity
+
 public class Tag extends Model {
     @AfterUpdate
     public void afterUpdate() {
