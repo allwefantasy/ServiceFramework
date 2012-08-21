@@ -9,7 +9,6 @@ import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.BooleanMemberValue;
 import net.csdn.ServiceFramwork;
-import net.csdn.annotation.association.NotMapping;
 import net.csdn.annotation.validate.Validate;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
@@ -20,14 +19,10 @@ import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
 
 import javax.persistence.Column;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.list;
 import static net.csdn.common.collections.WowCollections.map;
 import static net.csdn.enhancer.EnhancerHelper.createAnnotation;
 
@@ -46,71 +41,36 @@ public class PropertyEnhancer implements BitEnhancer {
     }
 
     @Override
-    public void enhance(CtClass ctClass) throws Exception {
-        autoInjectProperty(ctClass);
-        autoInjectGetSet(ctClass);
-    }
+    public void enhance(List<ModelClass> modelClasses) throws Exception {
 
-
-    private void notMapping(CtClass ctClass, List<String> skipFields) {
-        if (ctClass.hasAnnotation(NotMapping.class)) {
-            try {
-                NotMapping notMapping = (NotMapping) ctClass.getAnnotation(NotMapping.class);
-                for (String str : notMapping.value()) {
-                    skipFields.add(str);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        for (ModelClass modelClass : modelClasses) {
+            autoInjectProperty(modelClass);
+            autoInjectGetSet(modelClass.originClass);
         }
-        autoNotMapping(ctClass, skipFields);
-    }
 
-    //自动过滤掉
-    private void autoNotMapping(CtClass ctClass, List<String> skipFields) {
-        CtField[] fields = ctClass.getDeclaredFields();
-        for (CtField ctField : fields) {
-            guessNotMappingName(ctField, ManyToOne.class, skipFields);
-            guessNotMappingName(ctField, OneToOne.class, skipFields);
-        }
-    }
-
-    private void guessNotMappingName(CtField ctField, Class clzz, List<String> skipFields) {
-        if (ctField.hasAnnotation(clzz)) {
-            Method mappedBy = null;
-            try {
-                Object wow = ctField.getAnnotation(clzz);
-                mappedBy = wow.getClass().getMethod("mappedBy");
-                String value = (String) mappedBy.invoke(wow);
-                if (value == null || value.isEmpty()) {
-                    skipFields.add(ctField.getName() + "_id");
-                }
-            } catch (Exception e) {
-                if (mappedBy == null) {
-                    skipFields.add(ctField.getName() + "_id");
-                }
-            }
-        }
     }
 
 
-    private void autoInjectProperty(CtClass ctClass) {
+    private void autoInjectProperty(ModelClass modelClass) {
+
         //连接数据库，自动获取所有信息，然后添加属性
+        CtClass ctClass = modelClass.originClass;
         String entitySimpleName = ctClass.getSimpleName();
-        List<String> skipFields = list();
+        List<String> skipFields = modelClass.notMappingColumns();
 
-        notMapping(ctClass, skipFields);
 
         try {
             DBType dbType = ServiceFramwork.injector.getInstance(DBType.class);
             DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
 
             Map<String, String> columns = dbInfo.tableColumns.get(entitySimpleName);
-
+            if (columns == null) return;
             for (String columnName : columns.keySet()) {
                 String fieldName = columnName;
                 String fieldType = columns.get(columnName);
                 if (skipFields.contains(fieldName)) continue;
+                if (fieldName.equals("discriminator")) continue;
+
                 //对定义过的属性略过
                 boolean pass = true;
                 try {

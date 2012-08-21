@@ -5,6 +5,8 @@ import javassist.CtMethod;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
 
+import java.util.List;
+
 /**
  * BlogInfo: WilliamZhu
  * Date: 12-7-2
@@ -18,8 +20,11 @@ public class ClassMethodEnhancer implements BitEnhancer {
     }
 
     @Override
-    public void enhance(CtClass ctClass) throws Exception {
-        enhanceModelMethods(ctClass);
+    public void enhance(List<ModelClass> modelClasses) throws Exception {
+        for (ModelClass modelClass : modelClasses) {
+            enhanceModelMethods(modelClass.originClass);
+        }
+
     }
 
     private void enhanceModelMethods(CtClass ctClass) throws Exception {

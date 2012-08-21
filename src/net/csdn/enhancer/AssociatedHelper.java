@@ -1,9 +1,6 @@
 package net.csdn.enhancer;
 
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.NotFoundException;
+import javassist.*;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.SignatureAttribute;
@@ -35,6 +32,24 @@ public class AssociatedHelper {
             }
         }
         return null;
+    }
+
+    public static void findAndRemoveMethod(CtClass ctClass, String methodName) throws NotFoundException {
+        try {
+            CtMethod ctMethod = ctClass.getDeclaredMethod(methodName);
+            ctClass.getClassFile().getMethods().remove(ctMethod.getMethodInfo());
+        } catch (Exception e) {
+        }
+    }
+
+    public static void findAndRemoveMethod(CtClass ctClass, CtField ctField, String className) {
+
+        try {
+            CtMethod ctMethod = ctClass.getDeclaredMethod(ctField.getName(), new CtClass[]{ctClass.getClassPool().get(className)});
+            ctClass.getClassFile().getMethods().remove(ctMethod.getMethodInfo());
+        } catch (Exception e) {
+        }
+
     }
 
     public static String findAssociatedFieldName(CtClass ctClass, String targetClassName) throws Exception {

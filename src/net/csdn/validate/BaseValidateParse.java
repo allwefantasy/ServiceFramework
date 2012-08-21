@@ -1,6 +1,7 @@
 package net.csdn.validate;
 
 import net.csdn.annotation.validate.Validate;
+import net.csdn.reflect.ReflectHelper;
 
 import javax.persistence.Transient;
 import java.lang.reflect.Field;
@@ -42,7 +43,7 @@ public abstract class BaseValidateParse implements ValidateParse {
 
     protected Field getModelField(Class clzz, String name) {
         try {
-            Field field = clzz.getDeclaredField(name);
+            Field field = ReflectHelper.findField(clzz, name);
             field.setAccessible(true);
             return field;
         } catch (Exception e) {

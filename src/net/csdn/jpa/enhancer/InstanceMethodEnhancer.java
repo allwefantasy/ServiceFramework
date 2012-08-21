@@ -1,18 +1,20 @@
 package net.csdn.jpa.enhancer;
 
-import javassist.*;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
-import net.csdn.ServiceFramwork;
-import net.csdn.annotation.association.ManyToManyHint;
 import net.csdn.annotation.jpa.callback.*;
-import net.csdn.common.Strings;
 import net.csdn.common.settings.Settings;
-import net.csdn.enhancer.AssociatedHelper;
 import net.csdn.enhancer.BitEnhancer;
 import net.csdn.enhancer.EnhancerHelper;
-import net.csdn.jpa.type.DBInfo;
+import net.csdn.enhancer.association.ManyToManyEnhancer;
+import net.csdn.enhancer.association.ManyToOneEnhancer;
+import net.csdn.enhancer.association.OneToManyEnhancer;
+import net.csdn.enhancer.association.OneToOneEnhancer;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.map;
@@ -31,219 +33,38 @@ public class InstanceMethodEnhancer implements BitEnhancer {
         this.settings = settings;
     }
 
+    @Override
+    public void enhance(List<ModelClass> modelClasses) throws Exception {
+        for (ModelClass modelClass : modelClasses) {
+            inner_enhance(modelClass);
+        }
+
+    }
+
+
     /*
         Hibernate 的关联关系太复杂了。要么你区分控制端和被控制端。要么你必须在使用的时候将两端都设置好关联关系。
         对于mappedBy也是一个无语的设计。为什么我要通过它来区分控制端？
      */
-    @Override
-    public void enhance(CtClass ctClass) throws Exception {
+    public void inner_enhance(ModelClass modelClass) throws Exception {
+
+        CtClass ctClass = modelClass.originClass;
         CtField[] fields = ctClass.getDeclaredFields();
-//        String entityListener = "javax.persistence.EntityListeners";
-
-//        if (ctClass.hasAnnotation(EntityCallback.class)) {
-//            EntityCallback entityListeners = (EntityCallback) ctClass.getAnnotation(EntityCallback.class);
-//            String clzzName = entityListeners.value();
-//            CtClass clzz = ServiceFramwork.classPool.get(clzzName);
-//            enhanceJPACallback(clzz);
-//            AnnotationsAttribute annotationsAttribute = EnhancerHelper.getAnnotations(ctClass);
-//            ArrayMemberValue arrayMemberValue = new ArrayMemberValue(annotationsAttribute.getConstPool());
-//            ClassMemberValue[] clzzes = new ClassMemberValue[]{new ClassMemberValue(clzzName, annotationsAttribute.getConstPool())};
-//            arrayMemberValue.setValue(clzzes);
-//            EnhancerHelper.createAnnotation(annotationsAttribute, EntityListeners.class, map("value", arrayMemberValue));
-//
-//        } else {
-//
-//        }
-
         enhanceJPACallback(ctClass);
 
+        OneToOneEnhancer oneToOneEnhancer = new OneToOneEnhancer(modelClass);
+        oneToOneEnhancer.enhancer();
 
-        for (CtField ctField : fields) {
+        OneToManyEnhancer oneToManyEnhancer = new OneToManyEnhancer(modelClass);
+        oneToManyEnhancer.enhancer();
 
+        ManyToOneEnhancer manyToOneEnhancer = new ManyToOneEnhancer(modelClass);
+        manyToOneEnhancer.enhancer();
 
-            if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.OneToOne")) {
-                DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
-                Map<String, String> columns = dbInfo.tableColumns.get(ctClass.getSimpleName());
-                String clzzName = findAssociatedClassName(ctField);
-                CtField mappedByField = findAssociatedField(ctClass, clzzName);
-                if (!columns.containsKey(ctField.getName() + "_id")) {
-                    setMappedBy(ctField, mappedByField.getName(), "OneToOne");
-
-                } else {
-                    setMappedBy(mappedByField, mappedByField.getName(), "OneToOne");
-
-                }
-                setCascad(mappedByField, "OneToOne");
-                setCascad(ctField, "OneToOne");
-
-                String mappedByClassName = clzzName;
-                String mappedByFieldName = mappedByField.getName();
-
-                findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass, ctField.getName());
+        ManyToManyEnhancer manyToManyEnhancer = new ManyToManyEnhancer(modelClass);
+        manyToManyEnhancer.enhancer();
 
 
-                CtMethod wow = CtMethod.make(
-                        format("public net.csdn.jpa.association.Association {}() {" +
-                                "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
-                                "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.OneToOne"
-                        )
-                        ,
-                        ctClass);
-                ctClass.addMethod(wow);
-
-
-                CtMethod wow2 = CtMethod.make(
-                        format("public {} {}({} obj) {" +
-                                "        this.attr(\"{}\",obj);" +
-                                "        obj.attr(\"{}\",this);" +
-                                "        return this;" +
-                                "    }", ctClass.getName(), ctField.getName(), mappedByClassName, ctField.getName(), mappedByFieldName
-                        )
-                        ,
-                        ctClass);
-                ctClass.addMethod(wow2);
-
-            }
-
-            if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.OneToMany")) {
-
-
-                String clzzName = findAssociatedClassName(ctField);
-
-                String mappedByFieldName = findAssociatedFieldName(ctClass, clzzName);
-                String mappedByClassName = ctClass.getName();
-
-                //如果没有设置mappedBy我们帮他设置吧
-                setMappedBy(ctField, mappedByFieldName, "OneToMany");
-                setCascad(ctField, "OneToMany");
-
-
-                findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass, ctField.getName());
-                String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
-                String getter = "set" + propertyName;
-
-                CtMethod wow = CtMethod.make(
-                        format("public net.csdn.jpa.association.Association {}() {" +
-                                "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
-                                "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.OneToMany"
-                        )
-                        ,
-                        ctClass);
-                ctClass.addMethod(wow);
-
-                CtMethod wow2 = CtMethod.make(
-                        format("public {} {}({} obj) {" +
-                                "        this.{}.add(obj);" +
-                                "        obj.{}(this);" +
-                                "        return this;" +
-                                "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
-                        )
-                        ,
-                        ctClass);
-                ctClass.addMethod(wow2);
-
-            }
-
-
-            if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.ManyToOne")) {
-
-                String clzzName = ctField.getType().getName();
-
-                String mappedByFieldName = findAssociatedFieldName(ctClass, clzzName);
-                String mappedByClassName = ctClass.getName();
-
-                //默认设置为cascade = CascadeType.PERSIST
-                setCascad(ctField, "ManyToOne");
-
-
-                findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass, ctField.getName());
-                String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
-                String getter = "get" + propertyName;
-
-                CtMethod wow = CtMethod.make(
-                        format("public net.csdn.jpa.association.Association {}() {" +
-                                "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\");return obj;" +
-                                "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.ManyToOne"
-                        ),
-                        ctClass);
-                ctClass.addMethod(wow);
-
-
-                CtMethod wow2 = CtMethod.make(
-                        format("public {} {}({} obj) {" +
-                                "        this.{} = obj;" +
-                                "        obj.{}().add(this);" +
-                                "        return this;" +
-                                "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter
-                        ),
-                        ctClass);
-                ctClass.addMethod(wow2);
-
-
-            }
-            if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.ManyToMany")) {
-
-                String clzzName = findAssociatedClassName(ctField);
-
-                String mappedByFieldName = findAssociatedFieldName(ctClass, clzzName);
-                String mappedByClassName = ctClass.getName();
-
-                CtField other = findAssociatedField(ctClass, clzzName);
-
-                DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
-                String otherClassSimpleName = findAssociatedClass(ctClass.getClassPool(), ctField).getSimpleName();
-
-
-                String maybeTable1 = Strings.toUnderscoreCase(ctClass.getSimpleName()) + "_" + Strings.toUnderscoreCase(otherClassSimpleName);
-                String maybeTable2 = Strings.toUnderscoreCase(otherClassSimpleName) + "_" + Strings.toUnderscoreCase(ctClass.getSimpleName());
-                String finalTableName = dbInfo.tableNames.contains(maybeTable1) ? maybeTable1 : maybeTable2;
-                setCascad(ctField, "ManyToMany");
-                boolean isMaster = false;
-                if (!ctField.hasAnnotation(ManyToManyHint.class)) {
-                    if (dbInfo.tableNames.contains(maybeTable1)) {
-                        setMappedBy(other, ctField.getName(), "ManyToMany");
-                        isMaster = true;
-                        finalTableName = maybeTable1;
-
-                    }
-
-                    if (dbInfo.tableNames.contains(maybeTable2)) {
-                        setMappedBy(ctField, mappedByFieldName, "ManyToMany");
-                        finalTableName = maybeTable2;
-                    }
-                    setManyToManyHint(other);
-                }
-
-
-                findAndRemoveMethod(ctClass, ctField, mappedByClassName);
-                findAndRemoveMethod(ctClass, ctField.getName());
-                String propertyName = mappedByFieldName.substring(0, 1).toUpperCase() + mappedByFieldName.substring(1);
-                String getter = "get" + propertyName;
-
-                CtMethod wow = CtMethod.make(
-                        format("public net.csdn.jpa.association.Association {}() {" +
-                                "net.csdn.jpa.association.Association obj = new net.csdn.jpa.association.Association(this,\"{}\",\"{}\",\"{}\",\"{}\",\"{}\");return obj;" +
-                                "    }", ctField.getName(), ctField.getName(), mappedByFieldName, "javax.persistence.ManyToMany", finalTableName, isMaster
-                        ),
-                        ctClass);
-                ctClass.addMethod(wow);
-
-                CtMethod wow2 = CtMethod.make(
-                        format("public {} {}({} obj) {" +
-                                "        {}.add(obj);" +
-                                "        obj.{}().add(this);" +
-                                "        return this;" +
-                                "    }", ctClass.getName(), ctField.getName(), clzzName, ctField.getName(), getter)
-                        ,
-                        ctClass);
-                ctClass.addMethod(wow2);
-
-
-            }
-        }
         ctClass.defrost();
     }
 
@@ -300,51 +121,5 @@ public class InstanceMethodEnhancer implements BitEnhancer {
         }
     }
 
-    private void findAndRemoveMethod(CtClass ctClass, CtField ctField, String className) {
 
-        try {
-            CtMethod ctMethod = ctClass.getDeclaredMethod(ctField.getName(), new CtClass[]{ctClass.getClassPool().get(className)});
-            ctClass.getClassFile().getMethods().remove(ctMethod.getMethodInfo());
-        } catch (Exception e) {
-        }
-
-    }
-
-
-    private void findAndRemoveMethod(CtClass ctClass, String methodName) throws NotFoundException {
-        try {
-            CtMethod ctMethod = ctClass.getDeclaredMethod(methodName);
-            ctClass.getClassFile().getMethods().remove(ctMethod.getMethodInfo());
-        } catch (Exception e) {
-        }
-    }
-
-    private CtField findAssociatedField(CtClass ctClass, String targetClassName) throws Exception {
-        return AssociatedHelper.findAssociatedField(ctClass, targetClassName);
-    }
-
-    private String findAssociatedFieldName(CtClass ctClass, String targetClassName) throws Exception {
-        return AssociatedHelper.findAssociatedFieldName(ctClass, targetClassName);
-    }
-
-    private CtClass findAssociatedClass(ClassPool classPool, CtField ctField) {
-        return AssociatedHelper.findAssociatedClass(classPool, ctField);
-    }
-
-    private String findAssociatedClassName(CtField ctField) {
-        return AssociatedHelper.findAssociatedClassName(ctField);
-    }
-
-    private void setCascad(CtField ctField, String type) {
-        AssociatedHelper.setCascadeWithDefault(ctField, type);
-    }
-
-    private void setManyToManyHint(CtField ctField) {
-        AnnotationsAttribute annotationsAttribute = EnhancerHelper.getAnnotations(ctField);
-        EnhancerHelper.createAnnotation(annotationsAttribute, ManyToManyHint.class);
-    }
-
-    private void setMappedBy(CtField ctField, String mappedByFieldName, String type) {
-        AssociatedHelper.setMappedBy(ctField, mappedByFieldName, type);
-    }
 }

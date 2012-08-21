@@ -12,7 +12,7 @@ import net.csdn.jpa.enhancer.JPAEnhancer;
 import net.csdn.jpa.model.Model;
 import net.csdn.modules.scan.ScanService;
 
-import javax.persistence.Entity;
+import javax.persistence.DiscriminatorColumn;
 import java.io.DataInputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,13 +41,26 @@ public class ModelLoader implements Loader {
 
         enhancer.enhanceThisClass2(classList);
 
+
         for (CtClass ctClass : classList) {
-            try {
-                Class<Model> clzz = ctClass.toClass();
-                JPA.models.put(clzz.getSimpleName(), clzz);
-            } catch (CannotCompileException e) {
-                e.printStackTrace();
+            if (ctClass.hasAnnotation(DiscriminatorColumn.class)) {
+                loadClass(ctClass);
             }
+        }
+
+        for (CtClass ctClass : classList) {
+            if (!ctClass.hasAnnotation(DiscriminatorColumn.class)) {
+                loadClass(ctClass);
+            }
+        }
+    }
+
+    private void loadClass(CtClass ctClass) {
+        try {
+            Class<Model> clzz = ctClass.toClass();
+            JPA.models.put(clzz.getSimpleName(), clzz);
+        } catch (CannotCompileException e) {
+            e.printStackTrace();
         }
     }
 }
