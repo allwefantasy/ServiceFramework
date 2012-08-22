@@ -102,5 +102,6 @@ public class EntityEnhancer implements BitEnhancer {
             createAnnotation(modelClass.originClass, DynamicInsert.class, map());
         }
         ModelClass.fatherModelClass.addAll(fatherModelClasses);
+        ModelClass.modelClasses.addAll(modelClasses);
     }
 }

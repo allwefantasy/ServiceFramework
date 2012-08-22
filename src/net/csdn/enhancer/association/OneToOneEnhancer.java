@@ -34,7 +34,7 @@ public class OneToOneEnhancer {
                 DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
                 Map<String, String> columns = dbInfo.tableColumns.get(ctClass.getSimpleName());
                 String clzzName = AssociatedHelper.findAssociatedClassName(ctField);
-                CtField mappedByField = AssociatedHelper.findAssociatedField(ctClass, clzzName);
+                CtField mappedByField = AssociatedHelper.findAssociatedField(modelClass, clzzName);
                 if (!columns.containsKey(ctField.getName() + "_id")) {
                     AssociatedHelper.setMappedBy(ctField, mappedByField.getName(), "OneToOne");
 

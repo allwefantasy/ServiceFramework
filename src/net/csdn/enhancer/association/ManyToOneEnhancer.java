@@ -32,7 +32,7 @@ public class ManyToOneEnhancer {
 
                 String clzzName = ctField.getType().getName();
 
-                String mappedByFieldName = findAssociatedFieldName(ctClass, clzzName);
+                String mappedByFieldName = findAssociatedFieldName(modelClass, clzzName);
                 String mappedByClassName = ctClass.getName();
 
                 //默认设置为cascade = CascadeType.PERSIST

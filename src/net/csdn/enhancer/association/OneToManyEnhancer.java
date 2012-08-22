@@ -29,7 +29,7 @@ public class OneToManyEnhancer {
             if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.OneToMany")) {
                 String clzzName = findAssociatedClassName(ctField);
 
-                String mappedByFieldName = findAssociatedFieldName(ctClass, clzzName);
+                String mappedByFieldName = findAssociatedFieldName(modelClass, clzzName);
                 String mappedByClassName = ctClass.getName();
 
                 //如果没有设置mappedBy我们帮他设置吧

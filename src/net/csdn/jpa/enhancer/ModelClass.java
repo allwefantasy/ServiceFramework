@@ -20,14 +20,36 @@ import static net.csdn.common.collections.WowCollections.list;
  */
 public class ModelClass {
     public final static Set<ModelClass> fatherModelClass = new HashSet<ModelClass>();
+    public final static Set<ModelClass> modelClasses = new HashSet<ModelClass>();
     public CtClass originClass;
     public Set<ModelClass> children;
     private List<String> skipFields = list();
+
 
     public ModelClass(CtClass originClass, Set<ModelClass> children) {
         this.originClass = originClass;
         this.children = children;
         notMapping(originClass, skipFields);
+    }
+
+    public static ModelClass findModelClass(CtClass ct) {
+        for (ModelClass modelClass : modelClasses) {
+            if (ct == modelClass.originClass) {
+                return modelClass;
+            }
+        }
+        return null;
+    }
+
+    public boolean isInheritance() {
+        List<ModelClass> modelClasses = list();
+        for (ModelClass modelClass : fatherModelClass) {
+            modelClasses.addAll(modelClass.children);
+        }
+        if (modelClasses.contains(this)) {
+            return true;
+        }
+        return false;
     }
 
     public List<String> notMappingColumns() {

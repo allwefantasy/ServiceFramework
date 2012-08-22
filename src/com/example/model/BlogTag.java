@@ -20,4 +20,5 @@ public class BlogTag extends TagRelation {
     private final static Map $object_id = map(numericality, map(greater_than_or_equal_to, 2));
     @ManyToOne
     private Tag tag;
+
 }

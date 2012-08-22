@@ -2,8 +2,6 @@ package com.example.model;
 
 import net.csdn.jpa.model.Model;
 
-import javax.persistence.ManyToOne;
-
 
 /**
  * User: WilliamZhu
@@ -11,6 +9,6 @@ import javax.persistence.ManyToOne;
  * Time: 下午8:17
  */
 
-public class TagRelation extends Model{
+public class TagRelation extends Model {
 
 }

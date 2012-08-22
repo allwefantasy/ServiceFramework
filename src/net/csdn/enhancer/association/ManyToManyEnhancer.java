@@ -34,10 +34,10 @@ public class ManyToManyEnhancer {
             if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.ManyToMany")) {
                 String clzzName = findAssociatedClassName(ctField);
 
-                String mappedByFieldName = findAssociatedFieldName(ctClass, clzzName);
+                String mappedByFieldName = findAssociatedFieldName(modelClass, clzzName);
                 String mappedByClassName = ctClass.getName();
 
-                CtField other = findAssociatedField(ctClass, clzzName);
+                CtField other = findAssociatedField(modelClass, clzzName);
 
                 DBInfo dbInfo = ServiceFramwork.injector.getInstance(DBInfo.class);
                 String otherClassSimpleName = findAssociatedClass(ctClass.getClassPool(), ctField).getSimpleName();
