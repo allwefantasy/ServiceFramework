@@ -1,5 +1,12 @@
 #ServiceFramework Wiki
 
+```java
+update(2012-08-25): 添加了单表继承功能，所以如果你pull了，需要通过wow.sql重新建立表。
+另外在IDE中很可能需要手动删除eclisep项目中bin目录的META-INFO/persistence.xml或者
+Idea intellij out/production/META-INFO/persistence.xml的文件。之后启动或者运行测试用例
+会自动重新生成。
+```
+
 ##  创建一个新的ServiceFramework 项目
 
 
