@@ -37,7 +37,7 @@ CREATE TABLE `tag` (
   UNIQUE KEY `name` (`name`) USING HASH
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-CREATE TABLE `blog_tag` (
+CREATE TABLE `tag_relation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `tag_id` int(11) DEFAULT NULL,
   `object_id` int(11) DEFAULT NULL,
@@ -48,9 +48,10 @@ CREATE TABLE `blog_tag` (
   `content_length` int(11) DEFAULT NULL,
   `frequency` int(11) DEFAULT NULL,
   `channel_id` int(11) NOT NULL DEFAULT '-1',
+  `discriminator` char(20) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `created_at_index` (`created_at`),
   KEY `weight_index` (`weight`),
   KEY `tag_id_index` (`tag_id`) USING HASH,
   KEY `object_id_index` (`object_id`) USING HASH
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
