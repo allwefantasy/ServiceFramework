@@ -1,6 +1,8 @@
 package net.csdn.enhancer;
 
-import javassist.CtClass;
+import net.csdn.jpa.enhancer.ModelClass;
+
+import java.util.List;
 
 /**
  * BlogInfo: WilliamZhu
@@ -8,6 +10,6 @@ import javassist.CtClass;
  * Time: 下午8:38
  */
 public interface BitEnhancer {
-    public void enhance(CtClass ctClass) throws Exception;
+    public void enhance(List<ModelClass> modelClasses) throws Exception;
 
 }

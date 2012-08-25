@@ -4,6 +4,7 @@ import com.example.model.*;
 import net.csdn.junit.IocTest;
 import net.csdn.modules.persist.mysql.MysqlClient;
 import net.csdn.reflect.ReflectHelper;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
@@ -19,6 +20,28 @@ import static org.junit.Assert.assertTrue;
  */
 public class TagTest extends IocTest {
 
+
+    public void testInheritance() {
+        Tag tag = Tag.create(map("name", "java"));
+        tag.save();
+        dbCommit();
+
+        TagRelation tagRelation = BlogTag.create(map("object_id", 17, "tag", tag));
+        tagRelation.save();
+
+        tagRelation = NewsTag.create(map("object_id", 17, "tag", tag));
+        tagRelation.save();
+        dbCommit();
+
+        Assert.assertTrue(BlogTag.all().fetch().size() == 1);
+        Assert.assertTrue(TagRelation.all().fetch().size() == 2);
+
+        List<BlogTag> blogTags = BlogTag.all().fetch();
+        Assert.assertTrue(blogTags.get(0).attr("object_id", Integer.class) == 17);
+
+        TagRelation.deleteAll();
+        Tag.deleteAll();
+    }
 
     @Test
     public void testSqlQuery2() {

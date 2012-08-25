@@ -4,6 +4,7 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
+import javassist.bytecode.AttributeInfo;
 import javassist.bytecode.BadBytecode;
 import javassist.bytecode.SignatureAttribute;
 import javassist.bytecode.annotation.MemberValue;
@@ -11,6 +12,7 @@ import javassist.bytecode.annotation.MemberValue;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -47,7 +49,95 @@ public class EnhancerHelper {
         }
     }
 
+    public static void createAnnotation(CtField ctField, Class<? extends Annotation> annotationType, Map<String, MemberValue> members) {
+        if (ctField.hasAnnotation(annotationType)) return;
+
+        AnnotationsAttribute attr = new AnnotationsAttribute(ctField.getFieldInfo().getConstPool(), AnnotationsAttribute.visibleTag);
+        boolean isNewAttr = true;
+        List<AttributeInfo> attributeInfos = ctField.getFieldInfo().getAttributes();
+        for (AttributeInfo attributeInfo : attributeInfos) {
+            if (attributeInfo instanceof AnnotationsAttribute) {
+                attr = (AnnotationsAttribute) attributeInfo;
+                isNewAttr = false;
+            }
+        }
+
+        javassist.bytecode.annotation.Annotation[] annotations = attr.getAnnotations();
+        javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation(annotationType.getName(), attr.getConstPool());
+
+        for (javassist.bytecode.annotation.Annotation annotation1 : annotations) {
+            if (annotation1.getTypeName().equals(annotationType.getName())) {
+                annotation = annotation1;
+                break;
+            }
+        }
+
+        for (Map.Entry<String, MemberValue> member : members.entrySet()) {
+            try {
+                if (annotation.getMemberValue(member.getKey()) == null) {
+                    annotation.addMemberValue(member.getKey(), member.getValue());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                annotation.addMemberValue(member.getKey(), member.getValue());
+            }
+
+        }
+
+        attr.addAnnotation(annotation);
+        if (isNewAttr) {
+            ctField.getFieldInfo().addAttribute(attr);
+        }
+
+    }
+
+    public static void createAnnotation(CtClass ctClass, Class<? extends Annotation> annotationType, Map<String, MemberValue> members) {
+
+
+        if (ctClass.hasAnnotation(annotationType)) return;
+
+        AnnotationsAttribute attr = new AnnotationsAttribute(ctClass.getClassFile().getConstPool(), AnnotationsAttribute.visibleTag);
+        boolean isNewAttr = true;
+        List<AttributeInfo> attributeInfos = ctClass.getClassFile2().getAttributes();
+        for (AttributeInfo attributeInfo : attributeInfos) {
+            if (attributeInfo instanceof AnnotationsAttribute) {
+                attr = (AnnotationsAttribute) attributeInfo;
+                isNewAttr = false;
+            }
+        }
+
+        javassist.bytecode.annotation.Annotation[] annotations = attr.getAnnotations();
+        javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation(annotationType.getName(), attr.getConstPool());
+
+        for (javassist.bytecode.annotation.Annotation annotation1 : annotations) {
+            if (annotation1.getTypeName().equals(annotationType.getName())) {
+                annotation = annotation1;
+                break;
+            }
+        }
+
+        for (Map.Entry<String, MemberValue> member : members.entrySet()) {
+            try {
+                if (annotation.getMemberValue(member.getKey()) == null) {
+                    annotation.addMemberValue(member.getKey(), member.getValue());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                annotation.addMemberValue(member.getKey(), member.getValue());
+            }
+
+        }
+
+        attr.addAnnotation(annotation);
+
+        if (isNewAttr) {
+            ctClass.getClassFile().addAttribute(attr);
+        }
+
+    }
+
     public static void createAnnotation(AnnotationsAttribute attribute, Class<? extends Annotation> annotationType, Map<String, MemberValue> members) {
+
         javassist.bytecode.annotation.Annotation annotation = new javassist.bytecode.annotation.Annotation(annotationType.getName(), attribute.getConstPool());
         for (Map.Entry<String, MemberValue> member : members.entrySet()) {
             annotation.addMemberValue(member.getKey(), member.getValue());

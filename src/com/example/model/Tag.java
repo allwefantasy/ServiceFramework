@@ -35,6 +35,9 @@ public class Tag extends Model {
     @OneToMany
     private List<BlogTag> blog_tags = list();
 
+    @OneToMany
+    private List<NewsTag> news_tags = list();
+
 
     @ManyToMany
     private List<TagGroup> tag_groups = list();

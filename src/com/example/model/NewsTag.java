@@ -11,14 +11,12 @@ import static net.csdn.validate.ValidateHelper.numericality;
 
 /**
  * User: WilliamZhu
- * Date: 12-7-23
- * Time: 下午4:53
+ * Date: 12-8-20
+ * Time: 下午8:17
  */
-public class BlogTag extends TagRelation {
-
+public class NewsTag extends TagRelation {
     @Validate//这个限制只是为了展示用法
     private final static Map $object_id = map(numericality, map(greater_than_or_equal_to, 2));
     @ManyToOne
     private Tag tag;
-
 }

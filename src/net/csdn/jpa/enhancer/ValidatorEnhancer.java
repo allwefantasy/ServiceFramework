@@ -4,6 +4,8 @@ import javassist.CtClass;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
 
+import java.util.List;
+
 
 /**
  * BlogInfo: WilliamZhu
@@ -18,8 +20,17 @@ public class ValidatorEnhancer implements BitEnhancer {
         this.settings = settings;
     }
 
+
     @Override
-    public void enhance(CtClass ctClass) {
+    public void enhance(List<ModelClass> modelClasses) throws Exception {
+
+        for (ModelClass modelClass : modelClasses) {
+            inner_enhance(modelClass.originClass);
+        }
+
+    }
+
+    public void inner_enhance(CtClass ctClass) {
 //        CtField[] ctFields = ctClass.getFields();
 //        for (CtField ctField : ctFields) {
 //
