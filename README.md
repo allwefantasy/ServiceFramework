@@ -148,6 +148,14 @@ net.csdn.bootstrap.Application
 
 默认开启9400端口。你可以修改config/application.yml文件来改变端口。
 接着可以通过curl 进行测试访问。
+举个例子:
+常见一个tag_group:
+
+```java
+curl -XPOST 'http://127.0.0.1:9400/tag_group' -d 'name=java'
+```
+
+这个时候你可以查看数据库，应该就有相应的记录了。
 
 ## Model 
 这个章节，我们会知道 ServiceFramework 模型层 完整的使用。
