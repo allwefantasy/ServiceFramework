@@ -303,7 +303,7 @@ public class JPQL {
         return (JPABase) results.get(0);
     }
 
-    public JPABase create(Class clzz, Map<String, String> params) throws Exception {
+    public JPABase create(Class clzz, Map<String, Object> params) throws Exception {
         Object o = clzz.newInstance();
         ParamBinding paramBinding = new ParamBinding();
         paramBinding.parse(params);
