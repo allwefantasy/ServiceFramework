@@ -1,5 +1,15 @@
 #ServiceFramework Wiki
 
+```java
+update(2012-09-25): @simplechen 同学写了一些使用心得。 大家可以参看下 https://github.com/allwefantasy/ServiceFramework/issues/12 
+因为ServiceFramework 没有传统的页面(输出是json或者xml),所以需要curl 提交post数据。
+
+update(2012-08-25): 添加了单表继承功能，所以如果你pull了，需要通过wow.sql重新建立表。
+另外在IDE中很可能需要手动删除eclisep项目中bin目录的META-INFO/persistence.xml或者
+Idea intellij out/production/META-INFO/persistence.xml的文件。之后启动或者运行测试用例
+会自动重新生成。
+```
+
 ##  创建一个新的ServiceFramework 项目
 
 
@@ -141,6 +151,14 @@ net.csdn.bootstrap.Application
 
 默认开启9400端口。你可以修改config/application.yml文件来改变端口。
 接着可以通过curl 进行测试访问。
+举个例子:
+常见一个tag_group:
+
+```java
+curl -XPOST 'http://127.0.0.1:9400/tag_group' -d 'name=java'
+```
+
+这个时候你可以查看数据库，应该就有相应的记录了。
 
 ## Model 
 这个章节，我们会知道 ServiceFramework 模型层 完整的使用。
