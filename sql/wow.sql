@@ -4,7 +4,7 @@ CREATE TABLE `tag_wiki` (
   `tag_id` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
-  UNIQUE KEY `name` (`content`) USING HASH
+  UNIQUE KEY `name` (`content`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `tag_synonym` (
@@ -34,7 +34,7 @@ CREATE TABLE `tag` (
   `weight` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`),
-  UNIQUE KEY `name` (`name`) USING HASH
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 CREATE TABLE `tag_relation` (
@@ -52,6 +52,6 @@ CREATE TABLE `tag_relation` (
   PRIMARY KEY (`id`),
   KEY `created_at_index` (`created_at`),
   KEY `weight_index` (`weight`),
-  KEY `tag_id_index` (`tag_id`) USING HASH,
-  KEY `object_id_index` (`object_id`) USING HASH
+  KEY `tag_id_index` (`tag_id`),
+  KEY `object_id_index` (`object_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
