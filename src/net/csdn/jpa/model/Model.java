@@ -24,7 +24,7 @@ public class Model extends JPABase {
 
     public static MysqlClient nativeSqlClient() {
         //TODO:竟然在这里使用了  ServiceFramwork.injector 疯掉了....  去掉，去掉....
-        return ServiceFramwork.injector.getInstance(MysqlClient.class);
+        return ServiceFramwork.injector.getInstance(MysqlClient.class).defaultMysqlService();
     }
 
     //----------------------------------------------------------------------------------

@@ -21,7 +21,7 @@ import static net.csdn.modules.http.support.HttpStatus.HTTP_400;
 public class TagAdminController extends ApplicationController {
 
     @BeforeFilter
-    private final static Map $find_tag = map(only, list("add_tag_to_tag_group", "destroy_tag","destroy_tag_from_tag_group"));
+    private final static Map $find_tag = map(only, list("add_tag_to_tag_group", "destroy_tag", "destroy_tag_from_tag_group"));
 
     @BeforeFilter
     private final static Map $find_tag_group = map(only, list("add_tag_to_tag_group", "destroy_tag_from_tag_group", "destroy_tag_group"));
@@ -39,7 +39,6 @@ public class TagAdminController extends ApplicationController {
 
         render(ok());
     }
-
 
 
     @At(path = "/tag_group", types = DELETE)
@@ -97,6 +96,15 @@ public class TagAdminController extends ApplicationController {
     @At(path = "/tag", types = {POST, PUT})
     public void create_tag() {
         Tag tag = Tag.create(params());
+        if (!tag.save()) {
+            render(HTTP_400, tag.validateResults);
+        }
+        render(ok());
+    }
+
+    @At(path = "/json/tag", types = {POST, PUT})
+    public void create_tag_from_json() {
+        Tag tag = Tag.create(paramAsJSON());
         if (!tag.save()) {
             render(HTTP_400, tag.validateResults);
         }
