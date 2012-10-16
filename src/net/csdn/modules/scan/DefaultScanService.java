@@ -40,16 +40,16 @@ public class DefaultScanService implements ScanService {
     @Override
     public List<String> classNames(String packageName, Class baseClass) {
         URL class_file_base_url = ClasspathUrlFinder.findClassBase(baseClass);
-        File packageDir = new File(class_file_base_url.getPath() + packageName.replaceAll("\\.", File.separator));
+        String packageNameWithDot = packageName.replace(".", File.separator);
+        File packageDir = new File(class_file_base_url.getPath() + packageNameWithDot);
         List<String> classes = new ArrayList<String>();
         List<File> files = new ArrayList<File>();
         iterateDir(packageDir, files);
         for (File f : files) {
             String path = f.getPath();
-            String temp = packageName.replaceAll("\\.", File.separator);
-            int pos = StringUtils.indexOfIgnoreCase(path, temp);
+            int pos = StringUtils.indexOfIgnoreCase(path, packageNameWithDot);
             if (pos == -1) pos = 0;
-            path = path.substring(pos, path.length() - 6).replaceAll(File.separator, "\\.");
+            path = path.substring(pos, path.length() - 6).replace(File.separator, ".");
             classes.add(path);
         }
         return classes;

@@ -21,19 +21,19 @@ public class ParamBinding {
      b[c]=12
      [] 是为了兼容rails的表单风格。 "."则是传统Java风格
     */
-    private Map<String, Map<String, String>> _children = new HashMap();
-    private Map<String, String> rootValues = new HashMap<String, String>();
+    private Map<String, Map<String, Object>> _children = new HashMap();
+    private Map<String, Object> rootValues = new HashMap<String, Object>();
     private final static String keyPartDelimiter = "[\\.\\[\\]]+";
 
     public void toModel(Object model) {
-        for (Map.Entry<String, String> entry : rootValues.entrySet()) {
+        for (Map.Entry<String, Object> entry : rootValues.entrySet()) {
             try {
                 BeanUtils.setProperty(model, entry.getKey(), entry.getValue());
             } catch (Exception e) {
 
             }
         }
-        for (Map.Entry<String, Map<String, String>> entry : _children.entrySet()) {
+        for (Map.Entry<String, Map<String, Object>> entry : _children.entrySet()) {
             Object newModel;
             try {
                 Object obj = BeanUtils.getProperty(model, entry.getKey());
@@ -48,7 +48,7 @@ public class ParamBinding {
                 e.printStackTrace();
                 continue;
             }
-            for (Map.Entry<String, String> entry1 : entry.getValue().entrySet()) {
+            for (Map.Entry<String, Object> entry1 : entry.getValue().entrySet()) {
                 try {
                     BeanUtils.setProperty(newModel, entry1.getKey(), entry1.getValue());
                     BeanUtils.setProperty(model, entry.getKey(), newModel);
@@ -59,8 +59,8 @@ public class ParamBinding {
         }
     }
 
-    public void parse(Map<String, String> params) {
-        for (Map.Entry<String, String> entry : params.entrySet()) {
+    public void parse(Map<String, Object> params) {
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
             String[] keys = entry.getKey().split(keyPartDelimiter);
             if (keys.length > 2) throw new ArgumentErrorException("不支持超过三级层次的参数传递");
             if (keys.length == 1) {

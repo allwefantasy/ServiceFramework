@@ -2,7 +2,6 @@ package test.com.example.model;
 
 import com.example.model.*;
 import net.csdn.junit.IocTest;
-import net.csdn.modules.persist.mysql.MysqlClient;
 import net.csdn.reflect.ReflectHelper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -43,28 +42,29 @@ public class TagTest extends IocTest {
         Tag.deleteAll();
     }
 
-    @Test
-    public void testSqlQuery2() {
-        Tag tag = Tag.create(map("name", "java"));
-        tag.save();
-        dbCommit();
-        List<Map> lists = Tag.findBySql("select * from Tag");
-        assertTrue(lists.size() == 1);
-        Tag.deleteAll();
 
-    }
 
     @Test
     public void testSqlQuery() {
         Tag tag = Tag.create(map("name", "java"));
         tag.save();
         dbCommit();
-        MysqlClient mysqlClient = injector.getInstance(MysqlClient.class);
-        List<Map> lists = mysqlClient.query("select * from Tag");
+        List<Map> lists = Tag.nativeSqlClient().query("select * from Tag");
         assertTrue(lists.size() == 1);
         Tag.deleteAll();
 
     }
+
+    @Test
+    public void testSqlQuery2() {
+
+        Tag.nativeSqlClient().execute("insert into tag(name) value('java')");
+        List<Map> lists = Tag.nativeSqlClient().query("select * from Tag");
+        assertTrue(lists.size() == 1);
+        Tag.deleteAll();
+
+    }
+
 
     @Test
     public void testOneToOne() {
@@ -215,23 +215,61 @@ public class TagTest extends IocTest {
     }
 
     @Test
-    public void manyToOneOrOneToMany() {
+    public void OneToMany() {
         String tagName = "jack";
         String tagSynonymName = "wowo";
+
         Tag tag = Tag.create(map("name", tagName));
-        tag.save();
-        dbCommit();
-
-        tag = Tag.findById(tag.id());
-
         tag.associate("tag_synonym").set(TagSynonym.create(map("name", tagSynonymName)));
+        tag.save();
         dbCommit();
 
         TagSynonym tagSynonym = TagSynonym.where("name=:name", map("name", tagSynonymName)).single_fetch();
         assertTrue(tagSynonym != null);
 
-        tag = Tag.findById(tag.id());
-        TagSynonym.delete("name=?", tagSynonymName);
+        tag = Tag.where("name=:name", map("name", tagName)).single_fetch();
+        assertTrue(tag != null);
+        tagSynonym.delete();
+        tag.delete();
+    }
+
+    @Test
+    public void OneToMany2() {
+        String tagName = "jack";
+        String tagSynonymName = "wowo";
+
+        Tag tag = Tag.create(map("name", tagName));
+        tag.tag_synonym().set(TagSynonym.create(map("name", tagSynonymName)));
+
+        tag.save();
+        dbCommit();
+
+        TagSynonym tagSynonym = TagSynonym.where("name=:name", map("name", tagSynonymName)).single_fetch();
+        assertTrue(tagSynonym != null);
+
+        tag = Tag.where("name=:name", map("name", tagName)).single_fetch();
+        assertTrue(tag != null);
+        tagSynonym.delete();
+        tag.delete();
+    }
+
+    @Test
+    public void manyToOne() {
+        String tagName = "jack";
+        String tagSynonymName = "wowo";
+
+        TagSynonym tagSynonym = TagSynonym.create(map("name", tagSynonymName));
+        Tag tag = Tag.create(map("name", tagName));
+        tagSynonym.associate("tags").add(tag);
+        tagSynonym.save();
+        dbCommit();
+
+        tagSynonym = TagSynonym.where("name=:name", map("name", tagSynonymName)).single_fetch();
+        assertTrue(tagSynonym != null);
+
+        tag = Tag.where("name=:name", map("name", tagName)).single_fetch();
+        assertTrue(tag != null);
+        tagSynonym.delete();
         tag.delete();
     }
 
