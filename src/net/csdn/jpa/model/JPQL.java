@@ -168,7 +168,7 @@ public class JPQL {
         if (joins.contains("join")) {
             this.joins = parseJoin(joins);
         } else {
-            this.joins = "inner join fetch" + parseJoin(joins);
+            this.joins = " inner join fetch " + parseJoin(joins);
         }
         return this;
     }
