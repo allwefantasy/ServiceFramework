@@ -1,10 +1,15 @@
 package com.example.model;
 
+import net.csdn.AutoGeneration;
 import net.csdn.annotation.jpa.callback.AfterSave;
 import net.csdn.annotation.validate.Validate;
+import net.csdn.jpa.association.Association;
 import net.csdn.jpa.model.Model;
 
-import javax.persistence.*;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +47,9 @@ public class Tag extends Model {
     @ManyToMany
     private List<TagGroup> tag_groups = list();
 
+    public Association tag_synonym() {
+        throw new AutoGeneration();
+    }
 
     @AfterSave
     public void afterSave() {

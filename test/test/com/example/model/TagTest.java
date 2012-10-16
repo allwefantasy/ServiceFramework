@@ -234,6 +234,26 @@ public class TagTest extends IocTest {
     }
 
     @Test
+    public void OneToMany2() {
+        String tagName = "jack";
+        String tagSynonymName = "wowo";
+
+        Tag tag = Tag.create(map("name", tagName));
+        tag.tag_synonym().set(TagSynonym.create(map("name", tagSynonymName)));
+
+        tag.save();
+        dbCommit();
+
+        TagSynonym tagSynonym = TagSynonym.where("name=:name", map("name", tagSynonymName)).single_fetch();
+        assertTrue(tagSynonym != null);
+
+        tag = Tag.where("name=:name", map("name", tagName)).single_fetch();
+        assertTrue(tag != null);
+        tagSynonym.delete();
+        tag.delete();
+    }
+
+    @Test
     public void manyToOne() {
         String tagName = "jack";
         String tagSynonymName = "wowo";
