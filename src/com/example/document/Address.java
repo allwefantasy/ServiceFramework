@@ -1,6 +1,7 @@
 package com.example.document;
 
 import net.csdn.mongo.Document;
+import net.csdn.mongo.association.Association;
 import net.csdn.mongo.association.Options;
 
 import static net.csdn.common.collections.WowCollections.map;
@@ -21,6 +22,10 @@ public class Address extends Document {
                 )
 
         ));
+    }
+
+    public Association person() {
+        return parent$_associations.get("person").doNotUseMePlease_newMe(this);
     }
 
 

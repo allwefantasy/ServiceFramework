@@ -1,5 +1,6 @@
 package net.csdn.mongo.association;
 
+import net.csdn.mongo.Criteria;
 import net.csdn.mongo.Document;
 import net.csdn.reflect.ReflectHelper;
 
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.list;
+import static net.csdn.common.collections.WowCollections.map;
 
 /**
  * User: WilliamZhu
@@ -50,6 +52,7 @@ public class HasManyAssociation implements Association {
         return null;
     }
 
+    @Override
     public void save() {
         document.save();
         for (Document subDoc : documentList) {
@@ -57,6 +60,12 @@ public class HasManyAssociation implements Association {
             subDoc.save();
         }
     }
+
+    @Override
+    public Criteria filter() {
+        return new Criteria(kclass).where(map(foreignKey, document.attributes().get("_id")));
+    }
+
 
     @Override
     public Association doNotUseMePlease_newMe(Document document) {

@@ -1,8 +1,12 @@
 package net.csdn.mongo.association;
 
+import net.csdn.mongo.Criteria;
 import net.csdn.mongo.Document;
+import net.csdn.reflect.ReflectHelper;
 
 import java.util.Map;
+
+import static net.csdn.common.collections.WowCollections.map;
 
 /**
  * User: WilliamZhu
@@ -11,19 +15,31 @@ import java.util.Map;
  */
 public class BelongsToAssociation implements Association {
 
-    private Object foreignKey;
+    private String foreignKey;
     private Document document;
+    private Document parentDocument;
+    private Class kclass;
+    private String name;
 
 
-    public BelongsToAssociation(String name,Options options) {
-
+    public BelongsToAssociation(String name, Options options) {
+        kclass = options.kClass();
+        foreignKey = options.foreignKey();
+        this.name = name;
 
     }
 
+    private BelongsToAssociation(Class kclass, String foreignKey, Document document) {
+        this.kclass = kclass;
+        this.foreignKey = foreignKey;
+        this.document = document;
+
+    }
 
     @Override
     public Association build(Map params) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        parentDocument = (Document) ReflectHelper.staticMethod(kclass, "create", params);
+        return this;
     }
 
     @Override
@@ -33,6 +49,20 @@ public class BelongsToAssociation implements Association {
 
     @Override
     public Association doNotUseMePlease_newMe(Document document) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        BelongsToAssociation belongsToAssociation = new BelongsToAssociation(kclass, foreignKey, document);
+        document.associations().put(name, belongsToAssociation);
+        return belongsToAssociation;
+    }
+
+    @Override
+    public void save() {
+        parentDocument.save();
+        parentDocument.reload();
+        document.attributes().put(foreignKey, parentDocument.attributes().get("_id"));
+    }
+
+    @Override
+    public Criteria filter() {
+        return new Criteria(kclass).where(map("_id", document.attributes().get(foreignKey)));
     }
 }

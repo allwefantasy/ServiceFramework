@@ -18,10 +18,19 @@ public class Person extends Document {
                 Options.n_kclass, Address.class,
                 Options.n_foreignKey, "person_id"
         )));
+
+        hasOne("idcard", new Options(map(
+                Options.n_kclass, IdCard.class,
+                Options.n_foreignKey, "person_id"
+        )));
     }
 
     public Association addresses() {
         return parent$_associations.get("addresses").doNotUseMePlease_newMe(this);
+    }
+
+    public Association idcard() {
+        return parent$_associations.get("idcard").doNotUseMePlease_newMe(this);
     }
 
 

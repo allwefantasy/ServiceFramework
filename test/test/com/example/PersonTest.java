@@ -27,7 +27,22 @@ public class PersonTest extends IocTest {
                 "bodyLength", 10
         ));
 
-        person.addresses().build(map("location", "天国的世界"));
+        person.addresses().build(map("_id", 77, "location", "天国的世界")).save();
+        person = Person.findById(100);
+        List<Address> addresses = person.addresses().filter().fetch();
+        Assert.assertTrue(addresses.size() == 1);
+
+        Address address = addresses.get(0);
+        Person person1 = address.person().filter().singleFetch();
+        Assert.assertTrue(person1.getName().equals(person.getName()));
+
+        person.remove();
+
+        for (Address address1 : addresses) {
+            address1.remove();
+        }
+
+
     }
 
     @Test

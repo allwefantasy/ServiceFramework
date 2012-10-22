@@ -199,20 +199,23 @@ public class Document {
 
     //Association methods
     public static HasManyAssociation hasMany(String name, Options options) {
-        HasManyAssociation association = new HasManyAssociation(name,options);
+        HasManyAssociation association = new HasManyAssociation(name, options);
+        if (parent$_associations == null) parent$_associations = map();
         parent$_associations.put(name, association);
         return association;
     }
 
-    public HasOneAssociation hasOne(String name, Options options) {
-        HasOneAssociation association = new HasOneAssociation(name,options);
+    public static HasOneAssociation hasOne(String name, Options options) {
+        HasOneAssociation association = new HasOneAssociation(name, options);
+        if (parent$_associations == null) parent$_associations = map();
         parent$_associations.put(name, association);
         return association;
 
     }
 
     public static BelongsToAssociation belongsTo(String name, Options options) {
-        BelongsToAssociation association = new BelongsToAssociation(name,options);
+        BelongsToAssociation association = new BelongsToAssociation(name, options);
+        if (parent$_associations == null) parent$_associations = map();
         parent$_associations.put(name, association);
         return association;
     }
