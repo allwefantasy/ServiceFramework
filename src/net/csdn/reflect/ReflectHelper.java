@@ -125,6 +125,9 @@ public class ReflectHelper {
         }
     }
 
+    public static Object staticMethod(Class obj, String methodName, Object... params) {
+        return method(obj, methodName, params);
+    }
 
     public static Object method(Class obj, String methodName, Object... params) {
         try {

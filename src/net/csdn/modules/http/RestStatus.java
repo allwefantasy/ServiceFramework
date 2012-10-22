@@ -25,7 +25,7 @@ public enum RestStatus {
      * used in the request, for example:
      * <ul>
      * <li>GET: an entity corresponding to the requested resource is sent in the response;</li>
-     * <li>HEAD: the entity-header fields corresponding to the requested resource are sent in the response without any message-body;</li>
+     * <li>HEAD: the entity-header $fields corresponding to the requested resource are sent in the response without any message-body;</li>
      * <li>POST: an entity describing or containing the result of the action;</li>
      * <li>TRACE: an entity containing the request message as received by the end server.</li>
      * </ul>
@@ -75,7 +75,7 @@ public enum RestStatus {
      * applied to the document currently in the user agent's active view.
      * <p/>
      * <p>The 204 response MUST NOT include a message-body, and thus is always terminated by the first empty
-     * line after the header fields.
+     * line after the header $fields.
      */
     NO_CONTENT(204),
     /**
@@ -90,10 +90,10 @@ public enum RestStatus {
      * header field (section 14.35) indicating the desired range, and MAY have included an If-Range header
      * field (section 14.27) to make the request conditional.
      * <p/>
-     * <p>The response MUST include the following header fields:
+     * <p>The response MUST include the following header $fields:
      * <ul>
      * <li>Either a Content-Range header field (section 14.16) indicating the range included with this response,
-     * or a multipart/byteranges Content-Type including Content-Range fields for each part. If a Content-Length
+     * or a multipart/byteranges Content-Type including Content-Range $fields for each part. If a Content-Length
      * header field is present in the response, its value MUST match the actual number of OCTETs transmitted in
      * the message-body.</li>
      * <li>Date</li>
@@ -190,9 +190,9 @@ public enum RestStatus {
     /**
      * If the client has performed a conditional GET request and access is allowed, but the document has not been
      * modified, the server SHOULD respond with this status code. The 304 response MUST NOT contain a message-body,
-     * and thus is always terminated by the first empty line after the header fields.
+     * and thus is always terminated by the first empty line after the header $fields.
      * <p/>
-     * <p>The response MUST include the following header fields:
+     * <p>The response MUST include the following header $fields:
      * <ul>
      * <li>Date, unless its omission is required by section 14.18.1
      * If a clockless origin server obeys these rules, and proxies and clients add their own Date to any
@@ -343,7 +343,7 @@ public enum RestStatus {
      */
     LENGTH_REQUIRED(411),
     /**
-     * The precondition given in one or more of the request-header fields evaluated to false when it was tested on
+     * The precondition given in one or more of the request-header $fields evaluated to false when it was tested on
      * the server. This response code allows the client to place preconditions on the current resource metainformation
      * (header field data) and thus prevent the requested method from being applied to a resource other than the one
      * intended.

@@ -99,7 +99,7 @@ public class TagController extends ApplicationController {
         //设置json输出
         config.setExcludes(new String[]{"blog_tags"});
         config.setPretty(true);
-        // JSONArray data = remoteDataService.findByIds(param("type"), param("fields"), fetch_object_ids(models));
+        // JSONArray data = remoteDataService.findByIds(param("type"), param("$fields"), fetch_object_ids(models));
         render(map("total", count, "data", models));
     }
 

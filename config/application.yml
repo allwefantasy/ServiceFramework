@@ -45,9 +45,13 @@ orm:
     max_statements: 50
     idle_test_period: 3000
 ###############application config##################
+#'model' for relational database  like MySQL
+#'document' for NoSQL database model configuration,  MongoDB
+
 application:
     controller: com.example.controller
     model:      com.example.model
+    document:   com.example.document
     service:    com.example.service
     util:       com.example.util
     test:       test.com.example

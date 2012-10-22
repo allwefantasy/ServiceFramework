@@ -1525,6 +1525,12 @@ end
         return sb.toString();
     }
 
+
+    public static  String  extractFieldFromGetSetMethod(String methodName) {
+        methodName = methodName.substring(3);
+        methodName = methodName.substring(0, 1).toLowerCase() + methodName.substring(1);
+        return methodName;
+    }
     /**
      * Determine whether the given array is empty:
      * i.e. <code>null</code> or of zero length.
@@ -1545,6 +1551,8 @@ end
     private static boolean isEmpty(Collection collection) {
         return (collection == null || collection.isEmpty());
     }
+
+
 
     private Strings() {
 

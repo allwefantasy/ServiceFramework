@@ -59,6 +59,7 @@ public class Bootstrap {
         loaders.add(new LoggerLoader());
         loaders.add(new ModuelLoader());
         loaders.add(new ModelLoader());
+        loaders.add(new DocumentLoader());
         loaders.add(new ServiceLoader());
         loaders.add(new UtilLoader());
         loaders.add(new ControllerLoader());
@@ -70,8 +71,6 @@ public class Bootstrap {
         JPA.setSettings(tuple.v1());
         isSystemConfigured = true;
     }
-
-
 
 
     public static void isLoaded(String name) {

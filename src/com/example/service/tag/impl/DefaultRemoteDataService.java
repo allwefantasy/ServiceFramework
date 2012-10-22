@@ -21,7 +21,7 @@ public class DefaultRemoteDataService implements RemoteDataService {
         String port = "";
         HashMap<String, String> hm = new HashMap<String, String>();
         hm.put("ids", ids);
-        hm.put("fields", fields);
+        hm.put("$fields", fields);
         HttpTransportService.SResponse post = httpTransportService.post(new Url("http://" + host + ":" + port + "/store/" + getTypeName(typeName) + "/list/ids"), hm);
         if (post.getStatus() != 200) {
             throw new ArgumentErrorException("查询具体文章失败");

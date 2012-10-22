@@ -37,7 +37,7 @@ public class ThreadLocals {
     public static void clearReferencesThreadLocals() {
         try {
             Thread[] threads = getThreads();
-            // Make the fields in the Thread class that store ThreadLocals
+            // Make the $fields in the Thread class that store ThreadLocals
             // accessible
             Field threadLocalsField = Thread.class.getDeclaredField("threadLocals");
             threadLocalsField.setAccessible(true);

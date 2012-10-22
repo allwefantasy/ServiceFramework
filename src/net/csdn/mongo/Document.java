@@ -1,0 +1,250 @@
+package net.csdn.mongo;
+
+import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import net.csdn.AutoGeneration;
+import net.csdn.ServiceFramwork;
+import net.csdn.mongo.association.HasManyAssociation;
+import net.csdn.mongo.association.Options;
+import net.csdn.mongo.commands.Save;
+import net.csdn.reflect.ReflectHelper;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static net.csdn.common.collections.WowCollections.map;
+
+/**
+ * User: WilliamZhu
+ * Date: 12-10-16
+ * Time: 下午8:11
+ * # The +Document+ class is the Parent Class of All MongoDB model,
+ * # this means any MongoDB model class should extends this class.
+ * #
+ * # Once your class extends Document,you get all ODM(Object Data Mapping )
+ * # and +net.csdn.mongo.Criteria+ (A convenient DSL) power.
+ * #
+ * # Example setup:
+ * #
+ * # ```java
+ * # public class Person extends Document{
+ * #    static{
+ * #         storeIn("persons")
+ * #     }
+ * # }
+ * #```
+ * #
+ */
+public class Document {
+
+    //instance attributes
+    protected DBObject attributes = new BasicDBObject();
+    protected Map<String, Object> associations = map();
+    protected boolean new_record = true;
+
+
+    /*
+     *  +Class Methods+ will be copied into subclass when system startup.
+     *  you should access them using class methods instead of directly accessing;
+     *
+     *  Example:
+     *
+     *  ```java
+     *  Person.collection();
+     *  ```
+     *  instead of
+     *
+     *  ```java
+     *     Person.parent$_collection;//this is a wrong way to access class attributes
+     *  ```
+     *
+     */
+    protected static Map parent$_primaryKey;
+    protected static boolean parent$_embedded;
+
+    protected static List<String> parent$_fields;
+
+    protected static DBCollection parent$_collection;
+    protected static String parent$_collectionName;
+
+    protected static MongoDriver mongoDriver = ServiceFramwork.injector.getInstance(MongoDriver.class);
+
+
+    /*
+     * Warning: all methods  modified by +static+ keyword , you should call them in subclass.
+     */
+    public static String collectionName() {
+        return parent$_collectionName;
+    }
+
+    public static boolean embedded() {
+        return parent$_embedded;
+    }
+
+    public static boolean embedded(boolean isEmbedded) {
+        parent$_embedded = isEmbedded;
+        return parent$_embedded;
+    }
+
+
+    public static DBCollection collection() {
+        return parent$_collection;
+    }
+
+    public static List fields() {
+        return parent$_fields;
+    }
+
+
+    /*
+     # setting the collection name to store in.
+     #
+     # Example:
+     #
+     # <tt>Person.store_in :populdation</tt>
+     #
+     # Warning: you should call this Class Method in subclass.
+    */
+    protected static DBCollection storeIn(String name) {
+
+        parent$_collectionName = name;
+        parent$_collection = mongoDriver.database().getCollection(name);
+        return parent$_collection;
+    }
+
+    public static <T extends Document> T create(Map map) {
+        throw new AutoGeneration();
+    }
+
+
+    /*
+    def generate_key
+       if primary_key
+         values = primary_key.collect { |key| @attributes[key] }
+         @attributes[:_id] = values.join(" ").parameterize.to_s
+       else
+         @attributes[:_id] = Mongo::ObjectID.new.to_s unless id
+       end
+    end
+    */
+    public void key(String... names) {
+
+    }
+
+    public void save() {
+        Save.execute(this, false);
+    }
+
+    protected void attributesToPojo(String setterMethodName, Object param) {
+        ReflectHelper.method(this, setterMethodName, param);
+    }
+
+    protected void attributesToPojo() {
+        Set keys = attributes.keySet();
+        for (Object key : keys) {
+            if (key instanceof String) {
+                String strKey = (String) key;
+                try {
+                    ReflectHelper.field(this, strKey, attributes.get(strKey));
+                } catch (Exception e) {
+                    //e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    public Object id() {
+        return attributes.get("_id");
+    }
+
+    public Object id(Object id) {
+        attributes.put("_id", id);
+        return id;
+    }
+
+    public Document fields(String... names) {
+
+        for (String name : names) {
+            fields().add(name);
+        }
+        return this;
+    }
+
+
+    public DBObject reload() {
+        attributes = collection().findOne(map("_id", attributes.get("_id")));
+        return attributes;
+    }
+
+    public DBObject attributes() {
+        return attributes;
+    }
+
+
+    //Association methods
+    public HasManyAssociation hasMany(String name, Options options) {
+        HasManyAssociation association = new HasManyAssociation(this, options);
+        associations.put(name, association);
+        return association;
+    }
+
+    public void hasOne(Class associateClass) {
+        //HasOneAssociation association = new HasOneAssociation(this, options)
+    }
+
+    public void belongsTo(Class associateClass) {
+
+    }
+
+
+    //bind Criteria
+
+    public static Criteria where(Map conditions) {
+        //return new Criteria(Document.class).where(conditions);
+        throw new AutoGeneration();
+    }
+
+    public static Criteria select(String... fieldNames) {
+        throw new AutoGeneration();
+    }
+
+    public static Criteria order(List orderBy) {
+        throw new AutoGeneration();
+    }
+
+    public static Criteria skip(int skip) {
+        throw new AutoGeneration();
+    }
+
+    public static Criteria limit(int limit) {
+        throw new AutoGeneration();
+    }
+
+    public static int count() {
+        throw new AutoGeneration();
+    }
+
+    public static Criteria in(Map in) {
+        throw new AutoGeneration();
+    }
+
+    public static Criteria not(Map not) {
+        throw new AutoGeneration();
+    }
+
+    public static Criteria notIn(Map notIn) {
+        throw new AutoGeneration();
+    }
+
+    public static <T extends Document> T findById(Object id) {
+        throw new AutoGeneration();
+    }
+
+    public static <T extends Document> List<T> find(List list) {
+        throw new AutoGeneration();
+    }
+
+}

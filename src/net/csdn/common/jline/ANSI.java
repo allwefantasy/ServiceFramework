@@ -79,7 +79,7 @@ public class ANSI {
 
     public static class Code {
         //
-        // NOTE: Some fields duplicated from jline.ANSIBuffer.ANSICodes to change access modifiers
+        // NOTE: Some $fields duplicated from jline.ANSIBuffer.ANSICodes to change access modifiers
         //
 
         public static final int OFF = 0;
@@ -133,7 +133,7 @@ public class ANSI {
 
             try {
                 for (int i = 0; i < fields.length; i++) {
-                    // Skip anything non-public, all public fields are codes
+                    // Skip anything non-public, all public $fields are codes
                     int mods = fields[i].getModifiers();
                     if (!Modifier.isPublic(mods)) {
                         continue;
@@ -156,7 +156,7 @@ public class ANSI {
 
         /**
          * Returns the ANSI code for the given symbolic name.  Supported symbolic names are all defined as
-         * fields in {@link ANSI.Code} where the case is not significant.
+         * $fields in {@link ANSI.Code} where the case is not significant.
          */
         public static int forName(final String name) throws IllegalArgumentException {
             assert name != null;
