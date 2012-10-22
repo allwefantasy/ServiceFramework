@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static net.csdn.common.collections.WowCollections.list;
 import static net.csdn.common.collections.WowCollections.map;
 
 /**
@@ -17,6 +18,18 @@ import static net.csdn.common.collections.WowCollections.map;
  * Time: 上午11:36
  */
 public class PersonTest extends IocTest {
+
+    @Test
+    public void testDocumentHasManyAssociation() {
+        Person person = Person.create(map(
+                "_id", 100,
+                "name", "google",
+                "bodyLength", 10
+        ));
+
+        person.addresses().build(map("location", "天国的世界"));
+    }
+
     @Test
     public void testDocumentEnhancer() {
 
@@ -43,5 +56,16 @@ public class PersonTest extends IocTest {
         List<Person> personList = Person.where(map("name", "google")).fetch();
         Assert.assertTrue(personList.size() == 1);
         Assert.assertTrue(personList.get(0).getName().equals("google"));
+
+
+        personList = Person.select(list("name")).where(map("name", "google")).fetch();
+        Assert.assertTrue(personList.size() == 1);
+        Assert.assertTrue(personList.get(0).attributes().toMap().size() == 2);
+
+        personFound.remove();
+        personFound = Person.findById(100);
+        Assert.assertTrue(personFound == null);
+
+
     }
 }

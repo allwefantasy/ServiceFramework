@@ -1,6 +1,10 @@
 package com.example.document;
 
 import net.csdn.mongo.Document;
+import net.csdn.mongo.association.Association;
+import net.csdn.mongo.association.Options;
+
+import static net.csdn.common.collections.WowCollections.map;
 
 /**
  * User: WilliamZhu
@@ -8,14 +12,21 @@ import net.csdn.mongo.Document;
  * Time: 上午10:31
  */
 public class Person extends Document {
-
     static {
         storeIn("persons");
+        hasMany("addresses", new Options(map(
+                Options.n_kclass, Address.class,
+                Options.n_foreignKey, "person_id"
+        )));
     }
+
+    public Association addresses() {
+        return parent$_associations.get("addresses").doNotUseMePlease_newMe(this);
+    }
+
 
     private String name;
     private Integer bodyLength;
-
 
 
     public String getName() {

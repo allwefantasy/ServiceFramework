@@ -13,22 +13,27 @@ public class Options {
     private String name;
     private Object parentKey;
 
+    public final static String n_kclass = "kclass";
+    public final static String n_name = "name";
+    public final static String n_parentKey = "parentKey";
+    public final static String n_foreignKey = "foreignKey";
 
-    private Object foreignKey;
+
+    private String foreignKey;
 
     public Options(Map attributes) {
         klass = (Class) attributes.get("kclass");
         name = (String) attributes.get("name");
         parentKey = attributes.get("parentKey");
-        foreignKey = attributes.get("foreignKey");
+        foreignKey = (String) attributes.get("foreignKey");
     }
 
 
-    public Object foreignKey() {
+    public String foreignKey() {
         return foreignKey;
     }
 
-    public Options foreignKey(Object foreign_key) {
+    public Options foreignKey(String foreign_key) {
         this.foreignKey = foreign_key;
         return this;
     }

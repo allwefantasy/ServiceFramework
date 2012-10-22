@@ -196,17 +196,36 @@ public class Criteria {
     #
     # Returns: <tt>subclass of document</tt>
      */
-    public Document singleFetch() {
-        DBObject dbObject = collection().findOne(translateMapToDBObject(selector));
+    public <T extends Document> T singleFetch() {
+
+        DBObject dbObject = collection().findOne(translateMapToDBObject(selector), translateMapToDBObject(process_options()));
+        if (dbObject == null) return null;
         Document document = (Document) ReflectHelper.staticMethod(kclass, "create", dbObject.toMap());
-        return document;
+        return (T) document;
     }
 
 
     public List fetch() {
 
+        process_options();
         List result = list();
+
+        Map sort = (Map) options.get("sort");
+        Integer skip = (Integer) options.get("skip");
+        Integer limit = (Integer) options.get("limit");
+
+
         DBCursor dbCursor = collection().find(translateMapToDBObject(selector), translateMapToDBObject(options));
+
+        if (sort != null)
+            dbCursor.sort(translateMapToDBObject(sort));
+
+        if (skip != null)
+            dbCursor.skip(skip);
+
+        if (limit != null)
+            dbCursor.limit(limit);
+
         while (dbCursor.hasNext()) {
             DBObject dbObject = dbCursor.next();
             result.add(ReflectHelper.staticMethod(kclass, "create", dbObject.toMap()));
@@ -215,12 +234,12 @@ public class Criteria {
     }
 
 
-    public Criteria select(String... fieldNames) {
+    public Criteria select(List fieldNames) {
         options.put("fields", fieldNames);
         return this;
     }
 
-    public Criteria order(List orderBy) {
+    public Criteria order(Map orderBy) {
         options.put("sort", orderBy);
         return this;
     }
@@ -233,6 +252,29 @@ public class Criteria {
     public Criteria limit(int limit) {
         options.put("limit", limit);
         return this;
+    }
+
+
+    public <T extends Document> T first() {
+        return singleFetch();
+    }
+
+    public <T extends Document> T one() {
+        return first();
+    }
+
+    private static Map<String, Integer> SortMap = map(
+            "asc", 1,
+            "desc", -1
+    );
+
+
+    public <T extends Document> T last() {
+        Map<String, Object> sorting = (Map) options.get("sort");
+        if (sorting == null) sorting = map("_id", SortMap.get("desc"));
+        options.put("sort", sorting);
+
+        return (T) (fetch().get(0));
     }
 
     private Criteria updateSelector(Map attributes, String operator) {
@@ -263,8 +305,31 @@ public class Criteria {
     }
 
 
-    private void process_options() {
+    private Map process_options() {
 
+        List<String> fields = (List) options.remove("fields");
+        if (fields != null) {
+            for (String str : fields) {
+                options.put(str, 1);
+            }
+        }
+        Map<String, Object> sorting = (Map) options.get("sort");
+        if (sorting != null) {
+            Map<String, Object> newSorting = map();
+            for (Map.Entry<String, Object> wow : sorting.entrySet()) {
+
+                Object value = wow.getValue();
+                if (value.equals("asc") || value.equals("desc")) {
+                    newSorting.put(wow.getKey(), SortMap.get(value));
+                } else {
+                    newSorting.put(wow.getKey(), value);
+                }
+            }
+            options.put("sort", newSorting);
+        }
+
+
+        return options;
     }
 
     /*

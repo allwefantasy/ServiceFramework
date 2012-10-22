@@ -123,7 +123,7 @@ public class MongoEnhancer extends Enhancer {
         CtMethod create = CtMethod.make("public static net.csdn.mongo.Document create(java.util.Map params) { " +
                 entityName + " doc = new " + entityName + "();" +
                 "doc.attributes.putAll(params);" +
-                "doc.attributesToPojo();" +
+                "doc.copyAllAttributesToPojoFields();" +
                 "return doc;}", ctClass);
         ctClass.addMethod(create);
 
@@ -140,7 +140,7 @@ public class MongoEnhancer extends Enhancer {
         ctClass.addMethod(where);
 
         //select
-        CtMethod select = CtMethod.make("public static net.csdn.mongo.Criteria select(String[] params) {" +
+        CtMethod select = CtMethod.make("public static net.csdn.mongo.Criteria select(java.util.List params) {" +
                 "        return new net.csdn.mongo.Criteria(" + entityName + ".class).select(" +
                 "params" +
                 ");" +
@@ -149,7 +149,7 @@ public class MongoEnhancer extends Enhancer {
 
 
         //order
-        CtMethod order = CtMethod.make("public static net.csdn.mongo.Criteria order(java.util.List params) {" +
+        CtMethod order = CtMethod.make("public static net.csdn.mongo.Criteria order(java.util.Map params) {" +
                 "        return new net.csdn.mongo.Criteria(" + entityName + ".class).order(" +
                 "params" +
                 ");" +

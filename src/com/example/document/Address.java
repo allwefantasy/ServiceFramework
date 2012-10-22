@@ -1,6 +1,9 @@
 package com.example.document;
 
 import net.csdn.mongo.Document;
+import net.csdn.mongo.association.Options;
+
+import static net.csdn.common.collections.WowCollections.map;
 
 /**
  * User: WilliamZhu
@@ -10,5 +13,24 @@ import net.csdn.mongo.Document;
 public class Address extends Document {
     static {
         storeIn("addresses");
+
+        belongsTo("person", new Options(
+                map(
+                        Options.n_kclass, Person.class,
+                        Options.n_foreignKey, "person_id"
+                )
+
+        ));
+    }
+
+
+    private String location;
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

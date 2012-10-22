@@ -1,8 +1,10 @@
 package net.csdn.mongo.association;
 
 import net.csdn.mongo.Document;
+import net.csdn.reflect.ReflectHelper;
 
 import java.util.List;
+import java.util.Map;
 
 import static net.csdn.common.collections.WowCollections.list;
 
@@ -11,18 +13,55 @@ import static net.csdn.common.collections.WowCollections.list;
  * Date: 12-10-17
  * Time: 上午10:09
  */
-public class HasManyAssociation {
-    private List<Document> documents = list();
+public class HasManyAssociation implements Association {
 
     private Class kclass;
-    private Document parent;
-    private Object foreignKey;
+    private String foreignKey;
+    private Document document;
+    private String name;
+
+    private List<Document> documentList = list();
 
 
-    public HasManyAssociation(Document document,Options options) {
-         kclass = options.kClass();
-         parent = document;
-         foreignKey = options.foreignKey();
-         //documents =
+    public HasManyAssociation(String name, Options options) {
+        kclass = options.kClass();
+        foreignKey = options.foreignKey();
+        this.name = name;
+
+    }
+
+    private HasManyAssociation(Class kclass, String foreignKey, Document document) {
+        this.kclass = kclass;
+        this.foreignKey = foreignKey;
+        this.document = document;
+
+    }
+
+
+    @Override
+    public Association build(Map params) {
+        Document child = (Document) ReflectHelper.staticMethod(kclass, "create", params);
+        documentList.add(child);
+        return this;
+    }
+
+    @Override
+    public Association remove(Document document) {
+        return null;
+    }
+
+    public void save() {
+        document.save();
+        for (Document subDoc : documentList) {
+            subDoc.attributes().put(foreignKey, document.attributes().get("_id"));
+            subDoc.save();
+        }
+    }
+
+    @Override
+    public Association doNotUseMePlease_newMe(Document document) {
+        HasManyAssociation instanceHasManyAssociation = new HasManyAssociation(this.kclass, this.foreignKey, document);
+        document.associations().put(name, instanceHasManyAssociation);
+        return instanceHasManyAssociation;
     }
 }

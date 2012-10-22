@@ -5,8 +5,8 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import net.csdn.AutoGeneration;
 import net.csdn.ServiceFramwork;
-import net.csdn.mongo.association.HasManyAssociation;
-import net.csdn.mongo.association.Options;
+import net.csdn.mongo.association.*;
+import net.csdn.mongo.commands.Delete;
 import net.csdn.mongo.commands.Save;
 import net.csdn.reflect.ReflectHelper;
 
@@ -41,26 +41,26 @@ public class Document {
 
     //instance attributes
     protected DBObject attributes = new BasicDBObject();
-    protected Map<String, Object> associations = map();
     protected boolean new_record = true;
+    protected Map<String, Association> associations = map();
 
 
     /*
-     *  +Class Methods+ will be copied into subclass when system startup.
-     *  you should access them using class methods instead of directly accessing;
-     *
-     *  Example:
-     *
-     *  ```java
-     *  Person.collection();
-     *  ```
-     *  instead of
-     *
-     *  ```java
-     *     Person.parent$_collection;//this is a wrong way to access class attributes
-     *  ```
-     *
-     */
+    *  +Class Methods+ will be copied into subclass when system startup.
+    *  you should access them using class methods instead of directly accessing;
+    *
+    *  Example:
+    *
+    *  ```java
+    *  Person.collection();
+    *  ```
+    *  instead of
+    *
+    *  ```java
+    *     Person.parent$_collection;//this is a wrong way to access class attributes
+    *  ```
+    *
+    */
     protected static Map parent$_primaryKey;
     protected static boolean parent$_embedded;
 
@@ -68,6 +68,7 @@ public class Document {
 
     protected static DBCollection parent$_collection;
     protected static String parent$_collectionName;
+    protected static Map<String, Association> parent$_associations;
 
     protected static MongoDriver mongoDriver = ServiceFramwork.injector.getInstance(MongoDriver.class);
 
@@ -137,11 +138,19 @@ public class Document {
         Save.execute(this, false);
     }
 
-    protected void attributesToPojo(String setterMethodName, Object param) {
+    public void remove() {
+        Delete.execute(this);
+    }
+
+    /* +copySingleAttributeToPojoField+ and  +copyAllAttributesToPojoFields+
+       since all model have attributes property,so we should sync values between
+       Pojo fields and  attributes property
+     */
+    protected void copySingleAttributeToPojoField(String setterMethodName, Object param) {
         ReflectHelper.method(this, setterMethodName, param);
     }
 
-    protected void attributesToPojo() {
+    protected void copyAllAttributesToPojoFields() {
         Set keys = attributes.keySet();
         for (Object key : keys) {
             if (key instanceof String) {
@@ -173,6 +182,10 @@ public class Document {
         return this;
     }
 
+    public Map<String, Association> associations() {
+        return associations;
+    }
+
 
     public DBObject reload() {
         attributes = collection().findOne(map("_id", attributes.get("_id")));
@@ -185,18 +198,23 @@ public class Document {
 
 
     //Association methods
-    public HasManyAssociation hasMany(String name, Options options) {
-        HasManyAssociation association = new HasManyAssociation(this, options);
-        associations.put(name, association);
+    public static HasManyAssociation hasMany(String name, Options options) {
+        HasManyAssociation association = new HasManyAssociation(name,options);
+        parent$_associations.put(name, association);
         return association;
     }
 
-    public void hasOne(Class associateClass) {
-        //HasOneAssociation association = new HasOneAssociation(this, options)
+    public HasOneAssociation hasOne(String name, Options options) {
+        HasOneAssociation association = new HasOneAssociation(name,options);
+        parent$_associations.put(name, association);
+        return association;
+
     }
 
-    public void belongsTo(Class associateClass) {
-
+    public static BelongsToAssociation belongsTo(String name, Options options) {
+        BelongsToAssociation association = new BelongsToAssociation(name,options);
+        parent$_associations.put(name, association);
+        return association;
     }
 
 
@@ -207,7 +225,7 @@ public class Document {
         throw new AutoGeneration();
     }
 
-    public static Criteria select(String... fieldNames) {
+    public static Criteria select(List fieldNames) {
         throw new AutoGeneration();
     }
 
