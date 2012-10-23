@@ -6,6 +6,7 @@ import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
+import net.csdn.modules.cache.CacheModule;
 import net.csdn.modules.http.HttpModule;
 import net.csdn.modules.scan.ScanModule;
 import net.csdn.modules.settings.SettingsModule;
@@ -29,6 +30,10 @@ public class ModuelLoader implements Loader {
         moduleList.add(new TransportModule());
         moduleList.add(new HttpModule());
         moduleList.add(new ScanModule());
+        boolean disableRedis = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.redis.disable", false);
+        if (!disableRedis) {
+            moduleList.add(new CacheModule());
+        }
 
         moduleList.add(new AbstractModule() {
             @Override

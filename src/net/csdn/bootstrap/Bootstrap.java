@@ -54,12 +54,23 @@ public class Bootstrap {
         Tuple<Settings, Environment> tuple = InternalSettingsPreparer.prepareSettings(EMPTY_SETTINGS);
         ServiceFramwork.mode = ServiceFramwork.Mode.valueOf(tuple.v1().get("mode"));
 
+        Settings settings = tuple.v1();
+        boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+        boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongo.disable", false);
 
         List<Loader> loaders = new ArrayList<Loader>();
         loaders.add(new LoggerLoader());
         loaders.add(new ModuelLoader());
-        loaders.add(new ModelLoader());
-        loaders.add(new DocumentLoader());
+
+
+        if (!disableMysql) {
+            loaders.add(new ModelLoader());
+        }
+        if (!disableMongo) {
+            loaders.add(new DocumentLoader());
+        }
+
+
         loaders.add(new ServiceLoader());
         loaders.add(new UtilLoader());
         loaders.add(new ControllerLoader());
@@ -68,7 +79,10 @@ public class Bootstrap {
         for (Loader loader : loaders) {
             loader.load(tuple.v1());
         }
-        JPA.setSettings(tuple.v1());
+        if (!disableMysql) {
+            JPA.setSettings(tuple.v1());
+        }
+
         isSystemConfigured = true;
     }
 
