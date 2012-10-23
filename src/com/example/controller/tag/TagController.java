@@ -42,6 +42,10 @@ public class TagController extends ApplicationController {
 
     }
 
+    @At(path = "/withoutMysql", types = GET)
+    public void withoutMysql() {
+        render(ok());
+    }
 
     @At(path = "/blog_tags", types = PUT)
     public void save() {
