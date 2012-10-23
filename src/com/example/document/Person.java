@@ -1,5 +1,6 @@
 package com.example.document;
 
+import net.csdn.AutoGeneration;
 import net.csdn.mongo.Document;
 import net.csdn.mongo.association.Association;
 import net.csdn.mongo.association.Options;
@@ -26,11 +27,11 @@ public class Person extends Document {
     }
 
     public Association addresses() {
-        return parent$_associations.get("addresses").doNotUseMePlease_newMe(this);
+        throw new AutoGeneration();
     }
 
     public Association idcard() {
-        return parent$_associations.get("idcard").doNotUseMePlease_newMe(this);
+        throw new AutoGeneration();
     }
 
 

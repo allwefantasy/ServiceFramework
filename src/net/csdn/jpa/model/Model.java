@@ -1,5 +1,6 @@
 package net.csdn.jpa.model;
 
+import net.csdn.AutoGeneration;
 import net.csdn.ServiceFramwork;
 import net.csdn.jpa.exception.JPAQueryException;
 import net.csdn.modules.persist.mysql.MysqlClient;
@@ -30,46 +31,46 @@ public class Model extends JPABase {
     //----------------------------------------------------------------------------------
 
     public static <T extends JPABase> T find(Integer id) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
     public static <T extends JPABase> T find(List ids) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
     public static JPQL where(String cc) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
     public static JPQL where(String cc, Map params) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
 
     public static JPQL select(String cc) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
     public static JPQL joins(String cc) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
     public static JPQL order(String cc) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
     public static JPQL limit(int cc) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
     public static JPQL offset(int cc) {
-        throw new UnsupportedOperationException("ooooooops...not implemented yet....");
+        throw new AutoGeneration();
     }
 
     //----------------------------------------------------------------------------------
 
     public static <T extends JPABase> T create(Map params) {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
     /**
@@ -78,7 +79,7 @@ public class Model extends JPABase {
      * @return number of entities of this class
      */
     public static long count() {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
     /**
@@ -90,14 +91,14 @@ public class Model extends JPABase {
      * @return A long
      */
     public static long count(String query, Object... params) {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
     /**
      * Find all entities of this type
      */
     public static <T extends JPABase> List<T> findAll() {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
     /**
@@ -107,7 +108,7 @@ public class Model extends JPABase {
      * @return The entity
      */
     public static <T extends JPABase> T findById(Object id) {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
     /**
@@ -118,7 +119,7 @@ public class Model extends JPABase {
      * @return A JPAQuery
      */
     public static JPAQuery find(String query, Object... params) {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
     /**
@@ -127,7 +128,7 @@ public class Model extends JPABase {
      * @return A JPAQuery
      */
     public static JPAQuery all() {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
     /**
@@ -138,7 +139,7 @@ public class Model extends JPABase {
      * @return Number of entities deleted
      */
     public static int delete(String query, Object... params) {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
     /**
@@ -147,10 +148,10 @@ public class Model extends JPABase {
      * @return Number of entities deleted
      */
     public static int deleteAll() {
-        throw new UnsupportedOperationException("Please annotate your JPA model with @javax.persistence.Entity annotation.");
+        throw new AutoGeneration();
     }
 
-    public static void transaction(){
+    public static void transaction() {
 
     }
 

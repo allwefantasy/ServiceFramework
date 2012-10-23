@@ -48,50 +48,49 @@ public class MongoEnhancer extends Enhancer {
 
 
         // copy static fields to subclass.Importance because of inheritance strategy of java
-        CtField[] ctFields = document.getFields();
-        for (CtField ctField : ctFields) {
-            if (Modifier.isStatic(ctField.getModifiers()) && ctField.getName().startsWith("parent$_")) {
-                CtField ctField1 = new CtField(ctField.getType(), ctField.getName(), ctClass);
-                ctField1.setModifiers(ctField.getModifiers());
-                ctClass.addField(ctField1);
-            }
-        }
+        copyStaticFieldsToSubclass(document, ctClass);
 
         //copy static methods to subclass
-        CtMethod[] ctMethods = document.getMethods();
-
-        for (CtMethod ctMethod : ctMethods) {
-            if (Modifier.isStatic(ctMethod.getModifiers()) && !shouldNotCopyToSubclassStaticMethods.contains(ctMethod.getName())) {
-                CtMethod ctNewMethod = CtNewMethod.copy(ctMethod, ctClass, null);
-                ctClass.addMethod(ctNewMethod);
-            }
-
-        }
-
+        copyStaticMethodsToSubclass(document, ctClass);
 
         enhanceCriteriaClassMethods(ctClass);
 
         //enhance getter/setter methods to put them into attributes field
+        enhanceSetterMethods(ctClass);
+
+        enhanceAssociationMethods(ctClass);
+
+        return ctClass;
+    }
+
+    private void copyStaticFieldsToSubclass(CtClass document, CtClass targetClass) throws Exception {
+        CtField[] ctFields = document.getFields();
+        for (CtField ctField : ctFields) {
+            if (Modifier.isStatic(ctField.getModifiers()) && ctField.getName().startsWith("parent$_")) {
+                CtField ctField1 = new CtField(ctField.getType(), ctField.getName(), targetClass);
+                ctField1.setModifiers(ctField.getModifiers());
+                targetClass.addField(ctField1);
+            }
+        }
+
+    }
+
+    private void copyStaticMethodsToSubclass(CtClass document, CtClass targetClass) throws Exception {
+        CtMethod[] ctMethods = document.getMethods();
+
+        for (CtMethod ctMethod : ctMethods) {
+            if (Modifier.isStatic(ctMethod.getModifiers()) && !shouldNotCopyToSubclassStaticMethods.contains(ctMethod.getName())) {
+                CtMethod ctNewMethod = CtNewMethod.copy(ctMethod, targetClass, null);
+                targetClass.addMethod(ctNewMethod);
+            }
+
+        }
+    }
+
+    private void enhanceSetterMethods(CtClass ctClass) throws Exception {
         CtMethod[] modelMethods = ctClass.getMethods();
 
         for (CtMethod ctMethod : modelMethods) {
-//            if (ctMethod.getName().startsWith("get")) {
-//                //return (String)attributes.get({});
-//                String fieldName = Strings.extractFieldFromGetSetMethod(ctMethod.getName());
-//                try {
-//                    ctClass.getDeclaredField(fieldName);
-//                    String methodBody = MessageFormat.format(
-//                            "return ({})attributes.get(\"{}\");",
-//                            ctMethod.getReturnType().getSimpleName(),
-//                            fieldName
-//                    );
-//                    ctMethod.setBody(methodBody);
-//                } catch (NotFoundException exception) {
-//                    //when NotFoundException happens means it is NOT a get/set method
-//                }
-//
-//
-//            } else
             if (ctMethod.getName().startsWith("set")) {
                 try {
                     String fieldName = Strings.extractFieldFromGetSetMethod(ctMethod.getName());
@@ -105,14 +104,26 @@ public class MongoEnhancer extends Enhancer {
                     ctMethod.insertBefore(methodBody);
 
                 } catch (NotFoundException exception) {
-                    //when NotFoundException happens means it is NOT a get/set method
+                    //when NotFoundException happens that means it is NOT a get/set method
                 }
-                //attributes.put({},{})
+
 
             }
         }
+    }
 
-        return ctClass;
+    private void enhanceAssociationMethods(CtClass ctClass) throws Exception {
+        CtMethod[] modelMethods = ctClass.getMethods();
+        for (CtMethod ctMethod : modelMethods) {
+            String returnType = ctMethod.getReturnType().getName();
+            if (!Modifier.isStatic(ctMethod.getModifiers())
+                    && "net.csdn.mongo.association.Association".equals(returnType)
+                    ) {
+
+                String name = ctMethod.getName();
+                ctMethod.setBody("return ((net.csdn.mongo.association.Association)associationsMetaData().get(\"" + name + "\")).doNotUseMePlease_newMe(this);");
+            }
+        }
     }
 
     private void enhanceCriteriaClassMethods(CtClass ctClass) throws Exception {

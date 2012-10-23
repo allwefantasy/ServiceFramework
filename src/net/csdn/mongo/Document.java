@@ -94,6 +94,10 @@ public class Document {
         return parent$_collection;
     }
 
+    public static Map<String, Association> associationsMetaData() {
+        return parent$_associations;
+    }
+
     public static List fields() {
         return parent$_fields;
     }
