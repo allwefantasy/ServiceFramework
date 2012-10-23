@@ -1,6 +1,7 @@
 package net.csdn.modules.http;
 
 import com.google.inject.Inject;
+import net.csdn.ServiceFramwork;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
@@ -36,10 +37,12 @@ public class HttpServer {
     private CSLogger logger = Loggers.getLogger(getClass());
 
     private RestController restController;
+    private boolean disableMysql = false;
 
     @Inject
     public HttpServer(Settings settings, RestController restController) {
         this.restController = restController;
+        disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         server = new Server();
         SelectChannelConnector connector = new SelectChannelConnector();
 
@@ -49,8 +52,6 @@ public class HttpServer {
         HandlerList handlers = new HandlerList();
         handlers.setHandlers(new Handler[]{new DefaultHandler()});
         server.setHandler(handlers);
-
-
     }
 
 
@@ -167,7 +168,9 @@ public class HttpServer {
             DefaultResponse channel = new DefaultResponse();
             try {
                 channel.internalDispatchRequest();
-                JPA.getJPAConfig().getJPAContext().closeTx(false);
+                if (!disableMysql) {
+                    JPA.getJPAConfig().getJPAContext().closeTx(false);
+                }
                 channel.send();
             } catch (Exception e) {
                 e.printStackTrace();

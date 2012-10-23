@@ -13,13 +13,16 @@ development:
            database: wow
            username: root
            password: csdn.net
+           disable: false
         mongodb:
            host: 127.0.0.1
            port: 27017
            database: csdn_data_center
+           disable: true
         redis:
             host: 127.0.0.1
             port: 6379
+            disable: true
 
 production:
     datasources:

@@ -28,7 +28,11 @@ public class DBInfo {
     public DBInfo(Settings settings) {
         this.settings = settings;
         try {
-            info();
+            boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+            if (!disableMysql) {
+                info();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -60,7 +64,7 @@ public class DBInfo {
 
             }
             tableColumns.put(tableName, columns);
-            tableColumns.put(Strings.toCamelCase(tableName,true), columns);
+            tableColumns.put(Strings.toCamelCase(tableName, true), columns);
         }
         conn.close();
     }
