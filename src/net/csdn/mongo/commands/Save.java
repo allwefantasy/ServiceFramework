@@ -10,10 +10,16 @@ import net.csdn.reflect.ReflectHelper;
  * Time: 下午2:07
  */
 public class Save {
+
     public static boolean execute(Document doc, boolean validate) {
         Class clzz = doc.getClass();
-        DBCollection collection = (DBCollection) ReflectHelper.staticMethod(clzz, "collection");
-        collection.save(doc.attributes());
+        Document parent = doc._parent;
+        if (parent != null) {
+            Save.execute(parent, validate);
+        } else {
+            DBCollection collection = (DBCollection) ReflectHelper.staticMethod(clzz, "collection");
+            collection.save(doc.attributes());
+        }
         return true;
     }
 }

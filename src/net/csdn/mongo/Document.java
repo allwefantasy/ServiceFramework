@@ -8,6 +8,10 @@ import net.csdn.ServiceFramwork;
 import net.csdn.mongo.association.*;
 import net.csdn.mongo.commands.Delete;
 import net.csdn.mongo.commands.Save;
+import net.csdn.mongo.embedded.AssociationEmbedded;
+import net.csdn.mongo.embedded.BelongsToAssociationEmbedded;
+import net.csdn.mongo.embedded.HasManyAssociationEmbedded;
+import net.csdn.mongo.embedded.HasOneAssociationEmbedded;
 import net.csdn.reflect.ReflectHelper;
 
 import java.util.List;
@@ -43,6 +47,10 @@ public class Document {
     protected DBObject attributes = new BasicDBObject();
     protected boolean new_record = true;
     protected Map<String, Association> associations = map();
+    protected Map<String, AssociationEmbedded> associationsEmbedded = map();
+
+    //for embedded association
+    public Document _parent;
 
 
     /*
@@ -69,6 +77,7 @@ public class Document {
     protected static DBCollection parent$_collection;
     protected static String parent$_collectionName;
     protected static Map<String, Association> parent$_associations;
+    protected static Map<String, AssociationEmbedded> parent$_associations_embedded;
 
     protected static MongoDriver mongoDriver = ServiceFramwork.injector.getInstance(MongoDriver.class);
 
@@ -96,6 +105,10 @@ public class Document {
 
     public static Map<String, Association> associationsMetaData() {
         return parent$_associations;
+    }
+
+    public static Map<String, AssociationEmbedded> associationsEmbeddedMetaData() {
+        return parent$_associations_embedded;
     }
 
     public static List fields() {
@@ -190,6 +203,9 @@ public class Document {
         return associations;
     }
 
+    public Map<String, AssociationEmbedded> associationEmbedded() {
+        return associationsEmbedded;
+    }
 
     public DBObject reload() {
         attributes = collection().findOne(map("_id", attributes.get("_id")));
@@ -200,6 +216,30 @@ public class Document {
         return attributes;
     }
 
+
+    //embedded Association methods
+
+    public static HasManyAssociationEmbedded hasManyEmbedded(String name, Options options) {
+        HasManyAssociationEmbedded association = new HasManyAssociationEmbedded(name, options);
+        if (parent$_associations_embedded == null) parent$_associations_embedded = map();
+        parent$_associations_embedded.put(name, association);
+        return association;
+    }
+
+    public static BelongsToAssociationEmbedded belongsToEmbedded(String name, Options options) {
+        BelongsToAssociationEmbedded association = new BelongsToAssociationEmbedded(name, options);
+        if (parent$_associations_embedded == null) parent$_associations_embedded = map();
+        parent$_associations_embedded.put(name, association);
+        return association;
+
+    }
+
+    public static HasOneAssociationEmbedded hasOneEmbedded(String name, Options options) {
+        HasOneAssociationEmbedded association = new HasOneAssociationEmbedded(name, options);
+        if (parent$_associations_embedded == null) parent$_associations_embedded = map();
+        parent$_associations_embedded.put(name, association);
+        return association;
+    }
 
     //Association methods
     public static HasManyAssociation hasMany(String name, Options options) {
