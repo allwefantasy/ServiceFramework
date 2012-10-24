@@ -1,5 +1,9 @@
 #ServiceFramework Wiki
 
+update(2012-10-24) 
+新开发了一个MongoDB Java 版 DataMapper . Model类不需要任何Annotation和配置文件(当然mongodb的链接配置还是需要的)。
+完全使用声明式语法! [亲，文档看这里](http://t.cn/zluGaOm )
+具体实现代码可以checkout develop 分支。orz...
 
 update(2012-09-25): @simplechen 同学写了一些使用心得。 大家可以参看下 
 [使用Curl 测试 example 程序](https://github.com/allwefantasy/ServiceFramework/wiki/%E4%BD%BF%E7%94%A8Curl-%E6%B5%8B%E8%AF%95-example-%E7%A8%8B%E5%BA%8F)
