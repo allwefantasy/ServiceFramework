@@ -1,5 +1,6 @@
 #ServiceFramework Wiki
 
+update(2012-10-24): 添加了新开发的 mongodb DataMapper。使用上和框架的ServiceFramework非常相近。 详细参看文档 [mongodb support]() 
 
 update(2012-09-25): @simplechen 同学写了一些使用心得。 大家可以参看下 
 [使用Curl 测试 example 程序](https://github.com/allwefantasy/ServiceFramework/wiki/%E4%BD%BF%E7%94%A8Curl-%E6%B5%8B%E8%AF%95-example-%E7%A8%8B%E5%BA%8F)

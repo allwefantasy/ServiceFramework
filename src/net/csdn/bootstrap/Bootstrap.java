@@ -56,7 +56,7 @@ public class Bootstrap {
 
         Settings settings = tuple.v1();
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
-        boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongo.disable", false);
+        boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
 
         List<Loader> loaders = new ArrayList<Loader>();
         loaders.add(new LoggerLoader());
