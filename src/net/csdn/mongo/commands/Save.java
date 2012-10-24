@@ -12,12 +12,12 @@ import net.csdn.reflect.ReflectHelper;
 public class Save {
 
     public static boolean execute(Document doc, boolean validate) {
-        Class clzz = doc.getClass();
         Document parent = doc._parent;
         if (parent != null) {
             Save.execute(parent, validate);
         } else {
-            DBCollection collection = (DBCollection) ReflectHelper.staticMethod(clzz, "collection");
+            //we cannot call doc.collection().remove() directly,because of the dam inheritance of static methods in java
+            DBCollection collection = (DBCollection) ReflectHelper.staticMethod(doc.getClass(), "collection");
             collection.save(doc.attributes());
         }
         return true;

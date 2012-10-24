@@ -11,10 +11,20 @@ import net.csdn.reflect.ReflectHelper;
  * Time: 下午2:07
  */
 public class Delete {
+
+
     public static boolean execute(Document doc) {
-        Class clzz = doc.getClass();
-        DBCollection collection = (DBCollection) ReflectHelper.staticMethod(clzz, "collection");
-        collection.remove(new BasicDBObject("_id", doc.id()));
+
+        Document parent = doc._parent;
+
+        if (parent != null) {
+            parent.remove(doc);
+        } else {
+            //we cannot call doc.collection().remove() directly,because of the dam inheritance of static methods in java
+            DBCollection collection = (DBCollection) ReflectHelper.staticMethod(doc.getClass(), "collection");
+            collection.remove(new BasicDBObject("_id", doc.id()));
+        }
+
         return true;
     }
 }

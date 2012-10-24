@@ -37,9 +37,15 @@ public class HasManyAssociationEmbedded implements AssociationEmbedded {
 
         List<Map> attributes = (List<Map>) document.attributes().get(name);
         if (attributes == null) return;
+        int i = 0;
         for (Map item : attributes) {
             Document child = (Document) ReflectHelper.staticMethod(kclass, "create", item);
             child._parent = document;
+            if (child.id() == null) {
+                child.attributes().put("_id", i);
+                i++;
+            }
+            child.associationEmbeddedName = name;
             children.add(child);
         }
     }
@@ -47,8 +53,10 @@ public class HasManyAssociationEmbedded implements AssociationEmbedded {
 
     @Override
     public AssociationEmbedded build(Map params) {
-        Document child = (Document) ReflectHelper.staticMethod(kclass, "create", params);
+        Document child = (Document) ReflectHelper.staticMethod(kclass, "create ", params);
         child._parent = document;
+        child.associationEmbeddedName = name;
+        child.attributes().put("_id", children.size() + 1);
         children.add(child);
         return this;
     }

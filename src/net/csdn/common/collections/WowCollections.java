@@ -71,6 +71,14 @@ public class WowCollections {
         return list;
     }
 
+//    public static <T> List<T> collectObjectProperties(String methodName, T... arrays) {
+//        List<T> list = new ArrayList<T>(arrays.length);
+//        for (T t : arrays) {
+//            list.add(t);
+//        }
+//        return list;
+//    }
+
 
     public static <T> List<T> projectionColumn(List<Map> maps, String column) {
         List<T> lists = new ArrayList<T>(maps.size());

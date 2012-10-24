@@ -37,12 +37,12 @@ public class BelongsToAssociationEmbedded implements AssociationEmbedded {
 
     @Override
     public AssociationEmbedded build(Map params) {
-        return null;
+        return this;
     }
 
     @Override
     public AssociationEmbedded remove(Document document) {
-        return null;
+        return this;
     }
 
 

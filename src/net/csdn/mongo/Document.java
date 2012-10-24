@@ -14,10 +14,12 @@ import net.csdn.mongo.embedded.HasManyAssociationEmbedded;
 import net.csdn.mongo.embedded.HasOneAssociationEmbedded;
 import net.csdn.reflect.ReflectHelper;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static net.csdn.common.collections.WowCollections.list;
 import static net.csdn.common.collections.WowCollections.map;
 
 /**
@@ -49,8 +51,10 @@ public class Document {
     protected Map<String, Association> associations = map();
     protected Map<String, AssociationEmbedded> associationsEmbedded = map();
 
+
     //for embedded association
     public Document _parent;
+    public String associationEmbeddedName;
 
 
     /*
@@ -136,6 +140,10 @@ public class Document {
         throw new AutoGeneration();
     }
 
+    public static <T extends Document> T create(DBObject object) {
+        throw new AutoGeneration();
+    }
+
 
     /*
     def generate_key
@@ -159,21 +167,64 @@ public class Document {
         Delete.execute(this);
     }
 
-    /* +copySingleAttributeToPojoField+ and  +copyAllAttributesToPojoFields+
-       since all model have attributes property,so we should sync values between
-       Pojo fields and  attributes property
+    /*
+      # Remove a child document from this parent +Document+. Will reset the
+      # memoized association and notify the parent of the change.
+      def remove(child)
+        name = child.association_name
+        reset(name) { @attributes.remove(name, child.attributes) }
+        notify
+      end
      */
+    public void remove(Document child) {
+        String name = child.associationEmbeddedName;
+        AssociationEmbedded association = this.associationEmbedded().get(name);
+        if (association instanceof HasManyAssociationEmbedded) {
+            List<Map> children = (List) this.attributes().get(name);
+            Map shouldRemove = null;
+            for (Map wow : children) {
+                if (child.id().equals(wow.get("_id"))) {
+                    shouldRemove = wow;
+                    break;
+                }
+            }
+            if (shouldRemove != null) {
+                children.remove(shouldRemove);
+            }
+
+        } else {
+            this.attributes().removeField(name);
+        }
+
+        this.associationEmbedded().get(name).remove(child);
+        this.save();
+    }
+
+
+    /* +copySingleAttributeToPojoField+ and  +copyAllAttributesToPojoFields+
+      since all model have attributes property,so we should sync values between
+      Pojo fields and  attributes property
+    */
     protected void copySingleAttributeToPojoField(String setterMethodName, Object param) {
         ReflectHelper.method(this, setterMethodName, param);
     }
 
     protected void copyAllAttributesToPojoFields() {
+        Field[] fields = this.getClass().getDeclaredFields();
+        List allFields = list();
+        for (Field field : fields) {
+            allFields.add(field.getName());
+        }
+
         Set keys = attributes.keySet();
         for (Object key : keys) {
             if (key instanceof String) {
                 String strKey = (String) key;
                 try {
-                    ReflectHelper.field(this, strKey, attributes.get(strKey));
+                    if (allFields.contains(strKey)) {
+                        ReflectHelper.field(this, strKey, attributes.get(strKey));
+                    }
+
                 } catch (Exception e) {
                     //e.printStackTrace();
                 }

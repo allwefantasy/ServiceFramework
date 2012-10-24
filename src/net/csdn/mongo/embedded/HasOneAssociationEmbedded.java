@@ -1,5 +1,6 @@
 package net.csdn.mongo.embedded;
 
+import com.mongodb.DBObject;
 import net.csdn.mongo.Criteria;
 import net.csdn.mongo.Document;
 import net.csdn.mongo.association.Options;
@@ -32,10 +33,11 @@ public class HasOneAssociationEmbedded implements AssociationEmbedded {
         this.kclass = kclass;
         this.document = document;
         this.name = name;
-        Map childMap = (Map) document.attributes().get(name);
+        DBObject childMap = (DBObject) document.attributes().get(name);
         if (childMap != null) {
             child = (Document) ReflectHelper.staticMethod(kclass, "create", childMap);
             child._parent = document;
+            child.associationEmbeddedName = name;
         }
     }
 
@@ -44,11 +46,14 @@ public class HasOneAssociationEmbedded implements AssociationEmbedded {
     public AssociationEmbedded build(Map params) {
         child = (Document) ReflectHelper.staticMethod(kclass, "create", params);
         child._parent = document;
+        child.associationEmbeddedName = name;
         return this;
     }
 
     @Override
     public AssociationEmbedded remove(Document document) {
+        child = null;
+        document.attributes().removeField(name);
         return this;
     }
 
