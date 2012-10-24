@@ -60,6 +60,8 @@ public class MongoEnhancer extends Enhancer {
 
         enhanceAssociationMethods(ctClass);
 
+        enhanceAssociationEmbedded(ctClass);
+
         return ctClass;
     }
 
@@ -108,6 +110,21 @@ public class MongoEnhancer extends Enhancer {
                 }
 
 
+            }
+        }
+    }
+
+
+    private void enhanceAssociationEmbedded(CtClass ctClass) throws Exception {
+        CtMethod[] modelMethods = ctClass.getMethods();
+        for (CtMethod ctMethod : modelMethods) {
+            String returnType = ctMethod.getReturnType().getName();
+            if (!Modifier.isStatic(ctMethod.getModifiers())
+                    && "net.csdn.mongo.embedded.AssociationEmbedded".equals(returnType)
+                    ) {
+
+                String name = ctMethod.getName();
+                ctMethod.setBody("return ((net.csdn.mongo.embedded.AssociationEmbedded)associationsEmbeddedMetaData().get(\"" + name + "\")).doNotUseMePlease_newMe(this);");
             }
         }
     }

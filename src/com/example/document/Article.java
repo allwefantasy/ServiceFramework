@@ -1,5 +1,6 @@
 package com.example.document;
 
+import net.csdn.AutoGeneration;
 import net.csdn.mongo.Document;
 import net.csdn.mongo.association.Options;
 import net.csdn.mongo.embedded.AssociationEmbedded;
@@ -20,7 +21,7 @@ public class Article extends Document {
     }
 
     public AssociationEmbedded blog() {
-        return associationsEmbeddedMetaData().get("blog").doNotUseMePlease_newMe(this);
+        throw new AutoGeneration();
     }
 
     public String getTitle() {

@@ -1,5 +1,6 @@
 package com.example.document;
 
+import net.csdn.AutoGeneration;
 import net.csdn.mongo.Document;
 import net.csdn.mongo.association.Options;
 import net.csdn.mongo.embedded.AssociationEmbedded;
@@ -22,7 +23,7 @@ public class Blog extends Document {
     }
 
     public AssociationEmbedded articles() {
-        return associationsEmbeddedMetaData().get("articles").doNotUseMePlease_newMe(this);
+        throw new AutoGeneration();
     }
 
     //properties and their access methods
