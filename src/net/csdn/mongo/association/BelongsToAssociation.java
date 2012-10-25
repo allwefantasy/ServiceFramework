@@ -44,7 +44,7 @@ public class BelongsToAssociation implements Association {
 
     @Override
     public Association remove(Document document) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return this;
     }
 
     @Override

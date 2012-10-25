@@ -17,7 +17,7 @@ public class HasOneAssociation implements Association {
 
     private String foreignKey;
     private Document document;
-    private Document parentDocument;
+    private Document childDocument;
     private Class kclass;
     private String name;
 
@@ -35,13 +35,15 @@ public class HasOneAssociation implements Association {
 
     @Override
     public Association build(Map params) {
-        parentDocument = (Document) ReflectHelper.staticMethod(kclass, "create", params);
+        childDocument = (Document) ReflectHelper.staticMethod(kclass, "create", params);
         return this;
     }
 
     @Override
     public Association remove(Document document) {
-        return null;
+        childDocument = null;
+        document.remove();
+        return this;
     }
 
     @Override
@@ -55,8 +57,15 @@ public class HasOneAssociation implements Association {
     public void save() {
         document.save();
         document.reload();
-        parentDocument.attributes().put(foreignKey, document.attributes().get("_id"));
-        parentDocument.save();
+        childDocument.attributes().put(foreignKey, document.attributes().get("_id"));
+        childDocument.save();
+        Map<String, Association> associationMap = childDocument.associations();
+        //cascade save
+        for (Map.Entry<String, Association> entry : associationMap.entrySet()) {
+            if (entry.getValue() instanceof HasManyAssociation || entry.getValue() instanceof HasOneAssociation) {
+                entry.getValue().save();
+            }
+        }
     }
 
     @Override

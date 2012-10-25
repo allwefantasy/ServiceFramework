@@ -43,25 +43,12 @@ public class Criteria {
     private Class<Document> kclass;
     private Map options = map();
     private Map selector = map();
-    private int count = 0;
 
     private final static String AGGREGATE_REDUCE = "function(obj, prev) { prev.count++; }";
 
-    /*
-    # Aggregate the criteria. This will take the internally built selector and options
-    # and pass them on to the Ruby driver's +group()+ method on the collection. The
-    # collection itself will be retrieved from the class provided, and once the
-    # query has returned it will provided a grouping of keys with counts.
-    #
-    # Example:
-    #
-    # <tt>criteria.select(:field1).where(:field1 => "Title").aggregate(Person)</tt>
-    def aggregate
-      @klass.collection.group(@options[:$fields], @selector, { :count => 0 }, AGGREGATE_REDUCE, true)
-    end
-     */
+
     public Criteria aggregate() {
-        ReflectHelper.method("", "");
+       // ReflectHelper.method("", "");
         return this;
     }
 
@@ -71,17 +58,7 @@ public class Criteria {
         return this;
     }
 
-    /*
-    def where(selector = nil)
-      case selector
-      when String
-        @selector.update("$where" => selector)
-      else
-        @selector.update(selector ? selector.expand_complex_criteria : {})
-      end
-      self
-    end
-     */
+
     public Criteria where(Map _selector) {
         selector.putAll(_selector);
         return this;
@@ -198,7 +175,7 @@ public class Criteria {
      */
     public <T extends Document> T singleFetch() {
 
-        DBObject dbObject = collection().findOne(translateMapToDBObject(selector), translateMapToDBObject(process_options()));
+        DBObject dbObject = collection().findOne(translateMapToDBObject(selector), translateMapToDBObject(processOptions()));
         if (dbObject == null) return null;
         Document document = (Document) ReflectHelper.staticMethod(kclass, "create", dbObject.toMap());
         return (T) document;
@@ -207,7 +184,7 @@ public class Criteria {
 
     public List fetch() {
 
-        process_options();
+        processOptions();
         List result = list();
 
         Map sort = (Map) options.get("sort");
@@ -305,7 +282,7 @@ public class Criteria {
     }
 
 
-    private Map process_options() {
+    private Map processOptions() {
 
         List<String> fields = (List) options.remove("fields");
         if (fields != null) {
@@ -338,7 +315,7 @@ public class Criteria {
    # in if using Paginator
     */
 
-    private void filter_options() {
+    private void filterOptions() {
         Integer page_num = (Integer) options.remove("page");
         Integer per_page_num = (Integer) options.remove("per_page");
         if (page_num != null || per_page_num != null) {

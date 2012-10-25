@@ -47,7 +47,7 @@ public class MongoEnhancer extends Enhancer {
         CtClass document = ctClass.getSuperclass();
 
 
-        // copy static fields to subclass.Importance because of inheritance strategy of java
+        //copy static fields to subclass.Importance because of inheritance strategy of java
         copyStaticFieldsToSubclass(document, ctClass);
 
         //copy static methods to subclass
@@ -58,8 +58,10 @@ public class MongoEnhancer extends Enhancer {
         //enhance getter/setter methods to put them into attributes field
         enhanceSetterMethods(ctClass);
 
+        //enhance related association
         enhanceAssociationMethods(ctClass);
 
+        //enhance embedded association
         enhanceAssociationEmbedded(ctClass);
 
         return ctClass;

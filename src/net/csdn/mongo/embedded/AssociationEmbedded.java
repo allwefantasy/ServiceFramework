@@ -12,6 +12,7 @@ import java.util.Map;
  * Time: 下午7:53
  */
 public interface AssociationEmbedded {
+
     public AssociationEmbedded build(Map params);
 
     public AssociationEmbedded remove(Document document);

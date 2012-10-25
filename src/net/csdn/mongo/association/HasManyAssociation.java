@@ -49,7 +49,9 @@ public class HasManyAssociation implements Association {
 
     @Override
     public Association remove(Document document) {
-        return null;
+        documentList.remove(document);
+        document.remove();
+        return this;
     }
 
     @Override
@@ -58,6 +60,13 @@ public class HasManyAssociation implements Association {
         for (Document subDoc : documentList) {
             subDoc.attributes().put(foreignKey, document.attributes().get("_id"));
             subDoc.save();
+            Map<String, Association> associationMap = subDoc.associations();
+            //cascade save
+            for (Map.Entry<String, Association> entry : associationMap.entrySet()) {
+                if (entry.getValue() instanceof HasManyAssociation || entry.getValue() instanceof HasOneAssociation) {
+                    entry.getValue().save();
+                }
+            }
         }
     }
 
