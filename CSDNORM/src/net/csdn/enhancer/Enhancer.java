@@ -24,7 +24,7 @@ public abstract class Enhancer {
     protected ClassPool classPool;
 
     public Enhancer() {
-        this.classPool = JPA.classPool;
+        this.classPool = JPA.classPool();
     }
 
 

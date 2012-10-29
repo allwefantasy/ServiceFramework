@@ -7,7 +7,7 @@ import javassist.CtMethod;
 import javassist.bytecode.AnnotationsAttribute;
 import javassist.bytecode.annotation.MemberValue;
 import net.csdn.common.enhancer.EnhancerHelper;
-import net.csdn.mongo.MongoDriver;
+import net.csdn.mongo.MongoMongo;
 
 import java.io.DataInputStream;
 import java.lang.annotation.Annotation;
@@ -24,7 +24,7 @@ public abstract class Enhancer {
     protected ClassPool classPool;
 
     public Enhancer() {
-        this.classPool = MongoDriver.classPool;
+        this.classPool = MongoMongo.classPool();
     }
 
 

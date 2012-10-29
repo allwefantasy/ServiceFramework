@@ -5,7 +5,7 @@ import com.google.inject.Singleton;
 import net.csdn.common.settings.Settings;
 import net.csdn.modules.persist.mysql.DataSourceManager;
 import net.csdn.modules.persist.mysql.MysqlClient;
-import net.csdn.mongo.MongoDriver;
+import net.csdn.mongo.MongoMongo;
 
 /**
  * BlogInfo: WilliamZhu
@@ -23,7 +23,7 @@ public class PersistServiceModule extends AbstractModule {
     protected void configure() {
         bind(DataSourceManager.class).asEagerSingleton();
         bind(MysqlClient.class).in(Singleton.class);
-        bind(MongoDriver.class).in(Singleton.class);
+        bind(MongoMongo.class).in(Singleton.class);
 
     }
 }

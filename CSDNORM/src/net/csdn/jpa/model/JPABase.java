@@ -33,7 +33,7 @@ public class JPABase implements GenericModel {
     protected CSLogger logger = Loggers.getLogger(getClass());
     public final static List validateParses = list();
 
-    public final static MysqlClient mysqlClient = new MysqlClient(new DataSourceManager(JPA.getSettings()), JPA.getSettings());
+    public final static MysqlClient mysqlClient = new MysqlClient(new DataSourceManager(JPA.settings()), JPA.settings());
     private static Injector injector;
 
     public static JPAContext getJPAContext() {

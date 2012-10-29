@@ -32,7 +32,7 @@ public class AssociatedHelper {
             if (Modifier.isFinal(otherField.getModifiers()) || Modifier.isStatic(otherField.getModifiers()))
                 continue;
             String wow = findAssociatedClassName(otherField);
-            CtClass wowCtClass = JPA.classPool.get(wow);
+            CtClass wowCtClass = JPA.classPool().get(wow);
             if (wowCtClass.subtypeOf(ctClass) && EnhancerHelper.hasAnnotationWithPrefix(other, "javax.persistence.")) {
                 return otherField;
             }

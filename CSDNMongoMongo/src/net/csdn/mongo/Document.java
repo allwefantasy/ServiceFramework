@@ -82,7 +82,7 @@ public class Document {
     protected static Map<String, Association> parent$_associations;
     protected static Map<String, AssociationEmbedded> parent$_associations_embedded;
 
-    public static MongoDriver mongoDriver;
+    public static MongoMongo mongoMongo;
 
 
     /*
@@ -131,7 +131,7 @@ public class Document {
     protected static DBCollection storeIn(String name) {
 
         parent$_collectionName = name;
-        parent$_collection = mongoDriver.database().getCollection(name);
+        parent$_collection = mongoMongo.database().getCollection(name);
         return parent$_collection;
     }
 

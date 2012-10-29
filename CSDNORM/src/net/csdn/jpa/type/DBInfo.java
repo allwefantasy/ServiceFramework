@@ -28,7 +28,7 @@ public class DBInfo {
     public DBInfo(Settings settings) {
         this.settings = settings;
         try {
-            boolean disableMysql = settings.getAsBoolean(JPA.mode + ".datasources.mysql.disable", false);
+            boolean disableMysql = settings.getAsBoolean(JPA.mode() + ".datasources.mysql.disable", false);
             if (!disableMysql) {
                 info();
             }
@@ -41,7 +41,7 @@ public class DBInfo {
     public void info() throws Exception {
         Connection conn = null;
         Class.forName("com.mysql.jdbc.Driver").newInstance();
-        Map<String, Settings> groups = settings.getGroups(JPA.mode + ".datasources");
+        Map<String, Settings> groups = settings.getGroups(JPA.mode() + ".datasources");
         Settings mysqlSetting = groups.get("mysql");
         String url = "jdbc:mysql://{}:{}/{}?useUnicode=true&characterEncoding=utf8";
         url = format(url, mysqlSetting.get("host", "127.0.0.1"), mysqlSetting.get("port", "3306"), mysqlSetting.get("database", "csdn_search_client"));

@@ -1,7 +1,5 @@
 package test.com.example;
 
-import javassist.ClassPool;
-import javassist.LoaderClassPath;
 import net.csdn.common.settings.ImmutableSettings;
 import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
@@ -27,18 +25,8 @@ public class Main {
                 inputStream);
 
         //configure ORM
-        JPA.mode = "development";
-        JPA.setSettings(settings);
-
-        JPA.classPool = new ClassPool();
-        JPA.classPool.appendSystemPath();
-        JPA.classPool.appendClassPath(new LoaderClassPath(Main.class.getClassLoader()));
-
-
-        JPA.classLoader = Main.class.getClassLoader();
-
-        //finally load all you model
-        JPA.loadModels();
+        JPA.CSDNORMConfiguration csdnormConfiguration = new JPA.CSDNORMConfiguration("development", settings, Main.class);
+        JPA.configure(csdnormConfiguration);
 
         Tag.findAll();
         //then you can use you pojo now
