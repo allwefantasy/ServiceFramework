@@ -1,4 +1,4 @@
-package net.csdn.modules.scan.component;
+package net.csdn.common.scan.component;
 
 import java.io.File;
 import java.io.IOException;

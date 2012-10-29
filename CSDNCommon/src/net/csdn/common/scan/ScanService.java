@@ -1,6 +1,4 @@
-package net.csdn.modules.scan;
-
-import javassist.ClassPool;
+package net.csdn.common.scan;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -30,8 +28,12 @@ public interface ScanService {
 
     public List<String> classNames(String packageName, Class baseClass);
 
+    public Class getLoader();
+
+    public void setLoader(Class loader);
+
     public interface LoadClassEnhanceCallBack {
-        public Class loaded(ClassPool classPool, DataInputStream classFile);
+        public Class loaded(DataInputStream classFile);
     }
 
 }

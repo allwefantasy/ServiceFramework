@@ -60,8 +60,8 @@ public class PropertyEnhancer implements BitEnhancer {
 
 
         try {
-            DBType dbType = JPA.injector.getInstance(DBType.class);
-            DBInfo dbInfo = JPA.injector.getInstance(DBInfo.class);
+            DBType dbType = JPA.dbType;
+            DBInfo dbInfo = JPA.dbInfo;
 
             Map<String, String> columns = dbInfo.tableColumns.get(entitySimpleName);
             if (columns == null) return;

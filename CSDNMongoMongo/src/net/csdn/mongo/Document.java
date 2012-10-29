@@ -82,7 +82,7 @@ public class Document {
     protected static Map<String, Association> parent$_associations;
     protected static Map<String, AssociationEmbedded> parent$_associations_embedded;
 
-    protected static MongoDriver mongoDriver = MongoDriver.injector.getInstance(MongoDriver.class);
+    public static MongoDriver mongoDriver;
 
 
     /*

@@ -5,7 +5,16 @@ import com.google.inject.Injector;
 import com.mongodb.DB;
 import com.mongodb.Mongo;
 import javassist.ClassPool;
+import javassist.CtClass;
+import net.csdn.common.scan.DefaultScanService;
+import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
+import net.csdn.mongo.enhancer.Enhancer;
+import net.csdn.mongo.enhancer.MongoEnhancer;
+
+import java.io.DataInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: WilliamZhu
@@ -28,8 +37,13 @@ public class MongoDriver {
     private static final int defaultHostPort = 27017;
     private static final String defaultDBName = "csdn_data_center";
 
+    private static Settings settings;
+
+
+
     @Inject
     public MongoDriver(Settings _settings) throws Exception {
+        settings = _settings;
         this.mongo = new Mongo(_settings.get("mongo.host", defaultHostName), _settings.getAsInt("mongo.port", defaultHostPort));
         dbName = _settings.get("mongo.database", defaultDBName);
     }
@@ -45,6 +59,38 @@ public class MongoDriver {
 
     public DB database() {
         return mongo.getDB(dbName);
+    }
+
+    public static void loadDocuments() {
+        try {
+            new MongoDocumentLoader().load();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static class MongoDocumentLoader {
+
+        public void load() throws Exception {
+            final Enhancer enhancer = new MongoEnhancer(settings);
+            final List<CtClass> classList = new ArrayList<CtClass>();
+            ScanService scanService = new DefaultScanService();
+            scanService.setLoader(MongoDriver.class);
+            scanService.scanArchives(settings.get("application.document"), new ScanService.LoadClassEnhanceCallBack() {
+
+                public Class loaded(DataInputStream classFile) {
+                    try {
+                        classList.add(enhancer.enhanceThisClass(classFile));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+            });
+
+            enhancer.enhanceThisClass2(classList);
+
+        }
     }
 
 

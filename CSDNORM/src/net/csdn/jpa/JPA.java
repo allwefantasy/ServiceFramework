@@ -1,18 +1,32 @@
 package net.csdn.jpa;
 
+
 import com.google.inject.Injector;
+import javassist.CannotCompileException;
 import javassist.ClassPool;
+import javassist.CtClass;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.env.Environment;
 import net.csdn.common.io.Streams;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
+import net.csdn.common.scan.DefaultScanService;
+import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
+import net.csdn.enhancer.Enhancer;
 import net.csdn.jpa.context.JPAConfig;
+import net.csdn.jpa.enhancer.JPAEnhancer;
 import net.csdn.jpa.model.Model;
+import net.csdn.jpa.type.DBInfo;
+import net.csdn.jpa.type.DBType;
+import net.csdn.jpa.type.impl.MysqlType;
 
+import javax.persistence.DiscriminatorColumn;
+import java.io.DataInputStream;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static net.csdn.common.logging.support.MessageFormat.format;
@@ -37,6 +51,9 @@ public class JPA {
     public static String mode;
     public static ClassPool classPool;
     public static Injector injector;
+
+    public final static DBType dbType = new MysqlType();
+    public static DBInfo dbInfo;
 
     public static synchronized JPAConfig getJPAConfig() {
         if (jpaConfig == null) {
@@ -75,6 +92,7 @@ public class JPA {
 
     public static void setSettings(Settings settings) {
         JPA.settings = settings;
+        dbInfo = new DBInfo(settings);
     }
 
     public Environment getEnvironment() {
@@ -84,6 +102,7 @@ public class JPA {
     public void setEnvironment(Environment environment) {
         this.environment = environment;
     }
+
 
     private static Map<String, String> properties() {
         Map<String, String> properties = new HashMap<String, String>();
@@ -104,5 +123,58 @@ public class JPA {
         properties.put("hibernate.c3p0.idle_test_period", settings.get("orm.idle_test_period", "3000"));
         //    properties.put("hibernate.query.factory_class", "org.hibernate.hql.internal.classic.ClassicQueryTranslatorFactory");
         return properties;
+    }
+
+    public static void loadModels() {
+        try {
+            new JPAModelLoader().load();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static class JPAModelLoader {
+        public void load() throws Exception {
+            final Enhancer enhancer = new JPAEnhancer(JPA.getSettings());
+
+            final List<CtClass> classList = new ArrayList<CtClass>();
+            ScanService scanService = new DefaultScanService();
+            scanService.setLoader(JPA.class);
+            scanService.scanArchives(settings.get("application.model"), new ScanService.LoadClassEnhanceCallBack() {
+                @Override
+                public Class loaded(DataInputStream classFile) {
+                    try {
+                        classList.add(enhancer.enhanceThisClass(classFile));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }
+            });
+
+            enhancer.enhanceThisClass2(classList);
+
+
+            for (CtClass ctClass : classList) {
+                if (ctClass.hasAnnotation(DiscriminatorColumn.class)) {
+                    loadClass(ctClass);
+                }
+            }
+
+            for (CtClass ctClass : classList) {
+                if (!ctClass.hasAnnotation(DiscriminatorColumn.class)) {
+                    loadClass(ctClass);
+                }
+            }
+        }
+
+        private void loadClass(CtClass ctClass) {
+            try {
+                Class<Model> clzz = ctClass.toClass();
+                JPA.models.put(clzz.getSimpleName(), clzz);
+            } catch (CannotCompileException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

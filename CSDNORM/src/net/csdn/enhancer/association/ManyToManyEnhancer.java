@@ -39,7 +39,7 @@ public class ManyToManyEnhancer {
 
                 CtField other = findAssociatedField(modelClass, clzzName);
 
-                DBInfo dbInfo = JPA.injector.getInstance(DBInfo.class);
+                DBInfo dbInfo = JPA.dbInfo;
                 String otherClassSimpleName = findAssociatedClass(ctClass.getClassPool(), ctField).getSimpleName();
 
 

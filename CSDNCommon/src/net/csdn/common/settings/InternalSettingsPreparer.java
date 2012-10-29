@@ -3,6 +3,8 @@ package net.csdn.common.settings;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.env.Environment;
 
+import java.io.InputStream;
+
 import static net.csdn.common.Strings.cleanPath;
 import static net.csdn.common.settings.ImmutableSettings.settingsBuilder;
 
@@ -40,5 +42,13 @@ public class InternalSettingsPreparer {
         return new Tuple<Settings, Environment>(settingsBuilder.build(), environment);
 
     }
+
+    public static Settings simplePrepareSettings(Settings pSettings, InputStream inputStream) {
+        ImmutableSettings.Builder settingsBuilder = settingsBuilder().put(pSettings);
+        settingsBuilder.loadFromStream("", inputStream);
+        return settingsBuilder.build();
+
+    }
+
 
 }

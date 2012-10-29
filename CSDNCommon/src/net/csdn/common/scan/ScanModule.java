@@ -1,4 +1,4 @@
-package net.csdn.modules.scan;
+package net.csdn.common.scan;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;

@@ -3,8 +3,8 @@ package net.csdn;
 import com.google.inject.Injector;
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
-import net.csdn.modules.scan.DefaultScanService;
-import net.csdn.modules.scan.ScanService;
+import net.csdn.common.scan.DefaultScanService;
+import net.csdn.common.scan.ScanService;
 
 /**
  * BlogInfo: WilliamZhu

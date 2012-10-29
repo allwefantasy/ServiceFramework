@@ -1,11 +1,10 @@
 package net.csdn.bootstrap.loader.impl;
 
-import javassist.ClassPool;
 import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
+import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
-import net.csdn.modules.scan.ScanService;
 import net.csdn.mongo.MongoDriver;
 import net.csdn.mongo.enhancer.Enhancer;
 import net.csdn.mongo.enhancer.MongoEnhancer;
@@ -26,8 +25,8 @@ public class DocumentLoader implements Loader {
         final Enhancer enhancer = new MongoEnhancer(MongoDriver.injector.getInstance(Settings.class));
         final List<CtClass> classList = new ArrayList<CtClass>();
         ServiceFramwork.scanService.scanArchives(settings.get("application.document"), new ScanService.LoadClassEnhanceCallBack() {
-            @Override
-            public Class loaded(ClassPool classPool, DataInputStream classFile) {
+
+            public Class loaded(DataInputStream classFile) {
                 try {
                     classList.add(enhancer.enhanceThisClass(classFile));
                 } catch (Exception e) {

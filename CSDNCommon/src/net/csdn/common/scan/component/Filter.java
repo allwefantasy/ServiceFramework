@@ -1,4 +1,4 @@
-package net.csdn.modules.scan.component;
+package net.csdn.common.scan.component;
 
 
 public interface Filter {

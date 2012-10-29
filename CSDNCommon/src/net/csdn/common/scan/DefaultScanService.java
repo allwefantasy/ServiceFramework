@@ -1,12 +1,10 @@
-package net.csdn.modules.scan;
+package net.csdn.common.scan;
 
 import com.mysql.jdbc.StringUtils;
-import javassist.ClassPool;
-import net.csdn.ServiceFramwork;
-import net.csdn.modules.scan.component.ClasspathUrlFinder;
-import net.csdn.modules.scan.component.Filter;
-import net.csdn.modules.scan.component.IteratorFactory;
-import net.csdn.modules.scan.component.StreamIterator;
+import net.csdn.common.scan.component.ClasspathUrlFinder;
+import net.csdn.common.scan.component.Filter;
+import net.csdn.common.scan.component.IteratorFactory;
+import net.csdn.common.scan.component.StreamIterator;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -21,9 +19,20 @@ import java.util.List;
  */
 public class DefaultScanService implements ScanService {
 
+
+    private Class loader = DefaultScanService.class;
+
+    public Class getLoader() {
+        return loader;
+    }
+
+    public void setLoader(Class loader) {
+        this.loader = loader;
+    }
+
     @Override
     public URL packagePath(String packageName) {
-        URL class_file_base_url = ClasspathUrlFinder.findClassBase(DefaultScanService.class);
+        URL class_file_base_url = ClasspathUrlFinder.findClassBase(loader);
         try {
             return new URL("file:" + class_file_base_url.getPath() + packageName.replaceAll("\\.", "/") + "/");
         } catch (MalformedURLException e) {
@@ -107,10 +116,10 @@ public class DefaultScanService implements ScanService {
     @Override
     public Class scanClass(InputStream bits, LoadClassEnhanceCallBack loadClassEnhanceCallBack) throws IOException {
         DataInputStream dstream = new DataInputStream(new BufferedInputStream(bits));
-        ClassPool cp = ServiceFramwork.classPool;
+
         try {
             try {
-                return loadClassEnhanceCallBack.loaded(cp, dstream);
+                return loadClassEnhanceCallBack.loaded(dstream);
             } catch (Exception e) {
                 e.printStackTrace();
             }

@@ -1,7 +1,6 @@
 package net.csdn.jpa.model;
 
 import net.csdn.common.exception.AutoGeneration;
-import net.csdn.jpa.JPA;
 import net.csdn.jpa.exception.JPAQueryException;
 import net.csdn.modules.persist.mysql.MysqlClient;
 
@@ -17,15 +16,14 @@ import java.util.Map;
  */
 public class Model extends JPABase {
 
-
     public static List<Map> findBySql(String sql, Object... params) {
         //TODO:竟然在这里使用了  ServiceFramwork.injector 疯掉了....  去掉，去掉....
-        return JPA.injector.getInstance(MysqlClient.class).query(sql, params);
+        return mysqlClient.query(sql, params);
     }
 
     public static MysqlClient nativeSqlClient() {
         //TODO:竟然在这里使用了  ServiceFramwork.injector 疯掉了....  去掉，去掉....
-        return JPA.injector.getInstance(MysqlClient.class).defaultMysqlService();
+        return mysqlClient.defaultMysqlService();
     }
 
     //----------------------------------------------------------------------------------

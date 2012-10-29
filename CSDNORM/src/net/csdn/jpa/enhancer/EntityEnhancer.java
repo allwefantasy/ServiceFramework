@@ -39,7 +39,7 @@ public class EntityEnhancer implements BitEnhancer {
     public void enhance(List<ModelClass> modelClasses) throws Exception {
         List<ModelClass> fatherModelClasses = new ArrayList<ModelClass>();
         for (ModelClass modelClass : modelClasses) {
-            DBInfo dbInfo = JPA.injector.getInstance(DBInfo.class);
+            DBInfo dbInfo = JPA.dbInfo;
 
             CtClass ctClass = modelClass.originClass;
             Map<String, String> columns = dbInfo.tableColumns.get(modelClass.originClass.getSimpleName());
