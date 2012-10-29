@@ -10,6 +10,7 @@ import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.HttpServer;
+import net.csdn.mongo.Document;
 import net.csdn.mongo.MongoDriver;
 
 import java.util.ArrayList;
@@ -59,15 +60,16 @@ public class Bootstrap {
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
 
+        ServiceFramwork.scanService.setLoader(ServiceLoader.class);
         if (!disableMysql) {
-            JPA.setSettings(tuple.v1());
             JPA.mode = ServiceFramwork.mode.name();
+            JPA.setSettings(tuple.v1());
             JPA.classLoader = ServiceFramwork.class.getClassLoader();
             JPA.classPool = ServiceFramwork.classPool;
 
         }
         if (!disableMongo) {
-
+            Document.mongoDriver = new MongoDriver(settings);
             MongoDriver.classPool = ServiceFramwork.classPool;
         }
 

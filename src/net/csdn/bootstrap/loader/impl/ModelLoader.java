@@ -1,16 +1,15 @@
 package net.csdn.bootstrap.loader.impl;
 
 import javassist.CannotCompileException;
-import javassist.ClassPool;
 import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
+import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.Enhancer;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.enhancer.JPAEnhancer;
 import net.csdn.jpa.model.Model;
-import net.csdn.modules.scan.ScanService;
 
 import javax.persistence.DiscriminatorColumn;
 import java.io.DataInputStream;
@@ -29,7 +28,7 @@ public class ModelLoader implements Loader {
         final List<CtClass> classList = new ArrayList<CtClass>();
         ServiceFramwork.scanService.scanArchives(settings.get("application.model"), new ScanService.LoadClassEnhanceCallBack() {
             @Override
-            public Class loaded(ClassPool classPool, DataInputStream classFile) {
+            public Class loaded(DataInputStream classFile) {
                 try {
                     classList.add(enhancer.enhanceThisClass(classFile));
                 } catch (Exception e) {

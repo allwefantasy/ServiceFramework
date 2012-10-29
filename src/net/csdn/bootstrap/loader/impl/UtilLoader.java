@@ -2,14 +2,13 @@ package net.csdn.bootstrap.loader.impl;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
-import javassist.ClassPool;
 import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.AnnotationException;
 import net.csdn.annotation.Util;
 import net.csdn.bootstrap.loader.Loader;
+import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
-import net.csdn.modules.scan.ScanService;
 
 import java.io.DataInputStream;
 import java.util.ArrayList;
@@ -29,9 +28,9 @@ public class UtilLoader implements Loader {
 
         ServiceFramwork.scanService.scanArchives(settings.get("application.util"), new ScanService.LoadClassEnhanceCallBack() {
             @Override
-            public Class loaded(ClassPool classPool, DataInputStream classFile) {
+            public Class loaded(DataInputStream classFile) {
                 try {
-                    CtClass ctClass = classPool.makeClass(classFile);
+                    CtClass ctClass = ServiceFramwork.classPool.makeClass(classFile);
                     if (!ctClass.hasAnnotation(Util.class)) {
                         return null;
                     }

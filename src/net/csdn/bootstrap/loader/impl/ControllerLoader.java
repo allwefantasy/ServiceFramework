@@ -3,17 +3,16 @@ package net.csdn.bootstrap.loader.impl;
 import com.example.controller.tag.TagController;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
-import javassist.ClassPool;
 import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.rest.At;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.collect.Tuple;
+import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
 import net.csdn.modules.http.ApplicationController;
 import net.csdn.modules.http.RestController;
 import net.csdn.modules.http.RestRequest;
-import net.csdn.modules.scan.ScanService;
 
 import java.io.DataInputStream;
 import java.lang.reflect.Method;
@@ -34,9 +33,9 @@ public class ControllerLoader implements Loader {
         //自动加载所有Action类
         ServiceFramwork.scanService.scanArchives(settings.get("application.controller"), new ScanService.LoadClassEnhanceCallBack() {
             @Override
-            public Class loaded(ClassPool classPool, DataInputStream classFile) {
+            public Class loaded(DataInputStream classFile) {
                 try {
-                    CtClass ctClass = classPool.makeClass(classFile);
+                    CtClass ctClass = ServiceFramwork.classPool.makeClass(classFile);
                     if (Modifier.isAbstract(ctClass.getModifiers())) return null;
                     moduleList.add(bindAction(ctClass.toClass()));
                 } catch (Exception e) {

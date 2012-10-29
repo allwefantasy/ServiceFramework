@@ -62,7 +62,7 @@ public class JPA {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            jpaConfig = new JPAConfig(properties(), settings.get("datasources.mysql.database"));
+            jpaConfig = new JPAConfig(properties(), settings.get(JPA.mode + ".datasources.mysql.database"));
         }
         return jpaConfig;
     }
