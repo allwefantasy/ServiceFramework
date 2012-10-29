@@ -1,8 +1,8 @@
 package com.example.model;
 
-import net.csdn.AutoGeneration;
-import net.csdn.annotation.jpa.callback.AfterSave;
+import net.csdn.annotation.callback.AfterSave;
 import net.csdn.annotation.validate.Validate;
+import net.csdn.common.exception.AutoGeneration;
 import net.csdn.jpa.association.Association;
 import net.csdn.jpa.model.Model;
 

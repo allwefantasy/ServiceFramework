@@ -5,11 +5,12 @@ import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.bootstrap.loader.impl.*;
 import net.csdn.common.collect.Tuple;
+import net.csdn.common.env.Environment;
 import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
-import net.csdn.env.Environment;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.HttpServer;
+import net.csdn.mongo.MongoDriver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,9 +59,33 @@ public class Bootstrap {
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
 
+        if (!disableMysql) {
+            JPA.setSettings(tuple.v1());
+            JPA.mode = ServiceFramwork.mode.name();
+            JPA.classLoader = ServiceFramwork.class.getClassLoader();
+            JPA.classPool = ServiceFramwork.classPool;
+
+        }
+        if (!disableMongo) {
+
+            MongoDriver.classPool = ServiceFramwork.classPool;
+        }
+
+        Loader loggerLoader = new LoggerLoader();
+        Loader moduleLoader = new ModuelLoader();
+        loggerLoader.load(settings);
+        moduleLoader.load(settings);
+
+
+        if (!disableMysql) {
+            JPA.injector = ServiceFramwork.injector;
+        }
+        if (!disableMongo) {
+            MongoDriver.injector = ServiceFramwork.injector;
+        }
+
+
         List<Loader> loaders = new ArrayList<Loader>();
-        loaders.add(new LoggerLoader());
-        loaders.add(new ModuelLoader());
 
 
         if (!disableMysql) {
@@ -79,9 +104,7 @@ public class Bootstrap {
         for (Loader loader : loaders) {
             loader.load(tuple.v1());
         }
-        if (!disableMysql) {
-            JPA.setSettings(tuple.v1());
-        }
+
 
         isSystemConfigured = true;
     }

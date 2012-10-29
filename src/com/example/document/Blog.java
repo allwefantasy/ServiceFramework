@@ -1,6 +1,6 @@
 package com.example.document;
 
-import net.csdn.AutoGeneration;
+import net.csdn.common.exception.AutoGeneration;
 import net.csdn.mongo.Document;
 import net.csdn.mongo.association.Options;
 import net.csdn.mongo.embedded.AssociationEmbedded;

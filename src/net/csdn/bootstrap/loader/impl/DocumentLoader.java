@@ -5,8 +5,9 @@ import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.settings.Settings;
-import net.csdn.enhancer.Enhancer;
 import net.csdn.modules.scan.ScanService;
+import net.csdn.mongo.MongoDriver;
+import net.csdn.mongo.enhancer.Enhancer;
 import net.csdn.mongo.enhancer.MongoEnhancer;
 
 import java.io.DataInputStream;
@@ -22,7 +23,7 @@ public class DocumentLoader implements Loader {
 
     @Override
     public void load(Settings settings) throws Exception {
-        final Enhancer enhancer = new MongoEnhancer(ServiceFramwork.injector.getInstance(Settings.class));
+        final Enhancer enhancer = new MongoEnhancer(MongoDriver.injector.getInstance(Settings.class));
         final List<CtClass> classList = new ArrayList<CtClass>();
         ServiceFramwork.scanService.scanArchives(settings.get("application.document"), new ScanService.LoadClassEnhanceCallBack() {
             @Override

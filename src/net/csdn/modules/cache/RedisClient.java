@@ -8,7 +8,7 @@ package net.csdn.modules.cache;
 
 import com.google.inject.Inject;
 import net.csdn.common.settings.Settings;
-import net.csdn.exception.SettingsException;
+import net.csdn.common.exception.SettingsException;
 import net.csdn.modules.compress.gzip.GZip;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;

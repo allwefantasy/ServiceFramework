@@ -2,7 +2,7 @@ package test.com.example.model;
 
 import com.example.model.*;
 import net.csdn.junit.IocTest;
-import net.csdn.reflect.ReflectHelper;
+import net.csdn.common.reflect.ReflectHelper;
 import org.junit.Assert;
 import org.junit.Test;
 

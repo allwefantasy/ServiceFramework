@@ -5,7 +5,7 @@ import com.example.model.BlogTag;
 import com.example.model.Tag;
 import com.example.model.TagGroup;
 import com.example.model.TagSynonym;
-import net.csdn.exception.RenderFinish;
+import net.csdn.common.exception.RenderFinish;
 import net.csdn.junit.IocTest;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.RestResponse;

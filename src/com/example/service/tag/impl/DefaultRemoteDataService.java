@@ -4,7 +4,7 @@ package com.example.service.tag.impl;
 import com.example.service.tag.RemoteDataService;
 import com.google.inject.Inject;
 import net.csdn.common.path.Url;
-import net.csdn.exception.ArgumentErrorException;
+import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.modules.transport.HttpTransportService;
 import net.sf.json.JSONArray;
 
