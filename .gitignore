@@ -4,4 +4,5 @@
 /logs
 /out
 /build
+/bin/build_dependecy.sh
 
