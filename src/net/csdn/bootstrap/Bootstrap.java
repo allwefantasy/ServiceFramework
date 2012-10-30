@@ -59,7 +59,7 @@ public class Bootstrap {
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
 
-        ServiceFramwork.scanService.setLoader(ServiceLoader.class);
+        ServiceFramwork.scanService.setLoader(ServiceFramwork.class);
         if (!disableMysql) {
             JPA.configure(new JPA.CSDNORMConfiguration(ServiceFramwork.mode.name(), tuple.v1(), ServiceFramwork.class, ServiceFramwork.classPool));
         }
@@ -73,14 +73,6 @@ public class Bootstrap {
         moduleLoader.load(settings);
 
 
-        if (!disableMysql) {
-            JPA.injector(ServiceFramwork.injector);
-        }
-        if (!disableMongo) {
-            MongoMongo.injector(ServiceFramwork.injector);
-        }
-
-
         List<Loader> loaders = new ArrayList<Loader>();
 
         loaders.add(new ServiceLoader());
@@ -92,6 +84,12 @@ public class Bootstrap {
             loader.load(tuple.v1());
         }
 
+        if (!disableMysql) {
+            JPA.injector(ServiceFramwork.injector);
+        }
+        if (!disableMongo) {
+            MongoMongo.injector(ServiceFramwork.injector);
+        }
 
         isSystemConfigured = true;
     }

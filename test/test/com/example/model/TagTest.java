@@ -1,10 +1,10 @@
 package test.com.example.model;
 
-import com.example.model.*;
-import net.csdn.junit.IocTest;
 import net.csdn.common.reflect.ReflectHelper;
+import net.csdn.junit.IocTest;
 import org.junit.Assert;
 import org.junit.Test;
+import com.example.model.*;
 
 import java.util.List;
 import java.util.Map;
@@ -43,9 +43,9 @@ public class TagTest extends IocTest {
     }
 
 
-
     @Test
     public void testSqlQuery() {
+        System.out.print(Tag.class.getName());
         Tag tag = Tag.create(map("name", "java"));
         tag.save();
         dbCommit();
