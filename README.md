@@ -1,5 +1,15 @@
 #ServiceFramework Wiki
 
+```
+ServiceFramework 中 ORM 和 Mongo 的部分已经独立进另外两个项目，现在大家可以在自己的
+项目中单独使用ServiceFramework 中的ORM和Mongo部分啦。
+项目地址：
+```
+
+[ActiveORM](https://github.com/allwefantasy/active_orm)
+[MongoMongo](https://github.com/allwefantasy/mongomongo)
+
+
 ##  创建一个新的ServiceFramework 项目
 
 
