@@ -2,7 +2,7 @@ package com.example.controller;
 
 
 import net.csdn.annotation.filter.AroundFilter;
-import net.csdn.modules.http.RestController;
+import net.csdn.modules.http.WowAroundFilter;
 
 import java.util.Map;
 
@@ -38,7 +38,7 @@ public abstract class ApplicationController extends net.csdn.modules.http.Applic
     @AroundFilter
     private final static Map $print_action_execute_time = map();
 
-    private void print_action_execute_time(RestController.WowAroundFilter wowAroundFilter)throws Exception {
+    private void print_action_execute_time(WowAroundFilter wowAroundFilter)throws Exception {
         long time1 = System.currentTimeMillis();
         wowAroundFilter.invoke();
         logger.info("execute time:[" + (System.currentTimeMillis() - time1) + "]");

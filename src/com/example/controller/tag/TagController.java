@@ -10,8 +10,8 @@ import net.csdn.annotation.filter.BeforeFilter;
 import net.csdn.annotation.rest.At;
 import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
-import net.csdn.modules.http.RestController;
 import net.csdn.common.reflect.ReflectHelper;
+import net.csdn.modules.http.WowAroundFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class TagController extends ApplicationController {
     @AroundFilter
     private final static Map $print_action_execute_time2 = map(only, list("search"));
 
-    private void print_action_execute_time2(RestController.WowAroundFilter wowAroundFilter) throws Exception {
+    private void print_action_execute_time2(WowAroundFilter wowAroundFilter) throws Exception {
         long time1 = System.currentTimeMillis();
         wowAroundFilter.invoke();
         logger.info("标签聚合消耗时间:[" + (System.currentTimeMillis() - time1) + "]");

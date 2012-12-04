@@ -8,7 +8,6 @@ import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.PathTrie;
 import net.csdn.common.exception.ArgumentErrorException;
-import net.csdn.common.exception.ExceptionHandler;
 import net.csdn.common.exception.RecordNotFoundException;
 import net.csdn.filter.FilterHelper;
 import net.csdn.common.reflect.ReflectHelper;
@@ -150,7 +149,7 @@ public class RestController {
         while (iterator.hasNext()) {
             Method currentFilter = iterator.next();
             wowAroundFilter.setNext(new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController));
-            wowAroundFilter = wowAroundFilter.next;
+            wowAroundFilter = wowAroundFilter.getNext();
         }
 
         if (first != null) {
@@ -159,48 +158,6 @@ public class RestController {
             handlerKey.v2().invoke(applicationController);
         }
 
-    }
-
-    public class WowAroundFilter {
-        private WowAroundFilter next;
-        private Method currentFilter;
-        private Method action;
-        private ApplicationController applicationController;
-
-        public WowAroundFilter(Method currentFilter, Method action, ApplicationController applicationController) {
-            this.currentFilter = currentFilter;
-            this.action = action;
-            this.applicationController = applicationController;
-        }
-
-        public void invoke() throws Exception {
-            try {
-                WowAroundFilter wowAroundFilter = this.next;
-                if (wowAroundFilter == null) {
-                    wowAroundFilter = new WowAroundFilter(null, action, applicationController) {
-                        @Override
-                        public void invoke() throws Exception{
-                            WowAroundFilter.this.action.invoke(applicationController);
-                        }
-                    };
-
-                }
-                currentFilter.setAccessible(true);
-                currentFilter.invoke(applicationController, wowAroundFilter);
-
-            } catch (Exception e) {
-                try {
-                    ExceptionHandler.renderHandle(e);
-                } catch (Exception e1) {
-                    throw e1;
-                }
-            }
-
-        }
-
-        public void setNext(WowAroundFilter next) {
-            this.next = next;
-        }
     }
 
 
