@@ -38,7 +38,7 @@ public abstract class ApplicationController extends net.csdn.modules.http.Applic
     @AroundFilter
     private final static Map $print_action_execute_time = map();
 
-    private void print_action_execute_time(RestController.WowAroundFilter wowAroundFilter) {
+    private void print_action_execute_time(RestController.WowAroundFilter wowAroundFilter)throws Exception {
         long time1 = System.currentTimeMillis();
         wowAroundFilter.invoke();
         logger.info("execute time:[" + (System.currentTimeMillis() - time1) + "]");

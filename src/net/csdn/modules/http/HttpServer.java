@@ -2,13 +2,13 @@ package net.csdn.modules.http;
 
 import com.google.inject.Inject;
 import net.csdn.ServiceFramwork;
-import net.csdn.common.logging.CSLogger;
-import net.csdn.common.logging.Loggers;
-import net.csdn.common.settings.Settings;
 import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.common.exception.ExceptionHandler;
 import net.csdn.common.exception.RecordExistedException;
 import net.csdn.common.exception.RecordNotFoundException;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
+import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.support.HttpStatus;
 import net.sf.json.JSONException;
@@ -38,9 +38,11 @@ public class HttpServer {
 
     private RestController restController;
     private boolean disableMysql = false;
+    private Settings settings;
 
     @Inject
     public HttpServer(Settings settings, RestController restController) {
+        this.settings = settings;
         this.restController = restController;
         disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         server = new Server();
@@ -124,6 +126,7 @@ public class HttpServer {
                 }
 
                 public void error(Exception e) throws IOException {
+
                     if (e instanceof RecordNotFoundException) {
                         status = HttpStatus.HttpStatusNotFound;
                     } else if (e instanceof RecordExistedException || e instanceof ArgumentErrorException || e instanceof JSONException) {
@@ -131,6 +134,8 @@ public class HttpServer {
                     } else {
                         status = HttpStatus.HttpStatusSystemError;
                     }
+
+
                     httpServletResponse.setStatus(status);
                     output(e.getMessage());
                 }
@@ -175,7 +180,9 @@ public class HttpServer {
             } catch (Exception e) {
                 e.printStackTrace();
                 //回滚
-                JPA.getJPAConfig().getJPAContext().closeTx(true);
+                if (!disableMysql) {
+                    JPA.getJPAConfig().getJPAContext().closeTx(true);
+                }
                 channel.error(e);
             }
 

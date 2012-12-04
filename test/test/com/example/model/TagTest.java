@@ -20,6 +20,8 @@ import static org.junit.Assert.assertTrue;
 public class TagTest extends IocTest {
 
 
+
+
     public void testInheritance() {
         Tag tag = Tag.create(map("name", "java"));
         tag.save();
@@ -262,6 +264,30 @@ public class TagTest extends IocTest {
         Tag tag = Tag.create(map("name", tagName));
         tagSynonym.associate("tags").add(tag);
         tagSynonym.save();
+        dbCommit();
+
+        tagSynonym = TagSynonym.where("name=:name", map("name", tagSynonymName)).single_fetch();
+        assertTrue(tagSynonym != null);
+
+        tag = Tag.where("name=:name", map("name", tagName)).single_fetch();
+        assertTrue(tag != null);
+        tagSynonym.delete();
+        tag.delete();
+    }
+
+    @Test
+    public void manyToOne2() {
+        String tagName = "jack";
+        String tagSynonymName = "wowo";
+
+        TagSynonym tagSynonym = TagSynonym.create(map("name", tagSynonymName));
+        tagSynonym.save();
+        dbCommit();
+
+        Tag tag = Tag.create(map("name", tagName));
+        tagSynonym.associate("tags").add(tag);
+        tagSynonym.save();
+
         dbCommit();
 
         tagSynonym = TagSynonym.where("name=:name", map("name", tagSynonymName)).single_fetch();

@@ -173,26 +173,14 @@ public class RestController {
             this.applicationController = applicationController;
         }
 
-        public void invoke() {
+        public void invoke() throws Exception {
             try {
                 WowAroundFilter wowAroundFilter = this.next;
                 if (wowAroundFilter == null) {
                     wowAroundFilter = new WowAroundFilter(null, action, applicationController) {
                         @Override
-                        public void invoke() {
-                            try {
-                                WowAroundFilter.this.action.invoke(applicationController);
-                            } catch (Exception e) {
-                                try {
-                                    ExceptionHandler.renderHandle(e);
-                                } catch (Exception e1) {
-                                    try {
-                                        throw e1;
-                                    } catch (Exception e2) {
-                                        e2.printStackTrace();
-                                    }
-                                }
-                            }
+                        public void invoke() throws Exception{
+                            WowAroundFilter.this.action.invoke(applicationController);
                         }
                     };
 
@@ -204,11 +192,7 @@ public class RestController {
                 try {
                     ExceptionHandler.renderHandle(e);
                 } catch (Exception e1) {
-                    try {
-                        throw e1;
-                    } catch (Exception e2) {
-
-                    }
+                    throw e1;
                 }
             }
 

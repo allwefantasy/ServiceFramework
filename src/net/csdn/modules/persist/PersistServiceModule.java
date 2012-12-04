@@ -3,8 +3,6 @@ package net.csdn.modules.persist;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import net.csdn.common.settings.Settings;
-import net.csdn.modules.persist.mysql.DataSourceManager;
-import net.csdn.modules.persist.mysql.MysqlClient;
 import net.csdn.mongo.MongoMongo;
 
 /**
@@ -21,8 +19,8 @@ public class PersistServiceModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(DataSourceManager.class).asEagerSingleton();
-        bind(MysqlClient.class).in(Singleton.class);
+        //bind(DataSourceManager.class).asEagerSingleton();
+        //bind(MysqlClient.class).in(Singleton.class);
         bind(MongoMongo.class).in(Singleton.class);
 
     }

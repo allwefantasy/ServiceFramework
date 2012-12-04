@@ -1,12 +1,14 @@
 package net.csdn.junit;
 
 import com.google.inject.Injector;
+import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.jpa.JPA;
 import org.junit.After;
 import org.junit.Before;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
  * BlogInfo: WilliamZhu
@@ -15,6 +17,18 @@ import java.lang.reflect.Field;
  */
 public class IocTest {
     protected final static Injector injector = ServiceFramwork.injector;
+    protected static boolean startUp = false;
+
+//    static {
+//        if (!startUp) {
+//            try {
+//                initEnv();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//            startUp = true;
+//        }
+//    }
 
     public void dbCommit() {
         JPA.getJPAConfig().getJPAContext().closeTx(false);
@@ -36,6 +50,17 @@ public class IocTest {
 
     @Before
     public void setUp() throws Exception {
+
+
+    }
+
+    public static void initEnv() throws Exception {
+        ServiceFramwork.mode = ServiceFramwork.Mode.test;
+        CtClass ctClass = ServiceFramwork.classPool.get("net.csdn.bootstrap.Bootstrap");
+        //加载Guice容器
+        Method method = ctClass.toClass().getDeclaredMethod("configureSystem");
+        method.setAccessible(true);
+        method.invoke(null);
     }
 
     @After

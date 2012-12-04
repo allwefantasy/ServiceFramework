@@ -35,7 +35,7 @@ public class TagController extends ApplicationController {
     @AroundFilter
     private final static Map $print_action_execute_time2 = map(only, list("search"));
 
-    private void print_action_execute_time2(RestController.WowAroundFilter wowAroundFilter) {
+    private void print_action_execute_time2(RestController.WowAroundFilter wowAroundFilter) throws Exception {
         long time1 = System.currentTimeMillis();
         wowAroundFilter.invoke();
         logger.info("标签聚合消耗时间:[" + (System.currentTimeMillis() - time1) + "]");

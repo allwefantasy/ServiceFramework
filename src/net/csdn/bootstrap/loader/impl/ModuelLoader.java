@@ -35,25 +35,29 @@ public class ModuelLoader implements Loader {
             moduleList.add(new CacheModule());
         }
 
-        moduleList.add(new AbstractModule() {
-            @Override
-            protected void configure() {
-                bind(DBInfo.class).in(Singleton.class);
-            }
-        });
-        moduleList.add(new AbstractModule() {
-            @Override
-            protected void configure() {
-                String clzzName = settings.get("type_mapping", "net.csdn.jpa.type.impl.MysqlType");
-                final Class czz;
-                try {
-                    czz = Class.forName(clzzName);
-                    bind(DBType.class).to(czz).in(Singleton.class);
-                } catch (ClassNotFoundException e) {
-                    e.printStackTrace();
+        boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+
+        if(!disableMysql){
+            moduleList.add(new AbstractModule() {
+                @Override
+                protected void configure() {
+                    bind(DBInfo.class).in(Singleton.class);
                 }
-            }
-        });
+            });
+            moduleList.add(new AbstractModule() {
+                @Override
+                protected void configure() {
+                    String clzzName = settings.get("type_mapping", "net.csdn.jpa.type.impl.MysqlType");
+                    final Class czz;
+                    try {
+                        czz = Class.forName(clzzName);
+                        bind(DBType.class).to(czz).in(Singleton.class);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
 
         ServiceFramwork.injector = Guice.createInjector(Stage.PRODUCTION, moduleList);
     }

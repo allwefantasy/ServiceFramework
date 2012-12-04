@@ -1,17 +1,20 @@
 package net.csdn.modules.http;
 
+import net.csdn.ServiceFramwork;
+import net.csdn.common.Strings;
 import net.csdn.common.collections.WowCollections;
-import net.csdn.common.logging.CSLogger;
-import net.csdn.common.logging.Loggers;
-import net.csdn.common.unit.ByteSizeValue;
-import net.csdn.common.unit.TimeValue;
 import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.common.exception.RenderFinish;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
+import net.csdn.common.reflect.ReflectHelper;
+import net.csdn.common.settings.Settings;
+import net.csdn.common.unit.ByteSizeValue;
+import net.csdn.common.unit.TimeValue;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.model.Model;
 import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
-import net.csdn.common.reflect.ReflectHelper;
 import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -34,6 +37,27 @@ public abstract class ApplicationController {
     public static String EMPTY_JSON = "{}";
 
 
+    public Class const_document_get(String name) {
+        return inner_const_get("document",name);
+    }
+
+    public Class const_service_get(String name) {
+        return inner_const_get("service",name);
+    }
+
+    private Class inner_const_get(String type,String name){
+        Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
+        String model = settings.get("application."+type,"")+"."+ Strings.toCamelCase(name,true);
+        Class clzz = null;
+        try {
+            clzz = Class.forName(model);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            throw new ArgumentErrorException("error: could not load class:["+model+"]");
+        }
+        return clzz;
+
+    }
     //渲染输出
     public void render(int status, String content) {
         restResponse.originContent(content);
@@ -73,6 +97,7 @@ public abstract class ApplicationController {
     public void render(Object result) {
         restResponse.originContent(result);
         restResponse.write(toJson(result));
+        throw new RenderFinish();
     }
 
 
@@ -107,7 +132,7 @@ public abstract class ApplicationController {
         if (config.isPretty()) {
             return _toJson(obj).toString(2);
         }
-        return obj.toString();
+        return _toJson(obj).toString();
     }
 
     protected OutPutConfig config = new OutPutConfig();
@@ -396,4 +421,6 @@ public abstract class ApplicationController {
     public static Map selectMapWithAliasNameInclude(Map map, String... keys) {
         return WowCollections.selectMapWithAliasNameInclude(map, keys);
     }
+
+
 }
