@@ -20,6 +20,7 @@ public interface HttpTransportService {
     public SResponse put(Url url, Map data);
 
     public SResponse http(Url url, String jsonData, RestRequest.Method method);
+    public SResponse http(Url url, String jsonData, RestRequest.Method method,int timeout);
 
     public FutureTask<SResponse> asyncHttp(final Url url, final String jsonData, RestRequest.Method method);
 

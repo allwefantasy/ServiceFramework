@@ -17,6 +17,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
@@ -44,11 +46,22 @@ public class DefaultHttpTransportService implements HttpTransportService {
     @Inject
     private ThreadPoolService threadPoolService;
 
+    /*
+      timeout for how long to wait for a sequence  byte of response data
+        `HttpConnectionParams.setConnectionTimeout()`
+      timeout for how long to wait to establish a TCP connection
+        `HttpConnectionParams.setSoTimeout()`
+
+     */
     public DefaultHttpTransportService() {
         ThreadSafeClientConnManager threadSafeClientConnManager = new ThreadSafeClientConnManager();
         threadSafeClientConnManager.setDefaultMaxPerRoute(1000);
         threadSafeClientConnManager.setMaxTotal(10000);
-        httpClient = new DefaultHttpClient(threadSafeClientConnManager);
+
+        HttpParams httpParams = new BasicHttpParams();
+//        HttpConnectionParams.setSoTimeout(httpParams, 1000);
+//        HttpConnectionParams.setConnectionTimeout(httpParams, 1000);
+        httpClient = new DefaultHttpClient(threadSafeClientConnManager, httpParams);
     }
 
 
@@ -60,6 +73,7 @@ public class DefaultHttpTransportService implements HttpTransportService {
             UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(mapToNameValuesPairs(data), charset);
             post.setHeader(content_type.v1(), content_type.v2());
             post.setEntity(urlEncodedFormEntity);
+
             HttpResponse response = httpClient.execute(post);
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
         } catch (IOException e) {
@@ -110,6 +124,18 @@ public class DefaultHttpTransportService implements HttpTransportService {
         }
     }
 
+    @Override
+    public SResponse http(final Url url, final String jsonData, final RestRequest.Method method, int timeout) {
+
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.http(url, jsonData, method);
+            }
+        });
+        return response;
+    }
+
 
     public FutureTask<SResponse> asyncHttp(final Url url, final String jsonData, final RestRequest.Method method) {
         FutureTask<SResponse> getRemoteDataTask = new FutureTask(new Callable<SResponse>() {
@@ -147,7 +173,7 @@ public class DefaultHttpTransportService implements HttpTransportService {
     }
 
 
-    private HttpRequestBase createMethod(URI uri, String jsonData, RestRequest.Method method)  {
+    private HttpRequestBase createMethod(URI uri, String jsonData, RestRequest.Method method) {
         HttpRequestBase httpRequestBase;
         if (method == RestRequest.Method.GET) {
             httpRequestBase = new HttpGet(uri);
