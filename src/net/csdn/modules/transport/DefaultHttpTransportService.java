@@ -137,6 +137,17 @@ public class DefaultHttpTransportService implements HttpTransportService {
     }
 
 
+    public SResponse post(final Url url, final Map data, final int timeout) {
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.post(url, data, timeout);
+            }
+        });
+        return response;
+    }
+
+
     public FutureTask<SResponse> asyncHttp(final Url url, final String jsonData, final RestRequest.Method method) {
         FutureTask<SResponse> getRemoteDataTask = new FutureTask(new Callable<SResponse>() {
             @Override
