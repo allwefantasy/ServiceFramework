@@ -23,7 +23,7 @@ valid_status()
 }
 
 #默认我们设置为开发环境 p env=p 为生产环境  env=d 为开发环境
-env=${1-"d"}
+env=${3-"d"}
 build_dir=${2-"build"}
 
 
@@ -137,21 +137,23 @@ deploy()
 	done
 
 	#开始编译啦
-	javac -cp $classpath -d $DEPLOY_TO -encoding UTF-8 $sourcefiles
+	javac -g -cp $classpath -d $DEPLOY_TO -encoding UTF-8 $sourcefiles
 	
 	#编译错误的退出脚本
 	if [ $? -ne 0 ];then
 		echo 'compile error !!! exit.....'
 		exit $W_EXIT_STATUS
 	fi
-	cp -r "$S_HOME/src/META-INF" $DEPLOY_TO
-	
-	stop	
-	rm -rf $DEPLOY_CURRENT
-	ln -s  $DEPLOY_TO $DEPLOY_CURRENT
-    start
+	cp -r "$S_HOME/src/META-INF" $DEPLOY_TO	
 }
 
+migrate_version()
+{
+	stop	
+	rm -rf $DEPLOY_CURRENT
+	ln -s  $DEPLOY_TO $DEPLOY_CURRENT 
+    start
+}
 
 case $1 in
 "restart")
@@ -171,6 +173,10 @@ case $1 in
 
 "rollback")
    rollback
+;;
+
+"migrate_version")
+   migrate_version
 ;;
 *) echo "only accept params start|stop|restart|deploy" ;;
 esac
