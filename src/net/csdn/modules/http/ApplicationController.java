@@ -38,26 +38,27 @@ public abstract class ApplicationController {
 
 
     public Class const_document_get(String name) {
-        return inner_const_get("document",name);
+        return inner_const_get("document", name);
     }
 
     public Class const_service_get(String name) {
-        return inner_const_get("service",name);
+        return inner_const_get("service", name);
     }
 
-    private Class inner_const_get(String type,String name){
+    private Class inner_const_get(String type, String name) {
         Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
-        String model = settings.get("application."+type,"")+"."+ Strings.toCamelCase(name,true);
+        String model = settings.get("application." + type, "") + "." + Strings.toCamelCase(name, true);
         Class clzz = null;
         try {
             clzz = Class.forName(model);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            throw new ArgumentErrorException("error: could not load class:["+model+"]");
+            throw new ArgumentErrorException("error: could not load class:[" + model + "]");
         }
         return clzz;
 
     }
+
     //渲染输出
     public void render(int status, String content) {
         restResponse.originContent(content);
@@ -351,6 +352,10 @@ public abstract class ApplicationController {
 
     public static List project(List<Map> list, String key) {
         return WowCollections.project(list, key);
+    }
+
+    public static List projectByMethod(List list, String method) {
+        return WowCollections.projectByMethod(list, method);
     }
 
     public static Map double_list_to_map(List keys, List values) {

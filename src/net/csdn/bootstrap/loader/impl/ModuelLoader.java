@@ -34,7 +34,6 @@ public class ModuelLoader implements Loader {
         if (!disableRedis) {
             moduleList.add(new CacheModule());
         }
-
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
 
         if(!disableMysql){
@@ -58,6 +57,7 @@ public class ModuelLoader implements Loader {
                 }
             });
         }
+
 
         ServiceFramwork.injector = Guice.createInjector(Stage.PRODUCTION, moduleList);
     }

@@ -1,6 +1,5 @@
 package net.csdn.bootstrap.loader.impl;
 
-import com.example.controller.tag.TagController;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import javassist.CtClass;
@@ -46,10 +45,6 @@ public class ControllerLoader implements Loader {
             }
         });
         ServiceFramwork.injector = ServiceFramwork.injector.createChildInjector(moduleList);
-    }
-
-    public static void main(String[] args) {
-        System.out.println(TagController.class.getSuperclass() == ApplicationController.class);
     }
 
     private static Module bindAction(final Class clzz) {

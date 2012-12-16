@@ -31,11 +31,7 @@ public class WowAroundFilter {
                         try {
                             WowAroundFilter.this.action.invoke(applicationController);
                         } catch (Exception e) {
-                            try {
-                                ExceptionHandler.renderHandle(e);
-                            } catch (Exception e1) {
-                                throw e1;
-                            }
+                            ExceptionHandler.renderHandle(e);
                         }
                     }
                 };
@@ -45,7 +41,7 @@ public class WowAroundFilter {
             currentFilter.invoke(applicationController, wowAroundFilter);
 
         } catch (Exception e) {
-            throw e;
+            ExceptionHandler.renderHandle(e);
         }
 
     }
