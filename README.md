@@ -3,10 +3,13 @@
 ```
 ServiceFramework 中 ORM 和 Mongo 的部分已经独立进另外两个项目，现在大家可以在自己的
 项目中单独使用ServiceFramework 中的ORM和Mongo部分啦。
-项目地址：
+
+添加了一个jar目录，里面是ServiceFramework打成的jar包。如果你要动手开发一个项目，你可以把src目录清空，然后将jar目录的
+service_framework.jar 拷贝进 lib目录。这样你就获得了一个干净的项目。
 ```
 
 [ActiveORM](https://github.com/allwefantasy/active_orm)
+
 [MongoMongo](https://github.com/allwefantasy/mongomongo)
 
 
