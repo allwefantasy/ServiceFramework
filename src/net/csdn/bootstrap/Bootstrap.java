@@ -58,8 +58,9 @@ public class Bootstrap {
         Settings settings = tuple.v1();
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
-
-        //ServiceFramwork.scanService.setLoader(ServiceFramwork.class);
+        if(ServiceFramwork.scanService.getLoader()==null){
+            ServiceFramwork.scanService.setLoader(ServiceFramwork.class);
+        }
         if (!disableMysql) {
             JPA.configure(new JPA.CSDNORMConfiguration(ServiceFramwork.mode.name(), tuple.v1(), ServiceFramwork.scanService.getLoader(), ServiceFramwork.classPool));
         }
