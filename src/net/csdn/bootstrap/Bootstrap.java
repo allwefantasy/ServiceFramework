@@ -59,12 +59,12 @@ public class Bootstrap {
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
 
-        ServiceFramwork.scanService.setLoader(ServiceFramwork.class);
+        //ServiceFramwork.scanService.setLoader(ServiceFramwork.class);
         if (!disableMysql) {
-            JPA.configure(new JPA.CSDNORMConfiguration(ServiceFramwork.mode.name(), tuple.v1(), ServiceFramwork.class, ServiceFramwork.classPool));
+            JPA.configure(new JPA.CSDNORMConfiguration(ServiceFramwork.mode.name(), tuple.v1(), ServiceFramwork.scanService.getLoader(), ServiceFramwork.classPool));
         }
         if (!disableMongo) {
-            MongoMongo.configure(new MongoMongo.CSDNMongoConfiguration(ServiceFramwork.mode.name(), tuple.v1(), ServiceFramwork.class, ServiceFramwork.classPool));
+            MongoMongo.configure(new MongoMongo.CSDNMongoConfiguration(ServiceFramwork.mode.name(), tuple.v1(), ServiceFramwork.scanService.getLoader(), ServiceFramwork.classPool));
         }
 
         Loader loggerLoader = new LoggerLoader();
