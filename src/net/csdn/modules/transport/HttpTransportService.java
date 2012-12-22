@@ -17,13 +17,23 @@ public interface HttpTransportService {
 
     public SResponse post(Url url, Map data);
 
+    public SResponse post(Url url, Map data, Map<String, String> headers);
+
     public SResponse post(final Url url, final Map data, final int timeout);
+
+    public SResponse post(final Url url, final Map data, final Map<String, String> headers, final int timeout);
 
     public SResponse put(Url url, Map data);
 
+    public SResponse put(Url url, Map data, Map<String, String> headers);
+
     public SResponse http(Url url, String jsonData, RestRequest.Method method);
 
+    public SResponse http(Url url, String jsonData, Map<String, String> headers, RestRequest.Method method);
+
     public SResponse http(Url url, String jsonData, RestRequest.Method method, int timeout);
+
+    public SResponse http(Url url, String jsonData, Map<String, String> headers,RestRequest.Method method,  int timeout);
 
     public FutureTask<SResponse> asyncHttp(final Url url, final String jsonData, RestRequest.Method method);
 

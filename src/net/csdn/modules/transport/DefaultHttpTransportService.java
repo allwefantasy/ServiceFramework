@@ -5,6 +5,7 @@ import net.csdn.common.collect.Tuple;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.Url;
+import net.csdn.common.settings.Settings;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.support.HttpStatus;
 import net.csdn.modules.threadpool.ThreadPoolService;
@@ -30,6 +31,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
+import static net.csdn.common.collections.WowCollections.map;
+
 /**
  * BlogInfo: WilliamZhu
  * Date: 12-5-29
@@ -45,14 +48,17 @@ public class DefaultHttpTransportService implements HttpTransportService {
 
     @Inject
     private ThreadPoolService threadPoolService;
+    @Inject
+    private Settings settings;
+    private static final Map<String, String> EMPTY_MAP = map();
 
     /*
-      timeout for how long to wait for a sequence  byte of response data
-        `HttpConnectionParams.setConnectionTimeout()`
-      timeout for how long to wait to establish a TCP connection
-        `HttpConnectionParams.setSoTimeout()`
+     timeout for how long to wait for a sequence  byte of response data
+       `HttpConnectionParams.setConnectionTimeout()`
+     timeout for how long to wait to establish a TCP connection
+       `HttpConnectionParams.setSoTimeout()`
 
-     */
+    */
     public DefaultHttpTransportService() {
         ThreadSafeClientConnManager threadSafeClientConnManager = new ThreadSafeClientConnManager();
         threadSafeClientConnManager.setDefaultMaxPerRoute(1000);
@@ -66,12 +72,23 @@ public class DefaultHttpTransportService implements HttpTransportService {
 
 
     public SResponse post(Url url, Map data) {
+        return post(url, data, EMPTY_MAP);
+    }
+
+    public SResponse post(Url url, Map data, Map<String, String> headers) {
         HttpPost post = null;
 
         try {
             post = new HttpPost(url.toURI());
             UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(mapToNameValuesPairs(data), charset);
             post.setHeader(content_type.v1(), content_type.v2());
+
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    post.setHeader(entry.getKey(), entry.getValue());
+                }
+            }
+
             post.setEntity(urlEncodedFormEntity);
 
             HttpResponse response = httpClient.execute(post);
@@ -87,6 +104,10 @@ public class DefaultHttpTransportService implements HttpTransportService {
 
 
     public SResponse put(Url url, Map data) {
+        return put(url, data, EMPTY_MAP);
+    }
+
+    public SResponse put(Url url, Map data, Map<String, String> headers) {
         HttpPut put = null;
 
         String result = "";
@@ -94,6 +115,11 @@ public class DefaultHttpTransportService implements HttpTransportService {
             put = new HttpPut(url.toURI());
             UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(mapToNameValuesPairs(data), charset);
             put.setHeader(content_type.v1(), content_type.v2());
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    put.setHeader(entry.getKey(), entry.getValue());
+                }
+            }
             put.setEntity(urlEncodedFormEntity);
             HttpResponse response = httpClient.execute(put);
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
@@ -107,9 +133,18 @@ public class DefaultHttpTransportService implements HttpTransportService {
     }
 
     public SResponse http(Url url, String jsonData, RestRequest.Method method) {
+        return http(url, jsonData, EMPTY_MAP, method);
+    }
+
+    public SResponse http(Url url, String jsonData, Map<String, String> headers, RestRequest.Method method) {
         HttpRequestBase httpRequestBase = null;
         try {
             httpRequestBase = createMethod(url.toURI(), jsonData, method);
+            if (headers != null) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    httpRequestBase.setHeader(entry.getKey(), entry.getValue());
+                }
+            }
             HttpResponse response = httpClient.execute(httpRequestBase);
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
         } catch (IOException e) {
@@ -136,6 +171,28 @@ public class DefaultHttpTransportService implements HttpTransportService {
         return response;
     }
 
+
+    public SResponse http(final Url url, final String jsonData,final Map<String,String> headers,final RestRequest.Method method, int timeout) {
+
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.http(url, jsonData,headers, method);
+            }
+        });
+        return response;
+    }
+
+
+    public SResponse post(final Url url, final Map data, final Map<String,String> headers,final int timeout) {
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.post(url, data,headers);
+            }
+        });
+        return response;
+    }
 
     public SResponse post(final Url url, final Map data, final int timeout) {
         SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
