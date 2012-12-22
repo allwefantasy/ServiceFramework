@@ -1,6 +1,6 @@
 #ServiceFramework Wiki
 
-
+[一个step by step 教程。几分钟开发一个基础应用](https://github.com/allwefantasy/ServiceFramework/wiki/Step-by-Step-tutorial-for-ServiceFramework)
 
 ##  创建一个新的ServiceFramework 项目
 
