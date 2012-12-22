@@ -1,16 +1,5 @@
 #ServiceFramework Wiki
 
-```
-ServiceFramework 中 ORM 和 Mongo 的部分已经独立进另外两个项目，现在大家可以在自己的
-项目中单独使用ServiceFramework 中的ORM和Mongo部分啦。
-
-添加了一个jar目录，里面是ServiceFramework打成的jar包。如果你要动手开发一个项目，你可以把src目录清空，然后将jar目录的
-service_framework.jar 拷贝进 lib目录。这样你就获得了一个干净的项目。
-```
-
-[ActiveORM](https://github.com/allwefantasy/active_orm)
-
-[MongoMongo](https://github.com/allwefantasy/mongomongo)
 
 
 ##  创建一个新的ServiceFramework 项目
@@ -25,7 +14,8 @@ ServcieFramework 定位在 **移动互联网后端** 领域。
 2. Controller层含有便利的函数库，简洁高效的验证器，过滤器
 3. 简单但实用的View层，天然支持JSON,XMl格式输出
 
-框架提供了对mysql,mongodb,redis的支持
+框架提供了对mysql([ActiveORM](https://github.com/allwefantasy/active_orm)),mongodb([MongoMongo](https://github.com/allwefantasy/mongomongo))的支持.
+对象缓存正在开发中。
 
 如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于在一个全新的项目中使用它。
 相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
@@ -105,7 +95,7 @@ git clone git://github.com/allwefantasy/ServiceFramework.git ServiceFramework
 - 在你的mysql中新建一个库，名称为：wow
 - 运行sql目录下的 wow.sql,把所有的表建好。
 
-这应该就是所有准备工作了。但是您的端口可能不是默认的3306,所以您还应该检查下
+这应该就是所有准备工作了。但是您的端口可能不是默认的3306,所以您还应该检查下，并且修改username和password
 
 ```
 config/application.yml 
@@ -123,7 +113,6 @@ development:
            password: root
 ```
 
-部分，根据您的需求进行修改。
 
 ##如何运行测试
 项目src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
@@ -162,6 +151,7 @@ curl -XPOST 'http://127.0.0.1:9400/tag_group' -d 'name=java'
 ```
 
 这个时候你可以查看数据库，应该就有相应的记录了。
+
 
 ## Model 
 这个章节，我们会知道 ServiceFramework 模型层 完整的使用。
