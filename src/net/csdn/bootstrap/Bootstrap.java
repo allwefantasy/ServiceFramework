@@ -6,6 +6,8 @@ import net.csdn.bootstrap.loader.Loader;
 import net.csdn.bootstrap.loader.impl.*;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.env.Environment;
+import net.csdn.common.scan.DefaultScanService;
+import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
@@ -58,7 +60,7 @@ public class Bootstrap {
         Settings settings = tuple.v1();
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
-        if(ServiceFramwork.scanService.getLoader()==null){
+        if (ServiceFramwork.scanService.getLoader() == null || (ServiceFramwork.scanService.getLoader()== DefaultScanService.class)) {
             ServiceFramwork.scanService.setLoader(ServiceFramwork.class);
         }
         if (!disableMysql) {
