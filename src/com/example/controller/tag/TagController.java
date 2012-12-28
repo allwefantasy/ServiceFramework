@@ -3,6 +3,7 @@ package com.example.controller.tag;
 import com.example.controller.ApplicationController;
 import com.example.model.BlogTag;
 import com.example.model.Tag;
+import com.example.model.TagSynonym;
 import com.example.service.tag.RemoteDataService;
 import com.google.inject.Inject;
 import net.csdn.annotation.filter.AroundFilter;
@@ -20,6 +21,7 @@ import java.util.Set;
 
 import static net.csdn.filter.FilterHelper.BeforeFilter.only;
 import static net.csdn.modules.http.RestRequest.Method.GET;
+import static net.csdn.modules.http.RestRequest.Method.POST;
 import static net.csdn.modules.http.RestRequest.Method.PUT;
 import static net.csdn.modules.http.support.HttpStatus.HTTP_400;
 
@@ -59,6 +61,22 @@ public class TagController extends ApplicationController {
             tag.associate("blog_tags").add(BlogTag.create(map("object_id", paramAsInt("object_id"))));
         }
         render(ok());
+    }
+
+
+    @At(path = "/tag_group/{tag_synonym_name}/tag/{tag_name}", types = POST)
+    public void addTagToTagGroup() {
+        Map query = map("name", param("tag_synonym_name"));
+
+        TagSynonym tagSynonym = (TagSynonym) or(
+                TagSynonym.where(query).single_fetch(),
+                TagSynonym.create(query)
+        );
+
+        if (!tagSynonym.tags().add(map("name", param("tag_name")))) {
+            render(HTTP_400, tagSynonym.validateResults);
+        }
+        render("ok save");
     }
 
     /**
