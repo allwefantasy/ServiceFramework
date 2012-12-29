@@ -8,7 +8,7 @@ ServiceFramework divides your application into three layers,each with specific r
 by [Google Guice](http://code.google.com/p/google-guice/).
 
 
-###A short glance on Action Code
+###A short glance
 
 Create Model class.
 
