@@ -1,7 +1,9 @@
 #ServiceFramework Wiki
 
-如果你现在就想动手写一个应用，不妨看看这片文章：[一个step by step 教程。几分钟开发一个基础应用](https://github.com/allwefantasy/service_framework_example)     
-如果你要看较为完整的wiki,那就继续本文....O(∩_∩)O哈哈~
+Step-by-Step-tutorial-for-ServiceFramework
+
+* Step-by-Step-tutorial-for-ServiceFramework(1)  https://github.com/allwefantasy/service_framework_example/blob/master/README.md
+* Step-by-Step-tutorial-for-ServiceFramework(2)  https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework(2).md
 
 ##  创建一个新的ServiceFramework 项目
 
