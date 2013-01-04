@@ -8,7 +8,7 @@ ServiceFramework divides your application into three layers,each with specific r
 by [Google Guice](http://code.google.com/p/google-guice/).
 
 
-###A short glance on Action Code
+###A short glance
 
 Create Model class.
 
@@ -65,6 +65,8 @@ Magic ,right? Hmm.... If you are intresting on this,please continue to read.
 #### Tutorial Usefull
 
 
+
 * [Walk through for Creating Your first Application with ServiceFramework](https://github.com/allwefantasy/service_framework_example/blob/master/README.md)
 * [How to use Model Association](https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework(2).md)
+
 
