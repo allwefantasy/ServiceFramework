@@ -95,8 +95,8 @@ public class RestController {
             } else {
                 if (filterInfo.containsKey(FilterHelper.BeforeFilter.except)) {
                     List<String> actions = (List<String>) filterInfo.get(FilterHelper.BeforeFilter.except);
-                    if (actions.contains(method.getName())) {
-
+                    if (!actions.contains(method.getName())) {
+                        result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
                     }
                 } else {
                     result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
