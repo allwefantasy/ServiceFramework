@@ -4,6 +4,7 @@ import net.csdn.modules.http.*;
 import net.csdn.modules.http.support.HttpStatus;
 
 import java.io.IOException;
+import java.util.Map;
 
 
 /**
@@ -46,6 +47,16 @@ public class MockRestResponse implements RestResponse {
 
     public void write(byte[] contentByte) {
         this.contentByte = contentByte;
+    }
+
+    @Override
+    public void cookie(String name, String value) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void cookie(Map cookieInfo) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public String content() {

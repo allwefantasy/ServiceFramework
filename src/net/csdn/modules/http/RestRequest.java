@@ -75,4 +75,6 @@ public interface RestRequest {
     ByteSizeValue paramAsSize(String key, ByteSizeValue defaultValue);
 
     Map<String, String> params();
+
+    public String cookie(String name);
 }

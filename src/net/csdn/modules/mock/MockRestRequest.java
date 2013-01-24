@@ -99,6 +99,11 @@ public class MockRestRequest implements RestRequest {
     }
 
     @Override
+    public String cookie(String name) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
     public boolean hasParam(String key) {
         return params.containsKey(key);
     }

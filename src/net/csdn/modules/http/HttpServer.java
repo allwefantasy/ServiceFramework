@@ -21,10 +21,12 @@ import org.eclipse.jetty.server.nio.SelectChannelConnector;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 
 
 /**
@@ -97,6 +99,33 @@ public class HttpServer {
 
                 public void write(byte[] contentByte) {
                     this.contentByte = contentByte;
+                }
+
+                @Override
+                public void cookie(String name, String value) {
+                    httpServletResponse.addCookie(new Cookie(name, value));
+                }
+
+                @Override
+                public void cookie(Map cookieInfo) {
+                    Cookie cookie = new Cookie((String) cookieInfo.get("name"), (String) cookieInfo.get("value"));
+                    if (cookieInfo.containsKey("domain")) {
+                        cookie.setDomain((String) cookieInfo.get("domain"));
+                    }
+                    if (cookieInfo.containsKey("max_age")) {
+                        cookie.setMaxAge((Integer) cookieInfo.get("max_age"));
+                    }
+                    if (cookieInfo.containsKey("path")) {
+                        cookie.setPath((String) cookieInfo.get("path"));
+                    }
+                    if (cookieInfo.containsKey("secure")) {
+                        cookie.setSecure((Boolean) cookieInfo.get("secure"));
+                    }
+
+                    if (cookieInfo.containsKey("version")) {
+                        cookie.setVersion((Integer) cookieInfo.get("version"));
+                    }
+                    httpServletResponse.addCookie(cookie);
                 }
 
                 public String content() {

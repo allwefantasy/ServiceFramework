@@ -172,23 +172,23 @@ public class DefaultHttpTransportService implements HttpTransportService {
     }
 
 
-    public SResponse http(final Url url, final String jsonData,final Map<String,String> headers,final RestRequest.Method method, int timeout) {
+    public SResponse http(final Url url, final String jsonData, final Map<String, String> headers, final RestRequest.Method method, int timeout) {
 
         SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
             @Override
             public Object run() {
-                return DefaultHttpTransportService.this.http(url, jsonData,headers, method);
+                return DefaultHttpTransportService.this.http(url, jsonData, headers, method);
             }
         });
         return response;
     }
 
 
-    public SResponse post(final Url url, final Map data, final Map<String,String> headers,final int timeout) {
+    public SResponse post(final Url url, final Map data, final Map<String, String> headers, final int timeout) {
         SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
             @Override
             public Object run() {
-                return DefaultHttpTransportService.this.post(url, data,headers);
+                return DefaultHttpTransportService.this.post(url, data, headers);
             }
         });
         return response;
@@ -250,7 +250,14 @@ public class DefaultHttpTransportService implements HttpTransportService {
             if (jsonData != null && !jsonData.isEmpty())
                 ((HttpPut) httpRequestBase).setEntity(stringEntity(jsonData));
         } else if (method == RestRequest.Method.DELETE) {
-            httpRequestBase = new HttpDelete(uri);
+            if (jsonData != null && !jsonData.isEmpty()) {
+                httpRequestBase = new HttpPost(uri);
+                ((HttpPost) httpRequestBase).setEntity(stringEntity(jsonData));
+            } else {
+                httpRequestBase = new HttpDelete(uri);
+            }
+
+
         } else if (method == RestRequest.Method.HEAD) {
             httpRequestBase = new HttpHead(uri);
         } else if (method == RestRequest.Method.OPTIONS) {

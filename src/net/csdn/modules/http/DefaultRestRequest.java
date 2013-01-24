@@ -8,6 +8,7 @@ import net.csdn.common.unit.TimeValue;
 import net.sf.json.util.JSONUtils;
 import org.apache.commons.lang.StringUtils;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.HashMap;
@@ -116,6 +117,19 @@ public class DefaultRestRequest implements RestRequest {
     public Map<String, String> params() {
         return params;
     }
+
+    @Override
+    public String cookie(String name) {
+        Cookie[] cookies = servletRequest.getCookies();
+        if (cookies == null || cookies.length == 0) return null;
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equalsIgnoreCase(name)) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
+
 
     @Override
     public boolean hasParam(String key) {

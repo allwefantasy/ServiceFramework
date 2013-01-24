@@ -24,6 +24,7 @@ import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * BlogInfo: william
@@ -224,6 +225,27 @@ public abstract class ApplicationController {
     //获取http参数
     public String header(String name) {
         return request.header(name);
+    }
+
+    public String cookie(String name) {
+        return request.cookie(name);
+    }
+
+    public void cookie(String name, String value) {
+        restResponse.cookie(name, value);
+    }
+
+    public void cookie(Map cookieInfo) {
+        restResponse.cookie(cookieInfo);
+    }
+
+    public void cookie(String name, String value, String path, int max_age) {
+        restResponse.cookie(map(
+                "name", name,
+                "value", value,
+                "path", path,
+                "max_age", max_age
+        ));
     }
 
     public Map<String, String> params() {
@@ -431,6 +453,14 @@ public abstract class ApplicationController {
 
     public static Map selectMapWithAliasNameInclude(Map map, String... keys) {
         return WowCollections.selectMapWithAliasNameInclude(map, keys);
+    }
+
+    public static Pattern RegEx(String reg) {
+        return Pattern.compile(reg);
+    }
+
+    public Pattern paramsAsRegEx(String key) {
+        return RegEx(param(key));
     }
 
 

@@ -1,5 +1,7 @@
 package net.csdn.modules.http;
 
+import java.util.Map;
+
 /**
  * BlogInfo: WilliamZhu
  * Date: 12-6-12
@@ -16,6 +18,10 @@ public interface RestResponse {
     public void write(int httpStatus, String content, ViewType viewType);
 
     public void write(byte[] content);
+
+    public void cookie(String name, String value);
+
+    public void cookie(Map cookieInfo);
 
     public String content();
 
