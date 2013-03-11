@@ -37,11 +37,6 @@ public class Bootstrap {
             e.printStackTrace();
             System.exit(3);
         }
-        httpServer = ServiceFramwork.injector.getInstance(HttpServer.class);
-        httpServer.start();
-        httpServer.join();
-
-
     }
 
     public static void shutdown() {
@@ -60,7 +55,10 @@ public class Bootstrap {
         Settings settings = tuple.v1();
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
-        if (ServiceFramwork.scanService.getLoader() == null || (ServiceFramwork.scanService.getLoader()== DefaultScanService.class)) {
+        boolean disableHttp = settings.getAsBoolean("http.disable", false);
+
+
+        if (ServiceFramwork.scanService.getLoader() == null || (ServiceFramwork.scanService.getLoader() == DefaultScanService.class)) {
             ServiceFramwork.scanService.setLoader(ServiceFramwork.class);
         }
         if (!disableMysql) {
@@ -95,6 +93,12 @@ public class Bootstrap {
         }
 
         isSystemConfigured = true;
+
+        if (!disableHttp) {
+            httpServer = ServiceFramwork.injector.getInstance(HttpServer.class);
+            httpServer.start();
+            httpServer.join();
+        }
     }
 
 

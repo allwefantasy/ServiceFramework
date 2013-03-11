@@ -5,7 +5,11 @@ Step-by-Step-tutorial-for-ServiceFramework
 * [Step-by-Step-tutorial-for-ServiceFramework(1)](https://github.com/allwefantasy/service_framework_example/blob/master/README.md)
 * [Step-by-Step-tutorial-for-ServiceFramework(2)](https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework\(2\).md)
 * [Step-by-Step-tutorial-for-ServiceFramework(3)](https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework\(3\).md)
-* [Step-by-Step-tutorial-for-ServiceFramework(4)](https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework\(4\).md)
+* [Step-by-Step-tutorial-for-ServiceFramework(4)](https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework\(4\).md)* 
+
+
+##[README-EN](https://github.com/allwefantasy/ServiceFramework/blob/master/README-EN.md)
+
 
 ##  创建一个新的ServiceFramework 项目
 
@@ -20,9 +24,10 @@ ServcieFramework 定位在 **移动互联网后端** 领域。
 3. 简单但实用的View层，天然支持JSON,XMl格式输出
 
 框架提供了对mysql([ActiveORM](https://github.com/allwefantasy/active_orm)),mongodb([MongoMongo](https://github.com/allwefantasy/mongomongo))的支持.
-对象缓存正在开发中。
 
-如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于在一个全新的项目中使用它。
+_对象缓存正在开发中,开发以[Web应用的缓存设计模式](http://robbinfan.com/blog/38/orm-cache-sumup)的描述为基础思路，并且会直接提供包括计数等的实现。_
+
+*** 如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于在一个全新的项目中使用它。***
 相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
 
 现在让我们了解下 ServiceFramework 吧。

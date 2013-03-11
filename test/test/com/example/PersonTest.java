@@ -29,11 +29,11 @@ public class PersonTest extends IocTest {
 
         person.addresses().build(map("_id", 77, "location", "天国的世界")).save();
         person = Person.findById(100);
-        List<Address> addresses = person.addresses().filter().fetch();
+        List<Address> addresses = person.addresses().findAll();
         Assert.assertTrue(addresses.size() == 1);
 
         Address address = addresses.get(0);
-        Person person1 = address.person().filter().singleFetch();
+        Person person1 = address.person().findOne();
         Assert.assertTrue(person1.getName().equals(person.getName()));
 
         person.remove();
@@ -75,7 +75,7 @@ public class PersonTest extends IocTest {
 
         personList = Person.select(list("name")).where(map("name", "google")).fetch();
         Assert.assertTrue(personList.size() == 1);
-        Assert.assertTrue(personList.get(0).attributes().toMap().size() == 2);
+        Assert.assertTrue(personList.get(0).attributes().size() == 2);
 
         personFound.remove();
         personFound = Person.findById(100);
