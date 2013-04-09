@@ -75,11 +75,17 @@ public class HttpServer {
                     this.content = content;
                 }
 
-                @Override
-                public void write(String content, ViewType viewType) {
+                private void configureMimeType(ViewType viewType) {
                     if (viewType == ViewType.xml) {
                         content_type = "application/xml; charset=UTF-8";
+                    } else if (viewType == ViewType.image) {
+                        content_type = "image/jpeg";
                     }
+                }
+
+                @Override
+                public void write(String content, ViewType viewType) {
+                    configureMimeType(viewType);
                     this.content = content;
                 }
 
@@ -90,9 +96,7 @@ public class HttpServer {
 
                 @Override
                 public void write(int httpStatus, String content, ViewType viewType) {
-                    if (viewType == ViewType.xml) {
-                        content_type = "application/xml; charset=UTF-8";
-                    }
+                    configureMimeType(viewType);
                     this.content = content;
                 }
 

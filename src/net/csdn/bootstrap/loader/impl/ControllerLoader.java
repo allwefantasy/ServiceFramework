@@ -9,6 +9,8 @@ import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
+import net.csdn.enhancer.ControllerEnhancer;
+import net.csdn.filter.FilterEnhancer;
 import net.csdn.modules.http.ApplicationController;
 import net.csdn.modules.http.RestController;
 import net.csdn.modules.http.RestRequest;
@@ -18,6 +20,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+
+import static net.csdn.common.collections.WowCollections.list;
 
 /**
  * BlogInfo: WilliamZhu
@@ -29,14 +33,16 @@ public class ControllerLoader implements Loader {
     @Override
     public void load(Settings settings) throws Exception {
         final List<Module> moduleList = new ArrayList<Module>();
+
+        final List<CtClass> controllers = list();
+        final ControllerEnhancer enhancer = new FilterEnhancer(settings);
         //自动加载所有Action类
         ServiceFramwork.scanService.scanArchives(settings.get("application.controller"), new ScanService.LoadClassEnhanceCallBack() {
             @Override
             public Class loaded(DataInputStream classFile) {
                 try {
-                    CtClass ctClass = ServiceFramwork.classPool.makeClass(classFile);
-                    if (Modifier.isAbstract(ctClass.getModifiers())) return null;
-                    moduleList.add(bindAction(ctClass.toClass()));
+                    CtClass ctClass = enhancer.enhanceThisClass(classFile);
+                    controllers.add(ctClass);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -44,8 +50,17 @@ public class ControllerLoader implements Loader {
                 return null;
             }
         });
+
+        enhancer.enhanceThisClass2(controllers);
+
+        for (CtClass ctClass : controllers) {
+            if (Modifier.isAbstract(ctClass.getModifiers())) continue;
+            moduleList.add(bindAction(Class.forName(ctClass.getName())));
+        }
+
         ServiceFramwork.injector = ServiceFramwork.injector.createChildInjector(moduleList);
     }
+
 
     private static Module bindAction(final Class clzz) {
         return new AbstractModule() {

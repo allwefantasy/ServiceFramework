@@ -6,9 +6,9 @@ import net.csdn.ServiceFramwork;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
-import net.csdn.enhancer.Enhancer;
+import net.csdn.enhancer.ControllerEnhancer;
+import net.csdn.filter.FilterEnhancer;
 import net.csdn.jpa.JPA;
-import net.csdn.jpa.enhancer.JPAEnhancer;
 import net.csdn.jpa.model.Model;
 
 import javax.persistence.DiscriminatorColumn;
@@ -24,7 +24,7 @@ import java.util.List;
 public class ModelLoader implements Loader {
     @Override
     public void load(Settings settings) throws Exception {
-        final Enhancer enhancer = new JPAEnhancer(ServiceFramwork.injector.getInstance(Settings.class));
+        final ControllerEnhancer enhancer = new FilterEnhancer(ServiceFramwork.injector.getInstance(Settings.class));
         final List<CtClass> classList = new ArrayList<CtClass>();
         ServiceFramwork.scanService.scanArchives(settings.get("application.model"), new ScanService.LoadClassEnhanceCallBack() {
             @Override

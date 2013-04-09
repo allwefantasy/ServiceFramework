@@ -4,10 +4,6 @@ import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.NotFoundException;
 import javassist.Translator;
-import net.csdn.ServiceFramwork;
-import net.csdn.common.settings.Settings;
-import net.csdn.enhancer.Enhancer;
-import net.csdn.jpa.enhancer.JPAEnhancer;
 
 /**
  * User: WilliamZhu

@@ -6,5 +6,5 @@ package net.csdn.modules.http;
  * Time: 下午12:55
  */
 public enum ViewType {
-    string, json, xml
+    string, json, xml,image
 }

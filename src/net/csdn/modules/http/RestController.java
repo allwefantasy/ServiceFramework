@@ -4,21 +4,19 @@ import net.csdn.ServiceFramwork;
 import net.csdn.annotation.filter.AroundFilter;
 import net.csdn.annotation.filter.BeforeFilter;
 import net.csdn.common.collect.Tuple;
+import net.csdn.common.exception.ArgumentErrorException;
+import net.csdn.common.exception.RecordNotFoundException;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.PathTrie;
-import net.csdn.common.exception.ArgumentErrorException;
-import net.csdn.common.exception.RecordNotFoundException;
-import net.csdn.filter.FilterHelper;
 import net.csdn.common.reflect.ReflectHelper;
+import net.csdn.modules.http.support.FilterHelper2;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.collections.WowCollections.list;
 import static net.csdn.common.logging.support.MessageFormat.format;
 
 /**
@@ -80,64 +78,18 @@ public class RestController {
         ReflectHelper.field(applicationController, "restResponse", restResponse);
     }
 
-    private List<Method> whoFilterThisMethod(Class clzz, List<Field> filters, Method method) throws Exception {
-
-        List<Method> result = list();
-        for (Field filter : filters) {
-            filter.setAccessible(true);
-            Map filterInfo = (Map) filter.get(null);
-            String filterMethod = filter.getName().substring(1, filter.getName().length());
-            if (filterInfo.containsKey(FilterHelper.BeforeFilter.only)) {
-                List<String> actions = (List<String>) filterInfo.get(FilterHelper.BeforeFilter.only);
-                if (actions.contains(method.getName())) {
-                    result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
-                }
-            } else {
-                if (filterInfo.containsKey(FilterHelper.BeforeFilter.except)) {
-                    List<String> actions = (List<String>) filterInfo.get(FilterHelper.BeforeFilter.except);
-                    if (!actions.contains(method.getName())) {
-                        result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
-                    }
-                } else {
-                    result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
-                }
-            }
-        }
-        return result;
-    }
 
     private void filter(Tuple<Class<ApplicationController>, Method> handlerKey, ApplicationController applicationController) throws Exception {
-        //check beforeFilter
-
-        List<Field> globalBeforeFilters = ReflectHelper.fields(handlerKey.v1().getSuperclass(), BeforeFilter.class);
-        List<Field> globalAroundFilters = ReflectHelper.fields(handlerKey.v1().getSuperclass(), AroundFilter.class);
+        Map<Method, Map<Class, List<Method>>> result = FilterHelper2.create(handlerKey.v1());
+        Map<Class, List<Method>> filters = result.get(handlerKey.v2());
 
 
-        List<Field> beforeFilters = ReflectHelper.fields(handlerKey.v1(), BeforeFilter.class);
-        List<Field> aroundFilters = ReflectHelper.fields(handlerKey.v1(), AroundFilter.class);
-
-        globalBeforeFilters.addAll(beforeFilters);
-        globalAroundFilters.addAll(aroundFilters);
-
-        beforeFilters.clear();
-        aroundFilters.clear();
-
-        beforeFilters.addAll(globalBeforeFilters);
-        aroundFilters.addAll(globalAroundFilters);
-
-
-        Method action = handlerKey.v2();
-
-        List<Method> beforeFilterFilterThisAction = whoFilterThisMethod(handlerKey.v1(), beforeFilters, action);
-
-        List<Method> aroundFilterFilterThisAction = whoFilterThisMethod(handlerKey.v1(), aroundFilters, action);
-
-        for (Method filter : beforeFilterFilterThisAction) {
+        for (Method filter : filters.get(BeforeFilter.class)) {
             filter.setAccessible(true);
             filter.invoke(applicationController);
         }
 
-        Iterator<Method> iterator = aroundFilterFilterThisAction.iterator();
+        Iterator<Method> iterator = filters.get(AroundFilter.class).iterator();
 
         WowAroundFilter wowAroundFilter = null;
         WowAroundFilter first = null;

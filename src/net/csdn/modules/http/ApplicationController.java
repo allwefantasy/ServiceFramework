@@ -464,5 +464,29 @@ public abstract class ApplicationController {
         return RegEx(param(key));
     }
 
+    public static Map<String, Map<String, List>> parent$_before_filter_info;
+    public static Map<String, Map<String, List>> parent$_around_filter_info;
+
+    public static Map<String, Map<String, List>> parent$_before_filter_info() {
+        if (parent$_before_filter_info == null) {
+            parent$_before_filter_info = map();
+        }
+        return parent$_before_filter_info;
+    }
+
+    public static Map<String, Map<String, List>> parent$_around_filter_info() {
+        if (parent$_around_filter_info == null) {
+            parent$_around_filter_info = map();
+        }
+        return parent$_around_filter_info;
+    }
+
+    public static void beforeFilter(String filter, Map info) {
+        parent$_before_filter_info().put(filter, info);
+    }
+
+    public static void aroundFilter(String filter, Map info) {
+        parent$_around_filter_info().put(filter, info);
+    }
 
 }
