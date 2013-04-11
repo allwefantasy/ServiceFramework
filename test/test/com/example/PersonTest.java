@@ -75,7 +75,7 @@ public class PersonTest extends IocTest {
 
         personList = Person.select(list("name")).where(map("name", "google")).fetch();
         Assert.assertTrue(personList.size() == 1);
-        Assert.assertTrue(personList.get(0).attributes().size() == 2);
+
 
         personFound.remove();
         personFound = Person.findById(100);

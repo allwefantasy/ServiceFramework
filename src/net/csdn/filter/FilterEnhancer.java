@@ -81,7 +81,7 @@ public class FilterEnhancer extends ControllerEnhancer {
     @Override
     public void enhanceThisClass2(List<CtClass> ctClasses) throws Exception {
         for (CtClass ctClass : ctClasses) {
-            logger.info(ServiceFramwork.scanService.getLoader().getClassLoader() + " load " + ctClass.getName());
+            if(Modifier.isAbstract(ctClass.getModifiers()))continue;
             ctClass.toClass(ServiceFramwork.scanService.getLoader().getClassLoader(), ServiceFramwork.scanService.getLoader().getProtectionDomain());
         }
     }

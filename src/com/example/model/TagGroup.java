@@ -19,8 +19,9 @@ import static net.csdn.validate.ValidateHelper.uniqueness;
  */
 public class TagGroup extends Model {
 
-    @Validate
-    private final static Map $name = map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复"));
+    static {
+        validate("name",map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复")));
+    }
     @ManyToMany
     private List<Tag> tags = list();
 }

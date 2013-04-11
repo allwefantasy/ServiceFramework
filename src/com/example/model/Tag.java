@@ -25,11 +25,13 @@ import static net.csdn.validate.ValidateHelper.*;
  * Time: 下午4:52
  */
 public class Tag extends Model {
-    @Validate
-    private final static Map $name = map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复"));
+
     @Validate
     private final static Map $associated = map(associated, list("blog_tags"));
 
+    static {
+        validate("name", map(presence, map("message", "{}字段不能为空"), uniqueness, map("message", "{}字段不能重复")));
+    }
 
     @OneToOne
     private TagWiki tag_wiki;

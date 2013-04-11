@@ -15,9 +15,9 @@ development:
            password: csdn.net
            disable: false
         mongodb:
-           host: 127.0.0.1
+           host: 192.168.4.84
            port: 27017
-           database: csdn_data_center
+           database: csdn_data_center_cool
            disable: false
         redis:
             host: 127.0.0.1
@@ -57,13 +57,13 @@ application:
     document:   com.example.document
     service:    com.example.service
     util:       com.example.util
-    test:       test.com.example.document
+    test:       test.com.example
 
 
 ###############http config##################
 http:
     port: 9500
-
+    disable: true
 
 
 ###############validator config##################
