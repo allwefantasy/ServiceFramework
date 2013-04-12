@@ -9,9 +9,9 @@ import com.google.inject.Inject;
 import net.csdn.annotation.filter.AroundFilter;
 import net.csdn.annotation.filter.BeforeFilter;
 import net.csdn.annotation.rest.At;
+import net.csdn.common.reflect.ReflectHelper;
 import net.csdn.jpa.model.JPQL;
 import net.csdn.jpa.model.Model;
-import net.csdn.common.reflect.ReflectHelper;
 import net.csdn.modules.http.WowAroundFilter;
 
 import java.util.ArrayList;
@@ -20,9 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static net.csdn.filter.FilterHelper.BeforeFilter.only;
-import static net.csdn.modules.http.RestRequest.Method.GET;
-import static net.csdn.modules.http.RestRequest.Method.POST;
-import static net.csdn.modules.http.RestRequest.Method.PUT;
+import static net.csdn.modules.http.RestRequest.Method.*;
 import static net.csdn.modules.http.support.HttpStatus.HTTP_400;
 
 
@@ -46,6 +44,10 @@ public class TagController extends ApplicationController {
 
     @At(path = "/withoutMysql", types = GET)
     public void withoutMysql() {
+        Map newMap = aliasParamKeys(map(
+                "key1", "value"
+        ), "key1", "key2");
+
         render(ok());
     }
 

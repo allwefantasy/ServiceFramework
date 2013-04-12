@@ -341,12 +341,23 @@ public abstract class ApplicationController {
         return WowCollections.newHashSet(arrays);
     }
 
+
+    //@see  selectMap
     public static Map selectMap(Map map, String... keys) {
         return WowCollections.selectMap(map, keys);
     }
 
+    public static Map paramByKeys(Map map, String... keys) {
+        return WowCollections.selectMap(map, keys);
+    }
+
+    //@see aliasParamKeys
     public static Map selectMapWithAliasName(Map map, String... keys) {
         return WowCollections.selectMapWithAliasName(map, keys);
+    }
+
+    public static Map aliasParamKeys(Map params, String... keys) {
+        return WowCollections.selectMapWithAliasName(params, keys);
     }
 
     public static Map map(Object... arrays) {
@@ -358,11 +369,14 @@ public abstract class ApplicationController {
         return WowCollections.list(arrays);
     }
 
-
+    //@see project
     public static <T> List<T> projectionColumn(List<Map> maps, String column) {
         return WowCollections.projectionColumn(maps, column);
     }
 
+    public static List project(List<Map> list, String key) {
+        return WowCollections.project(list, key);
+    }
 
     public static String join(Collection collection, String split) {
         return WowCollections.join(collection, split);
@@ -372,13 +386,8 @@ public abstract class ApplicationController {
         return WowCollections.join(collection);
     }
 
-
-    public static List project(List<Map> list, String key) {
-        return WowCollections.project(list, key);
-    }
-
-    public static List projectByMethod(List list, String method) {
-        return WowCollections.projectByMethod(list, method);
+    public static List projectByMethod(List list, String method, Object... params) {
+        return WowCollections.projectByMethod(list, method, params);
     }
 
     public static Map double_list_to_map(List keys, List values) {
@@ -458,6 +467,10 @@ public abstract class ApplicationController {
 
     public static Pattern RegEx(String reg) {
         return Pattern.compile(reg);
+    }
+
+    public static Pattern regEx(String reg) {
+        return RegEx(reg);
     }
 
     public Pattern paramsAsRegEx(String key) {
