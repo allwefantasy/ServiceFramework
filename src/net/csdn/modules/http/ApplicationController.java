@@ -9,6 +9,7 @@ import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.reflect.ReflectHelper;
 import net.csdn.common.settings.Settings;
+import net.csdn.common.time.NumberExtendedForTime;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
 import net.csdn.jpa.JPA;
@@ -22,6 +23,7 @@ import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -58,6 +60,26 @@ public abstract class ApplicationController {
         }
         return clzz;
 
+    }
+
+    //session
+    public void session(String key, Object value) {
+        request.session(key, value);
+    }
+
+    //
+    public Object session(String key) {
+        return request.session(key);
+    }
+
+    //flash
+    public void flash(String key, Object value) {
+        request.flash(key, value);
+    }
+
+    //
+    public Object flash(String key) {
+        return request.flash(key);
     }
 
     //渲染输出
@@ -273,6 +295,10 @@ public abstract class ApplicationController {
         return StringUtils.isEmpty(abc);
     }
 
+    public boolean isEmpty(Collection abc) {
+        return WowCollections.isEmpty(abc);
+    }
+
     public float paramAsFloat(String key, float defaultValue) {
         return request.paramAsFloat(key, defaultValue);
     }
@@ -477,19 +503,37 @@ public abstract class ApplicationController {
         return RegEx(param(key));
     }
 
+    public boolean isNull(Object key) {
+        return key == null;
+    }
+
+    //时间扩展
+    public NumberExtendedForTime time(int number) {
+        return new NumberExtendedForTime(number);
+    }
+
+    //时间扩展
+    public NumberExtendedForTime time(long number) {
+        return new NumberExtendedForTime(number);
+    }
+
+    public DateTime now() {
+        return new DateTime();
+    }
+
     public static Map<String, Map<String, List>> parent$_before_filter_info;
     public static Map<String, Map<String, List>> parent$_around_filter_info;
 
     public static Map<String, Map<String, List>> parent$_before_filter_info() {
         if (parent$_before_filter_info == null) {
-            parent$_before_filter_info = map();
+            parent$_before_filter_info = new LinkedHashMap();
         }
         return parent$_before_filter_info;
     }
 
     public static Map<String, Map<String, List>> parent$_around_filter_info() {
         if (parent$_around_filter_info == null) {
-            parent$_around_filter_info = map();
+            parent$_around_filter_info = new LinkedHashMap();
         }
         return parent$_around_filter_info;
     }

@@ -7,8 +7,8 @@ package net.csdn.modules.cache;
  */
 
 import com.google.inject.Inject;
-import net.csdn.common.settings.Settings;
 import net.csdn.common.exception.SettingsException;
+import net.csdn.common.settings.Settings;
 import net.csdn.modules.compress.gzip.GZip;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -17,7 +17,6 @@ import redis.clients.jedis.JedisPoolConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 
 public class RedisClient {
 

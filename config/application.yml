@@ -8,14 +8,14 @@ mode:
 development:
     datasources:
         mysql:
-           host: 127.0.0.1
+           host: 192.168.6.126
            port: 3306
            database: wow
            username: root
            password: csdn.net
-           disable: false
+           disable: true
         mongodb:
-           host: 192.168.4.84
+           host: 192.168.6.126
            port: 27017
            database: csdn_data_center_cool
            disable: false

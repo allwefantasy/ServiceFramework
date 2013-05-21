@@ -12,5 +12,6 @@ public class CacheModule extends AbstractModule {
     @Override
     protected void configure() {
         bind(RedisClient.class).in(Singleton.class);
+        bind(AppCache.class).in(Singleton.class);
     }
 }

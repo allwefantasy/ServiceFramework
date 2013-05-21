@@ -77,4 +77,15 @@ public interface RestRequest {
     Map<String, String> params();
 
     public String cookie(String name);
+
+
+    public Object session(String key);
+
+
+    public void session(String key, Object value);
+
+    public Object flash(String key);
+
+
+    public void flash(String key, Object value);
 }

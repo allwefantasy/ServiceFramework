@@ -130,6 +130,26 @@ public class DefaultRestRequest implements RestRequest {
         return null;
     }
 
+    @Override
+    public Object session(String key) {
+        return servletRequest.getSession().getAttribute(key);
+    }
+
+    @Override
+    public void session(String key, Object value) {
+        servletRequest.getSession().setAttribute(key, value);
+    }
+
+
+    @Override
+    public Object flash(String key) {
+        return servletRequest.getAttribute(key);
+    }
+
+    @Override
+    public void flash(String key, Object value) {
+        servletRequest.setAttribute(key, value);
+    }
 
     @Override
     public boolean hasParam(String key) {
