@@ -38,7 +38,6 @@ public class MockRestRequest implements RestRequest {
         if (bodyContentNotForm != null)
             try {
                 content = bodyContentNotForm.getBytes();
-                RestUtils.decodeQueryString(bodyContentNotForm, 0, params);
             } catch (Exception e) {
                 throw new IllegalArgumentException("Fail to parse request params");
             }
