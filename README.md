@@ -26,7 +26,7 @@ ServcieFramework 定位在 **移动互联网后端** 领域。
 框架提供了对mysql([ActiveORM](https://github.com/allwefantasy/active_orm)),mongodb([MongoMongo](https://github.com/allwefantasy/mongomongo))的支持.
 
 _对象缓存正在开发中,开发以[Web应用的缓存设计模式](http://robbinfan.com/blog/38/orm-cache-sumup)的描述为基础思路，并且会直接提供包括计数等的实现。_
-_添加对Thrift的支持，可[同时对外提供thrift协议和http协议的接口]()，只需简单在application.yml中配置.
+_添加对Thrift的支持，可[同时对外提供thrift协议和http协议的接口](https://github.com/allwefantasy/ServiceFramework/blob/master/doc/ServiceFrameworkWiki-thrift.md)，只需简单在application.yml中配置.
 
 如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于在一个全新的项目中使用它。
 相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
