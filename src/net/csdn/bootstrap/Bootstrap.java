@@ -7,11 +7,11 @@ import net.csdn.bootstrap.loader.impl.*;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.env.Environment;
 import net.csdn.common.scan.DefaultScanService;
-import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.HttpServer;
+import net.csdn.modules.thrift.ThriftServer;
 import net.csdn.mongo.MongoMongo;
 
 import java.util.ArrayList;
@@ -27,6 +27,7 @@ public class Bootstrap {
 
 
     private static HttpServer httpServer;
+    private static ThriftServer thriftServer;
     private static boolean isSystemConfigured = false;
 
     public static void main(String[] args) {
@@ -43,6 +44,9 @@ public class Bootstrap {
         if (httpServer != null) {
             httpServer.close();
         }
+        if (thriftServer != null) {
+            thriftServer.stop();
+        }
     }
 
 
@@ -56,6 +60,7 @@ public class Bootstrap {
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
         boolean disableHttp = settings.getAsBoolean("http.disable", false);
+        boolean disableThrift = settings.getAsBoolean("thrift.disable", false);
 
 
         if (ServiceFramwork.scanService.getLoader() == null || (ServiceFramwork.scanService.getLoader() == DefaultScanService.class)) {
@@ -94,11 +99,18 @@ public class Bootstrap {
 
         isSystemConfigured = true;
 
+
+        if (!disableThrift) {
+            thriftServer = ServiceFramwork.injector.getInstance(ThriftServer.class);
+            thriftServer.start();
+        }
+
         if (!disableHttp) {
             httpServer = ServiceFramwork.injector.getInstance(HttpServer.class);
             httpServer.start();
-            httpServer.join();
         }
+
+        Thread.currentThread().join();
     }
 
 

@@ -35,7 +35,7 @@ import java.util.Map;
  * Time: 下午1:29
  */
 public class HttpServer {
-    private Server server;
+    private final Server server;
     private CSLogger logger = Loggers.getLogger(getClass());
 
     private RestController restController;
@@ -225,12 +225,19 @@ public class HttpServer {
 
 
     public void start() {
-        try {
-            server.start();
-            server.join();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    server.start();
+                    server.join();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).start();
+
     }
 
     public void close() {

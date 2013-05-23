@@ -63,8 +63,16 @@ application:
 ###############http config##################
 http:
     port: 9500
-    disable: true
+    disable: false
 
+thrift:
+    disable: false
+    services:
+        com_example_thrift_demo_HelloWordServiceImpl:
+           port: 7701
+           min_threads: 100
+           max_threads: 1000
+#           interface:
 
 ###############validator config##################
 #如果需要添加验证器，只要配置好类全名即可
