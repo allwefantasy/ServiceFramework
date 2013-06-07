@@ -1,10 +1,12 @@
 package net.csdn.modules.thrift;
 
 import com.google.inject.Inject;
+import net.csdn.ServiceFramwork;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import org.apache.thrift.TProcessor;
+import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -36,6 +38,8 @@ public class ThriftServer {
     @Inject
     public ThriftServer(Settings settings) {
         this.settings = settings;
+        boolean disableThrift = settings.getAsBoolean("thrift.disable", false);
+        if (disableThrift || ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) return;
         Map<String, String> services = settings.getByPrefix(prefix + ".").getAsMap();
         Map<String, Map<String, String>> newServices = new HashMap<String, Map<String, String>>();
         for (Map.Entry<String, String> entry : services.entrySet()) {
@@ -58,7 +62,12 @@ public class ThriftServer {
                 String parent = (String) entry.getValue().get(".interface");
                 Class clzz = Class.forName(impClassName);
                 if (parent == null) {
-                    parent = clzz.getInterfaces()[0].getName();
+                    Class[] inters = clzz.getInterfaces();
+                    for (Class iter : inters) {
+                        if (iter.getName().endsWith("Iface"))
+                            parent = clzz.getInterfaces()[0].getName();
+                    }
+
                 }
                 Class processor = Class.forName(parent.split("\\$")[0] + "$Processor");
                 servers.add(
@@ -69,6 +78,7 @@ public class ThriftServer {
                                         new TServerSocket(
                                                 Integer.parseInt(entry.getValue().get(".port"))
                                         ))
+                                        .protocolFactory(new TCompactProtocol.Factory())
                                         .processor((TProcessor) processor.getConstructor(Class.forName(parent)).newInstance(clzz.newInstance()))
                                         .minWorkerThreads((Integer.parseInt(entry.getValue().get(".min_threads"))))
                                         .maxWorkerThreads(Integer.parseInt(entry.getValue().get(".max_threads")))

@@ -54,7 +54,9 @@ public class Bootstrap {
     private static void configureSystem() throws Exception {
         if (isSystemConfigured) return;
         Tuple<Settings, Environment> tuple = InternalSettingsPreparer.prepareSettings(EMPTY_SETTINGS);
-        ServiceFramwork.mode = ServiceFramwork.Mode.valueOf(tuple.v1().get("mode"));
+        if (ServiceFramwork.mode.equals(ServiceFramwork.Mode.development)) {
+            ServiceFramwork.mode = ServiceFramwork.Mode.valueOf(tuple.v1().get("mode"));
+        }
 
         Settings settings = tuple.v1();
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
@@ -84,11 +86,15 @@ public class Bootstrap {
         loaders.add(new ServiceLoader());
         loaders.add(new UtilLoader());
         loaders.add(new ControllerLoader());
+        if (!ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
+            loaders.add(new ThriftLoader());
+        }
 
 
         for (Loader loader : loaders) {
             loader.load(tuple.v1());
         }
+
 
         if (!disableMysql) {
             JPA.injector(ServiceFramwork.injector);
@@ -100,17 +106,19 @@ public class Bootstrap {
         isSystemConfigured = true;
 
 
-        if (!disableThrift) {
+        if (!disableThrift && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
             thriftServer = ServiceFramwork.injector.getInstance(ThriftServer.class);
             thriftServer.start();
         }
 
-        if (!disableHttp) {
+        if (!disableHttp && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
             httpServer = ServiceFramwork.injector.getInstance(HttpServer.class);
             httpServer.start();
         }
+        if ((!disableHttp || !disableThrift) && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
+            Thread.currentThread().join();
+        }
 
-        Thread.currentThread().join();
     }
 
 

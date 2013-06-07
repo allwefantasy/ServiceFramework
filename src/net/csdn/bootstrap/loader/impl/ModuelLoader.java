@@ -11,7 +11,6 @@ import net.csdn.modules.cache.CacheModule;
 import net.csdn.modules.http.HttpModule;
 import net.csdn.modules.settings.SettingsModule;
 import net.csdn.modules.threadpool.ThreadPoolModule;
-import net.csdn.modules.thrift.ThriftModule;
 import net.csdn.modules.transport.TransportModule;
 
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ public class ModuelLoader implements Loader {
         moduleList.add(new ThreadPoolModule());
         moduleList.add(new TransportModule());
         moduleList.add(new HttpModule());
-        moduleList.add(new ThriftModule());
         moduleList.add(new ScanModule());
         boolean disableRedis = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.redis.disable", false);
         if (!disableRedis) {
