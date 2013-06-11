@@ -5,21 +5,17 @@
 ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高效性，其开发效率可以比肩Rails.
 
 1. ActiveRecord化的Model层，支持 MongoDB 和 MySQL.
-2. 完全从新设计的Controller层,优秀的过滤器支持，大量便利的函数。
-3. 易用的service层
+2. 完全重新设计的Controller层,优秀的过滤器支持，有用的函数库。
+3. IOC 使得 Service 是如此的易用
 4. Thrift 和 RESTFul 接口的开发变得异常的简单
 
-模型层使用两个开源项目:
+模型层基于如下开源项目:
  
 * [ActiveORM](https://github.com/allwefantasy/active_orm)
 * [MongoMongo](https://github.com/allwefantasy/mongomongo)
 
 
-如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于在一个全新的项目中使用它。
-相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
-
-现在让我们了解下 ServiceFramework 吧。
-
+ServiceFramework 不适合遗留项目。我们倾向于在一个全新的项目中使用它。
 
 ## Step by Step tutorial
 Step-by-Step-tutorial-for-ServiceFramework(continue...)
