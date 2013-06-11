@@ -6,6 +6,7 @@ import net.csdn.mongo.Document;
 import net.sf.json.JSONObject;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,40 @@ import static net.csdn.common.reflect.ReflectHelper.field;
 
 /**
  * 6/6/13 WilliamZhu(allwefantasy@gmail.com)
+ * <p/>
+ * for now,property like List<List<Pojo>>> not support
  */
 public class PojoCopy {
 
     private static CSLogger logger = Loggers.getLogger(PojoCopy.class);
+
+    public static <T> List<T> buildAll(List from, Class<T> to) {
+        try {
+            List temp = from.getClass().newInstance();
+            for (Object obj : from) {
+                temp.add(build(obj, to));
+            }
+            return temp;
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static <T> T build(Object from, Class<T> to) {
+        try {
+            T t = to.newInstance();
+            copyProperties(from, t);
+            return t;
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 
     public static void copyProperties(Object from, Object to) {
         //it's easy to build a document from map,so we just convert from to map.
@@ -36,6 +67,8 @@ public class PojoCopy {
         //pojo(or map) to pojo
         for (Field field : to.getClass().getFields()) {
             String name = field.getName();
+            if (!Modifier.isPublic(field.getModifiers()) || Modifier.isStatic(field.getModifiers()))
+                continue;
             try {
 
                 Object value;
@@ -45,7 +78,7 @@ public class PojoCopy {
                 } else {
                     value = field(from, name);
                 }
-
+                if (value == null) continue;
                 if (isBasicType(value)) {
                     field(to, name, value);
                 } else if (value instanceof List) {
@@ -53,7 +86,7 @@ public class PojoCopy {
                 } else if (value instanceof Map) {
                     MapProcess(from, to, name, value);
                 } else if (value instanceof Set) {
-
+                    SetProcess(from, to, name, value);
                 } else {
                     Object newDoc = field(to, name).getClass().newInstance();
                     copyProperties(value, newDoc);
@@ -61,7 +94,7 @@ public class PojoCopy {
                 }
 
             } catch (Exception e) {
-                //e.printStackTrace();
+                e.printStackTrace();
                 logger.info(e.getMessage());
             }
         }
@@ -75,6 +108,23 @@ public class PojoCopy {
     private static void ListProcess(Object from, Object to, String key, Object value) throws Exception {
         List tempValue = (List) value;
         List newTempValue = (List) value.getClass().newInstance();
+        for (Object temp : tempValue) {
+            if (isBasicType(temp)) {
+                newTempValue.add(temp);
+            } else {
+                Class newDocClass = (Class) ((ParameterizedType) (to.getClass().getField(key).getGenericType())).getActualTypeArguments()[0];
+                Object newDoc = newDocClass.newInstance();
+                copyProperties(temp, newDoc);
+                newTempValue.add(newDoc);
+            }
+
+        }
+        field(to, key, newTempValue);
+    }
+
+    private static void SetProcess(Object from, Object to, String key, Object value) throws Exception {
+        Set tempValue = (Set) value;
+        Set newTempValue = (Set) value.getClass().newInstance();
         for (Object temp : tempValue) {
             if (isBasicType(temp)) {
                 newTempValue.add(temp);

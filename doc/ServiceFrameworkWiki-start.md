@@ -31,40 +31,20 @@ border-collapse: collapse;
 }
 </style>
 
-#ServiceFramework Wiki
-
-##  创建一个新的ServiceFramework 项目
-
-
-###ServiceFramework 适合你吗？
-
-ServcieFramework 定位在**移动互联网后端**。
-所以ServcieFramework非常强调开发的高效性，其开发效率可以比肩Rails(不相信？可以体验一下哦)。
-
-1. 拥有Java界最简单，非常高效，且规范的Model层
-2. Controller层有非常简洁的验证器，过滤器
-3. 简单但实用的View层，天然支持JSON,XMl格式输出
-
-框架已经提供了对mysql,mongodb,redis的支持
-
-如果你面对的是一个遗留项目或者遗留的数据库，那么ServiceFramework不适合你。我们倾向于一个全新的项目中使用它。相信你会为Java也能做到如此的简洁而惊讶，如此高效的开发而窃喜。
-
-现在让我们开始 ServiceFramework 十五分钟旅程吧。
-
-
 
 ### 搭起来，跑起来
 
 在终端下赋值黏贴运行该命令:
 
-git clone https://github.com/service_framework/service_framework.git tag_engine
+
+	git clone git://github.com/allwefantasy/ServiceFramework.git ServiceFramework
 
 此时你就获得一个开箱即用的项目。所有的目录和结构都是规范化的。
 
 ####我们先看看目录结构:
 
 <table>
-	<tbody><tr>
+  <tbody><tr>
 		<th>文件/目录</th>
 		<th>作用</th>
 	</tr>
@@ -74,7 +54,7 @@ git clone https://github.com/service_framework/service_framework.git tag_engine
 	</tr>
 	<tr>
 		<td>config/</td>
-		<td>配置文件。整个ServiceFramework只有两个配置文件，分别为application.yml 和logging.yml  更详细的配置介绍参看:<a href="configuring.html">配置 ServiceFramework 应用</a></td>
+		<td>配置文件。整个ServiceFramework只有两个配置文件，分别为application.yml 和logging.yml  更详细的配置介绍参看:<a href="#">配置 ServiceFramework 应用</a></td>
 	</tr>
 	<tr>
 		<td>bin</td>
@@ -113,20 +93,67 @@ git clone https://github.com/service_framework/service_framework.git tag_engine
 	
 	<tr>
 		<td>test/</td>
-		<td>单元测试目录。详细参看:<a href="testing.html">如何测试ServiceFramework应用</a></td>
+		<td>单元测试目录。详细参看:<a href="#">如何测试ServiceFramework应用</a></td>
 	</tr>
 	
 </tbody></table>
 
-项目在src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
-在test 中的 test.com.example 有example项目的测试代码。
-你可以在IDE环境运行 test 根目录下的
+##运行测试前或者启动应用的准备工作。
 
-DynamicSuiteRunner 文件。
+- 在你的mysql中新建一个库，名称为：wow
+- 运行sql目录下的 wow.sql,把所有的表建好。
 
-你可以可以运行 net.csdn.bootstrap.Application
-启动HttpServer.
-然后通过curl 进行访问。
+这应该就是所有准备工作了。但是您的端口可能不是默认的3306,所以您还应该检查下，并且修改username和password
 
-这里我们会实现一个Tag系统来展示如何使用ServiceFrameWork 开发是如何的高效。
+
+	config/application.yml 
+
+文件中的
+
+	development:
+	    datasources:
+	        mysql:
+	           host: 127.0.0.1
+	           port: 3306
+	           database: wow
+	           username: root
+	           password: root
+
+##如何运行测试
+项目src目录下有一个com.example 示例程序。实现的是一个简单的tag系统。
+
+在test 目录中 test.com.example 有example项目的测试代码。
+test 根目录下的有个文件叫
+
+
+	DynamicSuiteRunner 
+
+
+你可以在IDE中启动它来运行整个测试集。
+
+## 如何启动应用。
+
+你可以在IDE运行
+
+
+	net.csdn.bootstrap.Application 
+
+当然你也可以写一个类继承它。然后运行这个新的类。
+
+如果你不希望使用IDE.你可以直接进入项目，然后运行:
+
+
+	./bin/run.sh start
+
+
+默认开启9400端口。你可以修改config/application.yml文件来改变端口。
+接着可以通过curl 进行测试访问。
+举个例子:
+常见一个tag_group:
+
+
+	curl -XPOST 'http://127.0.0.1:9400/tag_group' -d 'name=java'
+
+
+这个时候你可以查看数据库，应该就有相应的记录了。
 

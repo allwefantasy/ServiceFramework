@@ -34,12 +34,15 @@ public class ThriftClient<T extends TServiceClient> {
         return thriftClient;
     }
 
+    private ThriftClient() {
+    }
+
     final ObjectPool<String, T> connectionPool = new BaseObjectPool.Builder<String, T>(
             new PoolableObjectFactory<String, T>() {
                 @Override
                 public T createObject(String key) throws Exception {
                     String[] socketInfo = key.split(":");
-                    TTransport transport = new TSocket(socketInfo[0], Integer.parseInt(socketInfo[1]), connectTimeoutInMillis);
+                    TTransport transport = new TSocket(socketInfo[0], Integer.parseInt(socketInfo[1]));
                     transport.open();
                     TProtocol protocol = new TCompactProtocol(transport);
                     return hold.getConstructor(TProtocol.class).newInstance(protocol);
@@ -78,7 +81,7 @@ public class ThriftClient<T extends TServiceClient> {
     ).borrowValidation(true).min(5).max(5).build();
 
 
-    public void execute(String address, Callback<T> callback) {
+    public void execute(String address, Callback<T> callback) throws ThriftConnectException {
         T obj = brow(address);
         try {
             callback.execute(obj);
@@ -87,13 +90,46 @@ public class ThriftClient<T extends TServiceClient> {
         }
     }
 
-    public T brow(String socketAddress) {
+
+    public void tryExecute(String address, Callback<T> callback) throws ThriftConnectException {
+        T obj = null;
+        int failCount = 0;
+        boolean shouldTry = true;
+
+        while (shouldTry && failCount < 4) {
+            try {
+                obj = brow(address);
+                shouldTry = false;
+            } catch (ThriftConnectException e) {
+                e.printStackTrace();
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e1) {
+                    e1.printStackTrace();
+                }
+                failCount++;
+                if (failCount == 4) {
+                    throw e;
+                }
+            }
+        }
+
+        try {
+            callback.execute(obj);
+        } finally {
+            back(address, obj);
+        }
+    }
+
+    public T brow(String socketAddress) throws ThriftConnectException {
         try {
             return connectionPool.borrowObject(socketAddress, 1000);
         } catch (PoolExhaustedException e) {
             e.printStackTrace();
+            throw new ThriftConnectException(e);
         } catch (NoValidObjectException e) {
             e.printStackTrace();
+            throw new ThriftConnectException(e);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
