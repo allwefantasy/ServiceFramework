@@ -2,7 +2,7 @@
 
 [README-EN](https://github.com/allwefantasy/ServiceFramework/blob/master/README-EN.md)
 
-![ServiceFramework_LOGO.jpg](https://github.com/allwefantasy/ServiceFramework/tree/master/doc/ServiceFramework_LOGO.jpg)
+[[doc/ServiceFramework_LOGO.jpg]]
 
 ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高效性，其开发效率可以比肩Rails.
 
