@@ -1,3 +1,5 @@
+![logo](http://allwefantasy.com/service_framework_logo_big.jpg)
+
 ##Welcome To ServiceFramework
 
 ServiceFramework is  a web-application framework that includes some powerfull Persistence Components 
