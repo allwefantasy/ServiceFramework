@@ -144,6 +144,20 @@ Step12 > 创建测试类 test.com.example.TagControllerTest
 Step13 >  运行 DynamicSuiteRunner 跑起测试
 
 
+QuickStart 的一些常见错误:
+
+1. application 文件 数据连接配置错误。你可以将test,development环境下的连接配置弄成相同的
+2. 包名和类名必须保证和示例一致。如果你需要使用不同的package,那么你需要修改application.yml中的application 配置。如下:
+  
+		  application:
+		    controller: com.example.controller.http
+		    model:      com.example.model
+		    document:   com.example.document
+		    service:    com.example.service
+		    util:       com.example.util
+		    test:       test.com.example
+
+
 
 Model层基于如下开源项目:
  
