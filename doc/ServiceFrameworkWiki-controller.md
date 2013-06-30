@@ -314,6 +314,7 @@ render 方法也可以在过滤器中使用。一旦调用render方法后，就�
 config对象来自 父类。本质上就是json-lib 中的JsonConfig。对json控制非常的完善。能够满足大部分输出要求。
 
 
+ServiceFrameork 也支持 Velocity,支持html的输出,使用render 时指定 ViewType 为 html即可。
 
 ###ServiceFramework
 
