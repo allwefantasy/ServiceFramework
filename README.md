@@ -123,6 +123,28 @@ Step9 >   运行  ExampleApplication
 
 Step10 >  浏览器中输入  http://127.0.0.1:9002/hello .同时查看数据库，你会发现tag表已经有数据了。  
 
+
+Step11 >  写个Action单元测试  编辑 runner.DynamicSuite  在 initEnv方法第一行处添加
+
+      ServiceFramwork.scanService.setLoader(ExampleApplication.class);
+
+Step12 > 创建测试类 test.com.example.TagControllerTest
+
+    public class TagControllerTest extends BaseControllerTest {
+	    @Test
+	    public void testHello() throws Exception {
+	        Tag.deleteAll();
+	        RestResponse response = get("/hello", map());
+	        Assert.assertTrue(response.status() == 200);
+	        String result = response.content();
+	        Assert.assertEquals("Hello java!  Hello  world!", result);
+	    }
+    }
+
+Step13 >  运行 DynamicSuiteRunner 跑起测试
+
+
+
 Model层基于如下开源项目:
  
 * [ActiveORM](https://github.com/allwefantasy/active_orm)
