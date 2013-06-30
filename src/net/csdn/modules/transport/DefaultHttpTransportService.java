@@ -61,8 +61,8 @@ public class DefaultHttpTransportService implements HttpTransportService {
     */
     public DefaultHttpTransportService() {
         ThreadSafeClientConnManager threadSafeClientConnManager = new ThreadSafeClientConnManager();
-        threadSafeClientConnManager.setDefaultMaxPerRoute(1000);
-        threadSafeClientConnManager.setMaxTotal(10000);
+//        threadSafeClientConnManager.setDefaultMaxPerRoute(1000);
+//        threadSafeClientConnManager.setMaxTotal(500);
 
         HttpParams httpParams = new BasicHttpParams();
 //        HttpConnectionParams.setSoTimeout(httpParams, 1000);
