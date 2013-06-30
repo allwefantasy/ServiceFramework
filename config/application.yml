@@ -8,37 +8,57 @@ mode:
 development:
     datasources:
         mysql:
-           host: 192.168.6.126
+           host: 127.0.0.1
            port: 3306
            database: wow
            username: root
-           password: csdn.net
-           disable: true
+           password: root
+           disable: false
         mongodb:
-           host: 192.168.6.126
+           host: 127.0.0.1
            port: 27017
-           database: csdn_data_center_cool
+           database: wow
            disable: false
         redis:
             host: 127.0.0.1
             port: 6379
             disable: true
-
+test:
+    datasources:
+            mysql:
+               host: 127.0.0.1
+               port: 3306
+               database: wow
+               username: root
+               password: root
+               disable: false
+            mongodb:
+               host: 127.0.0.1
+               port: 27017
+               database: wow
+               disable: false
+            redis:
+                host: 127.0.0.1
+                port: 6379
+                disable: true
 production:
     datasources:
-        mysql:
-           host: 127.0.0.1
-           port: 3306
-           database: wow
-           username: root
-           password: csdn.net
-        mongodb:
-           host: 127.0.0.1
-           port: 27017
-           database: csdn_data_center
-        redis:
-            host: 127.0.0.1
-            port: 6379
+            mysql:
+               host: 127.0.0.1
+               port: 3306
+               database: wow
+               username: root
+               password: root
+               disable: false
+            mongodb:
+               host: 127.0.0.1
+               port: 27017
+               database: wow
+               disable: false
+            redis:
+                host: 127.0.0.1
+                port: 6379
+                disable: true
 
 orm:
     show_sql: true
@@ -52,27 +72,33 @@ orm:
 #'document' for NoSQL database model configuration,  MongoDB
 
 application:
-    controller: com.example.controller
+    controller: com.example.controller.http
     model:      com.example.model
     document:   com.example.document
     service:    com.example.service
     util:       com.example.util
     test:       test.com.example
-
+    template:
+        engine:
+           enable: true
 
 ###############http config##################
 http:
-    port: 9500
+    port: 9002
     disable: false
 
-thrift:
-    disable: false
-    services:
-        com_example_thrift_demo_HelloWordServiceImpl:
-           port: 7701
-           min_threads: 100
-           max_threads: 1000
-#           interface:
+#thrift:
+#    disable: true
+#    services:
+#        net_csdn_controller_thrift_impl_CBayesianQueryServiceImpl:
+#           port: 9001
+#           min_threads: 100
+#           max_threads: 1000
+#
+#    servers:
+#        spam_bayes: ["127.0.0.1:9001"]
+
+
 
 ###############validator config##################
 #如果需要添加验证器，只要配置好类全名即可
