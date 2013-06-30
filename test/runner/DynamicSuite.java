@@ -15,6 +15,7 @@ import java.util.List;
  * Time: 下午3:29
  */
 public class DynamicSuite extends Suite {
+    private static Class[] testClasses = new Class[]{};
 
     static {
         try {
@@ -44,7 +45,7 @@ public class DynamicSuite extends Suite {
         for (String abc : classStrs) {
             classList.add(Class.forName(abc));
         }
-        Class[] classes = new Class[classList.size()];
+        Class[] classes = testClasses.length > 0 ? testClasses : new Class[classList.size()];
         classList.toArray(classes);
         return classes;
     }
