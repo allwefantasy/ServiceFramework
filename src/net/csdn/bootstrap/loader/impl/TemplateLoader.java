@@ -19,6 +19,7 @@ public class TemplateLoader implements Loader {
             properties.setProperty("file.resource.loader.path", environment.templateDirFile().getPath());
             properties.setProperty("input.encoding", "utf-8");
             properties.setProperty("output.encoding", "utf-8");
+            properties.setProperty("runtime.log", environment.logsFile().getPath() + "/template");
             Velocity.init(properties);
         }
     }
