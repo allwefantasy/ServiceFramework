@@ -96,10 +96,10 @@ Step6 >   新建 com.example.controller.http.TagController
 			{
 			   @At(path = "/hello", types = RestRequest.Method.GET)
 			    public void hello() {
-			        Tag tag = Tag.create(map("name","java"));
+			        Tag tag = Tag.create(map("name", "java"));
 			        tag.save();
 			        render(200, map(
-			                "name", tag.attr("name",String.class)
+			                "tag", tag
 			        ), ViewType.html);
 			    }
 			}
@@ -107,7 +107,7 @@ Step6 >   新建 com.example.controller.http.TagController
 Step7 >	新建 template/tag/hello.vm
 
 
-			Hello $name!  Hello  world!		
+			Hello $tag.name!  Hello  world!		
 
 Step8 >   创建启动类
 

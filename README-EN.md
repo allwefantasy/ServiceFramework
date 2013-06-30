@@ -103,7 +103,7 @@ Step6 >   create com.example.controller.http.TagController
 			        Tag tag = Tag.create(map("name","java"));
 			        tag.save();
 			        render(200, map(
-			                "name", tag.attr("name",String.class)
+			                "tag", tag
 			        ), ViewType.html);
 			    }
 			}
@@ -111,7 +111,7 @@ Step6 >   create com.example.controller.http.TagController
 Step7 >  create template/tag/hello.vm
 
 
-			Hello $name!  Hello  world!		
+			Hello $tag.name!  Hello  world!		
 
 Step8 >   create startup class
 
