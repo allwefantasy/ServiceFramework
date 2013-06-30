@@ -546,4 +546,13 @@ application:
 上面我们只是讨论了Model,Controller的设计问题。其实还有Service和Util的设计问题。这个应该通过IOC来处理。至于静态资源文件则不在讨论方位之内。
 
 
+## 约定
+
+关于 类名 <=> 表明
+
+BlogTag <=> blog_tag
+
+
+
+
 

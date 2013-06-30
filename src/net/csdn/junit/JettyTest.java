@@ -2,7 +2,6 @@ package net.csdn.junit;
 
 import net.csdn.bootstrap.Bootstrap;
 import org.junit.After;
-import org.junit.Before;
 
 /**
  * BlogInfo: WilliamZhu
@@ -11,15 +10,10 @@ import org.junit.Before;
  */
 public class JettyTest extends IocTest {
 
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-    }
 
     @After
     public void tearDown() throws Exception {
         Bootstrap.shutdown();
-        super.tearDown();
     }
 
     public void runTargetServer(Runnable runnable) {

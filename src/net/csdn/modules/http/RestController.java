@@ -113,7 +113,7 @@ public class RestController {
     }
 
 
-    private Tuple<Class<ApplicationController>, Method> getHandler(RestRequest request) {
+    public Tuple<Class<ApplicationController>, Method> getHandler(RestRequest request) {
         String path = getPath(request);
         RestRequest.Method method = request.method();
         if (method == RestRequest.Method.GET) {

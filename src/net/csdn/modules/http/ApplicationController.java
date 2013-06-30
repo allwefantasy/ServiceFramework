@@ -2,6 +2,7 @@ package net.csdn.modules.http;
 
 import net.csdn.ServiceFramwork;
 import net.csdn.common.Strings;
+import net.csdn.common.collect.Tuple;
 import net.csdn.common.collections.WowCollections;
 import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.common.exception.RenderFinish;
@@ -23,8 +24,12 @@ import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.xml.XMLSerializer;
 import org.apache.commons.lang.StringUtils;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.joda.time.DateTime;
 
+import java.io.StringWriter;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -103,10 +108,46 @@ public abstract class ApplicationController {
         throw new RenderFinish();
     }
 
+    public void renderHtml(int status, String path, Map result) {
+        VelocityContext context = new VelocityContext();
+        if (result instanceof Map) {
+            Map<String, Object> temp = (Map) result;
+            for (Map.Entry<String, Object> entry : temp.entrySet()) {
+                context.put(entry.getKey(), entry.getValue());
+            }
+        }
+        StringWriter w = new StringWriter();
+        Velocity.mergeTemplate(path, "utf-8", context, w);
+        restResponse.write(status, w.toString(), ViewType.html);
+    }
 
     public void render(int status, Object result, ViewType viewType) {
         restResponse.originContent(result);
-        restResponse.write(status, viewType == ViewType.xml ? toXML(result) : toJson(result), viewType);
+        if (viewType == ViewType.xml) {
+            restResponse.write(status, toXML(result), viewType);
+        } else if (viewType == ViewType.json) {
+            restResponse.write(status, toJson(result), viewType);
+        } else if (viewType == ViewType.string) {
+            restResponse.write(status, result.toString(), viewType);
+        } else if (viewType == ViewType.html) {
+
+            String[] tempArray = getClass().getName().split("\\.");
+            String controllerName = StringUtils.substringBefore(Strings.toUnderscoreCase(tempArray[tempArray.length - 1]), "_controller");
+            RestController restController = ServiceFramwork.injector.getInstance(RestController.class);
+            Tuple<Class<ApplicationController>, Method> handlerKey = restController.getHandler(request);
+            String actionName = Strings.toUnderscoreCase(handlerKey.v2().getName());
+
+            VelocityContext context = new VelocityContext();
+            if (result instanceof Map) {
+                Map<String, Object> temp = (Map) result;
+                for (Map.Entry<String, Object> entry : temp.entrySet()) {
+                    context.put(entry.getKey(), entry.getValue());
+                }
+            }
+            StringWriter w = new StringWriter();
+            Velocity.mergeTemplate(controllerName + "/" + actionName + ".vm", "utf-8", context, w);
+            restResponse.write(status, w.toString(), viewType);
+        }
         throw new RenderFinish();
     }
 
@@ -125,7 +166,7 @@ public abstract class ApplicationController {
     }
 
 
-    public class OutPutConfig extends JsonConfig {
+    public class JSONOutPutConfig extends JsonConfig {
         private boolean pretty = false;
 
         public boolean isPretty() {
@@ -159,7 +200,7 @@ public abstract class ApplicationController {
         return _toJson(obj).toString();
     }
 
-    protected OutPutConfig config = new OutPutConfig();
+    protected JSONOutPutConfig config = new JSONOutPutConfig();
 
     public JSON _toJson(Object obj) {
         JsonConfig config = new JsonConfig();

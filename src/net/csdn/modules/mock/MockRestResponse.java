@@ -1,6 +1,7 @@
 package net.csdn.modules.mock;
 
-import net.csdn.modules.http.*;
+import net.csdn.modules.http.RestResponse;
+import net.csdn.modules.http.ViewType;
 import net.csdn.modules.http.support.HttpStatus;
 
 import java.io.IOException;
@@ -51,12 +52,12 @@ public class MockRestResponse implements RestResponse {
 
     @Override
     public void cookie(String name, String value) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     @Override
     public void cookie(Map cookieInfo) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     public String content() {
@@ -74,6 +75,10 @@ public class MockRestResponse implements RestResponse {
         return this;
     }
 
+    @Override
+    public int status() {
+        return status;
+    }
 
     public void error(Exception e) throws IOException {
 

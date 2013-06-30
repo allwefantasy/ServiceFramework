@@ -86,6 +86,7 @@ public class Bootstrap {
         loaders.add(new ServiceLoader());
         loaders.add(new UtilLoader());
         loaders.add(new ControllerLoader());
+        loaders.add(new TemplateLoader());
         if (!ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
             loaders.add(new ThriftLoader());
         }

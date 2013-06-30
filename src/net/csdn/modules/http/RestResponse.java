@@ -28,4 +28,6 @@ public interface RestResponse {
     public Object originContent();
 
     public RestResponse originContent(Object obj);
+
+    public int status();
 }

@@ -8,7 +8,6 @@ import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.RestUtils;
 import org.apache.commons.lang.StringUtils;
 
-import javax.servlet.http.HttpSession;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -28,13 +27,28 @@ public class MockRestRequest implements RestRequest {
 
     private final Map<String, String> params;
 
+    private final String rawPath;
+
     private byte[] content;
 
 
     public MockRestRequest(Map<String, String> params, RestRequest.Method method, String bodyContentNotForm) {
         this.method = method;
         this.params = params;
+        this.rawPath = "";
+        if (bodyContentNotForm != null)
+            try {
+                content = bodyContentNotForm.getBytes();
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Fail to parse request params");
+            }
+    }
 
+
+    public MockRestRequest(String path, Map<String, String> params, RestRequest.Method requestMethod, String bodyContentNotForm) {
+        this.method = requestMethod;
+        this.params = params;
+        this.rawPath = path;
         if (bodyContentNotForm != null)
             try {
                 content = bodyContentNotForm.getBytes();
@@ -55,7 +69,7 @@ public class MockRestRequest implements RestRequest {
 
     @Override
     public String rawPath() {
-        return null;
+        return rawPath;
     }
 
     @Override

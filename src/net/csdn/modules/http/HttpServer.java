@@ -77,9 +77,13 @@ public class HttpServer {
 
                 private void configureMimeType(ViewType viewType) {
                     if (viewType == ViewType.xml) {
-                        content_type = "application/xml; charset=UTF-8";
+                        content_type = "application/xml;charset=UTF-8";
                     } else if (viewType == ViewType.image) {
                         content_type = "image/jpeg";
+                    } else if (viewType == ViewType.string) {
+                        content_type = "text/plain;charset=UTF-8";
+                    } else if (viewType == ViewType.html) {
+                        content_type = "text/html;charset=UTF-8";
                     }
                 }
 
@@ -146,6 +150,10 @@ public class HttpServer {
                     return null;
                 }
 
+                @Override
+                public int status() {
+                    return status;
+                }
 
                 public void send() throws IOException {
                     if (content != null) {
