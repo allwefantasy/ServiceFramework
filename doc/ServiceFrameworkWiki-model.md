@@ -81,10 +81,10 @@ pre code {
 	    }
 	    
 	    @OneToMany
-	    private List<BlogTag> blog_tags = list();
+	    private List<BlogTag> blogTags = list();
 	
 	    @ManyToMany
-	    private List<TagGroup> tag_groups = list();
+	    private List<TagGroup> tagGroups = list();
 	}
 	
 	
@@ -144,13 +144,11 @@ ServiceFramework 为你提供了大量便利方法。比如建立map/list
 前面的例子可以看到，我们不需要进行任何表和模型之间的映射配置。这依赖于默认的命名约定。这些规则包括：
 
 1. 类名为驼峰命名法，表名则为UnderScore的形式。比如TagWiki 在数据库相应的表名也为 tag_wiki
-2. 外键名称 = 属性名+"_id".
-3. 属性名 = 小写 加 下划线的形式。比如示例中的 tag_groups 等。 这和java的传统命名会有些区别。
-这主要是为了数据库字段和Model属性名保持一致。如果你使用"tagGroups"这种传统的驼峰命名方式,
-那么数据库中的字段名就会很丑陋了。遵循现在的方式你会发现这是相当便利的一种方式。
+2. 外键名称 = 属性名(UnderScore)+"_id".
+3. 属性名 = 驼峰命名，对应的表字段则为underScore形式。比如假设Model中有个userName属性，那么在表中的名称为 user_name
 
 4. 根据语义区分单复数形式 
-5.强烈推荐使用自增id,名称为id,并且为interge类型。这可以省掉很多麻烦
+5. 强烈推荐使用自增id,名称为id,并且为interge类型。这可以省掉很多麻烦
 
 
 ### 模型属性
