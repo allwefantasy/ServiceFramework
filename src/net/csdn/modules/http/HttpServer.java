@@ -2,6 +2,7 @@ package net.csdn.modules.http;
 
 import com.google.inject.Inject;
 import net.csdn.ServiceFramwork;
+import net.csdn.common.env.Environment;
 import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.common.exception.ExceptionHandler;
 import net.csdn.common.exception.RecordExistedException;
@@ -17,7 +18,9 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.util.resource.Resource;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -46,6 +49,7 @@ public class HttpServer {
     public HttpServer(Settings settings, RestController restController) {
         this.settings = settings;
         this.restController = restController;
+        Environment environment = new Environment(settings);
         disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         server = new Server();
         SelectChannelConnector connector = new SelectChannelConnector();
@@ -54,7 +58,16 @@ public class HttpServer {
         server.addConnector(connector);
 
         HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[]{new DefaultHandler()});
+
+        ResourceHandler resource_handler = new ResourceHandler();
+        resource_handler.setDirectoriesListed(false);
+        try {
+            resource_handler.setBaseResource(Resource.newResource(environment.templateDirFile().getPath() + "/assets/"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        handlers.setHandlers(new Handler[]{resource_handler, new DefaultHandler()});
         server.setHandler(handlers);
     }
 

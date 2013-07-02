@@ -29,7 +29,9 @@ import org.apache.velocity.app.Velocity;
 import org.joda.time.DateTime;
 
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -110,12 +112,7 @@ public abstract class ApplicationController {
 
     public void renderHtml(int status, String path, Map result) {
         VelocityContext context = new VelocityContext();
-        if (result instanceof Map) {
-            Map<String, Object> temp = (Map) result;
-            for (Map.Entry<String, Object> entry : temp.entrySet()) {
-                context.put(entry.getKey(), entry.getValue());
-            }
-        }
+        copyObjectToMap(result, context);
         StringWriter w = new StringWriter();
         Velocity.mergeTemplate(path, "utf-8", context, w);
         restResponse.write(status, w.toString(), ViewType.html);
@@ -138,12 +135,9 @@ public abstract class ApplicationController {
             String actionName = Strings.toUnderscoreCase(handlerKey.v2().getName());
 
             VelocityContext context = new VelocityContext();
-            if (result instanceof Map) {
-                Map<String, Object> temp = (Map) result;
-                for (Map.Entry<String, Object> entry : temp.entrySet()) {
-                    context.put(entry.getKey(), entry.getValue());
-                }
-            }
+
+            copyObjectToMap(result, context);
+
             StringWriter w = new StringWriter();
             Velocity.mergeTemplate(controllerName + "/" + actionName + ".vm", "utf-8", context, w);
             restResponse.write(status, w.toString(), viewType);
@@ -151,6 +145,25 @@ public abstract class ApplicationController {
         throw new RenderFinish();
     }
 
+    private void copyObjectToMap(Object result, VelocityContext context) {
+        if (result instanceof Map) {
+            Map<String, Object> temp = (Map) result;
+            for (Map.Entry<String, Object> entry : temp.entrySet()) {
+                context.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        //put all instance variables in context
+        for (Field field : this.getClass().getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers())) continue;
+            field.setAccessible(true);
+            try {
+                context.put(field.getName(), field.get(this));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     public void render(String content) {
         restResponse.originContent(content);
