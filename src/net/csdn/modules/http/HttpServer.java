@@ -58,16 +58,20 @@ public class HttpServer {
         server.addConnector(connector);
 
         HandlerList handlers = new HandlerList();
-
-        ResourceHandler resource_handler = new ResourceHandler();
-        resource_handler.setDirectoriesListed(false);
-        try {
-            resource_handler.setBaseResource(Resource.newResource(environment.templateDirFile().getPath() + "/assets/"));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (settings.getAsBoolean("application.static.enable", false)) {
+            ResourceHandler resource_handler = new ResourceHandler();
+            resource_handler.setDirectoriesListed(false);
+            try {
+                resource_handler.setBaseResource(Resource.newResource(environment.templateDirFile().getPath() + "/assets/"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            handlers.setHandlers(new Handler[]{resource_handler, new DefaultHandler()});
+        } else {
+            handlers.setHandlers(new Handler[]{new DefaultHandler()});
         }
 
-        handlers.setHandlers(new Handler[]{resource_handler, new DefaultHandler()});
+
         server.setHandler(handlers);
     }
 
@@ -188,8 +192,6 @@ public class HttpServer {
                     } else {
                         status = HttpStatus.HttpStatusSystemError;
                     }
-
-
                     httpServletResponse.setStatus(status);
                     output(e.getMessage());
                 }

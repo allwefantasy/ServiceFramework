@@ -118,6 +118,9 @@ public abstract class ApplicationController {
         restResponse.write(status, w.toString(), ViewType.html);
     }
 
+
+
+
     public void render(int status, Object result, ViewType viewType) {
         restResponse.originContent(result);
         if (viewType == ViewType.xml) {

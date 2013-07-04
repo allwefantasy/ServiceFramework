@@ -34,6 +34,14 @@ public class DefaultRestRequest implements RestRequest {
 
     private final byte[] content;
 
+    public DefaultRestRequest(String method, Map params) {
+
+        this.method = Method.valueOf(method);
+        this.params = params;
+        servletRequest = null;
+        content = new byte[0];
+
+    }
 
     public DefaultRestRequest(HttpServletRequest servletRequest) {
         this.servletRequest = servletRequest;
