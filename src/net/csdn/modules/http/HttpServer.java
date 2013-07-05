@@ -1,5 +1,6 @@
 package net.csdn.modules.http;
 
+import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import net.csdn.ServiceFramwork;
 import net.csdn.common.env.Environment;
@@ -160,6 +161,23 @@ public class HttpServer {
                 @Override
                 public Object originContent() {
                     return null;
+                }
+
+                @Override
+                public void redirectTo(String path, Map params) {
+                    try {
+                        String param = Joiner.on("&").withKeyValueSeparator("=").join(params);
+                        if (path.contains("?")) {
+                            path += ("&" + param);
+                        } else {
+                            if (params.size() != 0) {
+                                path += ("?" + param);
+                            }
+                        }
+                        httpServletResponse.sendRedirect(path);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override

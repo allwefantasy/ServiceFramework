@@ -44,8 +44,6 @@ public abstract class ApplicationController {
     protected CSLogger logger = Loggers.getLogger(getClass());
     protected RestRequest request;
     protected RestResponse restResponse;
-    public static String EMPTY_JSON = "{}";
-
 
     public Class const_document_get(String name) {
         return inner_const_get("document", name);
@@ -104,6 +102,11 @@ public abstract class ApplicationController {
         throw new RenderFinish();
     }
 
+    public void redirectTo(String url, Map params) {
+        restResponse.redirectTo(url, params);
+        throw new RenderFinish();
+    }
+
     public void render(int status, String content, ViewType viewType) {
         restResponse.originContent(content);
         restResponse.write(status, content, viewType);
@@ -117,8 +120,6 @@ public abstract class ApplicationController {
         Velocity.mergeTemplate(path, "utf-8", context, w);
         restResponse.write(status, w.toString(), ViewType.html);
     }
-
-
 
 
     public void render(int status, Object result, ViewType viewType) {

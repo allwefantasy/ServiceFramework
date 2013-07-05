@@ -28,7 +28,7 @@ public class DefaultRestRequest implements RestRequest {
 
     private final HttpServletRequest servletRequest;
 
-    private final Method method;
+    private Method method;
 
     private final Map<String, String> params;
 
@@ -51,6 +51,9 @@ public class DefaultRestRequest implements RestRequest {
         if (servletRequest.getQueryString() != null) {
             RestUtils.decodeQueryString(servletRequest.getQueryString(), 0, params);
         }
+        if (params.containsKey("_method")) {
+            this.method = Method.valueOf(params.get("_method"));
+        }
         //application/x-www-form-urlencoded
         String contentType = servletRequest.getHeader("content-type");
         try {
@@ -69,6 +72,10 @@ public class DefaultRestRequest implements RestRequest {
         }
         if ("application/x-www-form-urlencoded".equals(contentType))
             RestUtils.decodeQueryString(wow, 0, params);
+
+        if (params.containsKey("_method")) {
+            this.method = Method.valueOf(params.get("_method"));
+        }
     }
 
     @Override

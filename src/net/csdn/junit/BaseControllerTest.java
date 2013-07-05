@@ -37,7 +37,6 @@ public class BaseControllerTest extends IocTest {
             } else {
                 throw e;
             }
-
         } else {
             throw e;
         }

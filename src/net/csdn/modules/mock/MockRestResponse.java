@@ -70,6 +70,11 @@ public class MockRestResponse implements RestResponse {
     }
 
     @Override
+    public void redirectTo(String path, Map params) {
+        //do nothing
+    }
+
+    @Override
     public RestResponse originContent(Object obj) {
         this.object = obj;
         return this;

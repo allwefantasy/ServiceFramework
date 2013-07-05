@@ -27,6 +27,8 @@ public interface RestResponse {
 
     public Object originContent();
 
+    public void redirectTo(String path, Map params);
+
     public RestResponse originContent(Object obj);
 
     public int status();
