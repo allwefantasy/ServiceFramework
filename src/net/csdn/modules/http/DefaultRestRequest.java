@@ -70,6 +70,7 @@ public class DefaultRestRequest implements RestRequest {
             //我们猜测是json数据什么都不做
             return;
         }
+
         if ("application/x-www-form-urlencoded".equals(contentType))
             RestUtils.decodeQueryString(wow, 0, params);
 

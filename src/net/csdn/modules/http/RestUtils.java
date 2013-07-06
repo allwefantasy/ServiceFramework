@@ -58,7 +58,12 @@ public class RestUtils {
     }
 
     private static void addParam(Map<String, String> params, String name, String value) {
-        params.put(name, value);
+        if (params.containsKey(name)) {
+            params.put(name, params.get(name) + "," + value);
+        } else {
+            params.put(name, value);
+        }
+
     }
 
     /**

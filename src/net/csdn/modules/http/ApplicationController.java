@@ -156,7 +156,7 @@ public abstract class ApplicationController {
                 context.put(entry.getKey(), entry.getValue());
             }
         }
-
+        context.put("helper", WowCollections.class);
         //put all instance variables in context
         for (Field field : this.getClass().getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers())) continue;
