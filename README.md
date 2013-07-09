@@ -33,13 +33,24 @@ ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高�
 5. Thrift 和 RESTFul 只需简单配置即可同时提供 Thrift 和 RESTFul 接口
     
 			 
-			    @At(path = "/tag/{type}/rank", types = GET)
-			    public void listTagByCount() {
-			        searchService.tagCount(param("type"), page);
-			        render(200, page);
-			    }
+		###############http config##################
+		http:
+		    port: 7700
+		    disable: false
+
+		thrift:
+		    disable: false
+		    services:
+		        net_csdn_controller_thrift_impl_CLoadServiceImpl:
+		           port: 7701
+		           min_threads: 100
+		           max_threads: 1000		        
+
+		    servers:
+		        load: ["127.0.0.1:7701"]
+
 	  
-6. 支持 Velocity.
+6. 支持 Velocity, 页面可直接访问所有实例变量以及helper类的方法
 
 	 
 			    @At(path = "/hello", types = GET)

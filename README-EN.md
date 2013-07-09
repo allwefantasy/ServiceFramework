@@ -34,13 +34,24 @@ written by  java language according to the Model-View-Controller(MVC) pattern.
 5. just a little configuration and Thrift & RESTFul are all supported
     
 			 
-			    @At(path = "/tag/{type}/rank", types = GET)
-			    public void listTagByCount() {
-			        searchService.tagCount(param("type"), page);
-			        render(200, page);
-			    }
+		###############http config##################
+		http:
+		    port: 7700
+		    disable: false
+
+		thrift:
+		    disable: false
+		    services:
+		        net_csdn_controller_thrift_impl_CLoadServiceImpl:
+		           port: 7701
+		           min_threads: 100
+		           max_threads: 1000		        
+
+		    servers:
+		        load: ["127.0.0.1:7701"]
+
 	  
-6. Template Engine using Velocity.
+6. Template Engine using Velocity. Instance Variables and Helper Class method will be automatically imported in page
 
 	 
 			    @At(path = "/hello", types = GET)
