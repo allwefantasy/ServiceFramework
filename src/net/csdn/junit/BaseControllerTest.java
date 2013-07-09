@@ -8,6 +8,7 @@ import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,9 +21,15 @@ public class BaseControllerTest extends IocTest {
 
     public RestResponse runAction(String path, Map params, RestRequest.Method method) throws Exception {
         RestResponse response = new MockRestResponse();
+
+        Map newParams = new HashMap();
+        for (Object key : params.keySet()) {
+            newParams.put(key, params.get(key).toString());
+        }
+
         RestController controller = injector.getInstance(RestController.class);
         try {
-            controller.dispatchRequest(new MockRestRequest(path, params, method, null), response);
+            controller.dispatchRequest(new MockRestRequest(path, newParams, method, null), response);
         } catch (Exception e) {
             catchRenderFinish(e);
         }

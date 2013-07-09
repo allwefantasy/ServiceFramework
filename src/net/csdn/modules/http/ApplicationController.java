@@ -23,6 +23,7 @@ import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.xml.XMLSerializer;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
@@ -30,10 +31,13 @@ import org.joda.time.DateTime;
 
 import java.io.StringWriter;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.regex.Pattern;
+
+import static net.csdn.common.Strings.toUnderscoreCase;
 
 /**
  * BlogInfo: william
@@ -44,6 +48,7 @@ public abstract class ApplicationController {
     protected CSLogger logger = Loggers.getLogger(getClass());
     protected RestRequest request;
     protected RestResponse restResponse;
+    private Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
 
     public Class const_document_get(String name) {
         return inner_const_get("document", name);
@@ -54,7 +59,7 @@ public abstract class ApplicationController {
     }
 
     private Class inner_const_get(String type, String name) {
-        Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
+
         String model = settings.get("application." + type, "") + "." + Strings.toCamelCase(name, true);
         Class clzz = null;
         try {
@@ -65,6 +70,16 @@ public abstract class ApplicationController {
         }
         return clzz;
 
+    }
+
+    protected void merge(Object dest, Object origin) {
+        try {
+            BeanUtils.copyProperties(dest, origin);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     //session
@@ -132,18 +147,12 @@ public abstract class ApplicationController {
             restResponse.write(status, result.toString(), viewType);
         } else if (viewType == ViewType.html) {
 
-            String[] tempArray = getClass().getName().split("\\.");
-            String controllerName = StringUtils.substringBefore(Strings.toUnderscoreCase(tempArray[tempArray.length - 1]), "_controller");
-            RestController restController = ServiceFramwork.injector.getInstance(RestController.class);
-            Tuple<Class<ApplicationController>, Method> handlerKey = restController.getHandler(request);
-            String actionName = Strings.toUnderscoreCase(handlerKey.v2().getName());
-
             VelocityContext context = new VelocityContext();
 
             copyObjectToMap(result, context);
 
             StringWriter w = new StringWriter();
-            Velocity.mergeTemplate(controllerName + "/" + actionName + ".vm", "utf-8", context, w);
+            Velocity.mergeTemplate(toUnderscoreCase(getControllerNameWithoutSuffix()) + "/" + toUnderscoreCase(getActionName()) + ".vm", "utf-8", context, w);
             restResponse.write(status, w.toString(), viewType);
         }
         throw new RenderFinish();
@@ -156,7 +165,7 @@ public abstract class ApplicationController {
                 context.put(entry.getKey(), entry.getValue());
             }
         }
-        context.put("helper", WowCollections.class);
+        context.put("helper", findHelper());
         //put all instance variables in context
         for (Field field : this.getClass().getDeclaredFields()) {
             if (Modifier.isStatic(field.getModifiers())) continue;
@@ -168,6 +177,35 @@ public abstract class ApplicationController {
             }
         }
     }
+
+    private String getControllerNameWithoutSuffix() {
+        return StringUtils.substringBefore(getControllerName(), "Controller");
+    }
+
+    private String getControllerName() {
+        return getClass().getSimpleName();
+    }
+
+    private String getActionName() {
+        RestController restController = ServiceFramwork.injector.getInstance(RestController.class);
+        Tuple<Class<ApplicationController>, Method> handlerKey = restController.getHandler(request);
+        return handlerKey.v2().getName();
+    }
+
+    private Object findHelper() {
+        String wow = StringUtils.substringAfter(
+                StringUtils.substringBefore(getClass().getName(), "." + getClass().getSimpleName()),
+                settings.get("application.controller", "")+".");
+        wow = (settings.get("application.helper", "") + "." + wow + "." + getControllerNameWithoutSuffix() + "Helper");
+        Object instance;
+        try {
+            instance = Class.forName(wow).newInstance();
+        } catch (Exception e) {
+            instance = new WowCollections();
+        }
+        return instance;
+    }
+
 
     public void render(String content) {
         restResponse.originContent(content);
