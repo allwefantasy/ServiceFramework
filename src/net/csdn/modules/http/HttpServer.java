@@ -21,6 +21,7 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.resource.Resource;
 
 import javax.servlet.ServletException;
@@ -31,6 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+
+import static net.csdn.common.collections.WowCollections.isNull;
 
 
 /**
@@ -67,7 +70,12 @@ public class HttpServer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            handlers.setHandlers(new Handler[]{resource_handler, new DefaultHandler()});
+            if (settings.getAsBoolean("application.session.enable", false)) {
+                handlers.setHandlers(new Handler[]{resource_handler, new SessionHandler(), new DefaultHandler()});
+            } else {
+                handlers.setHandlers(new Handler[]{resource_handler, new DefaultHandler()});
+            }
+
         } else {
             handlers.setHandlers(new Handler[]{new DefaultHandler()});
         }
@@ -163,21 +171,19 @@ public class HttpServer {
                     return null;
                 }
 
+                private String redirectPath;
+
                 @Override
                 public void redirectTo(String path, Map params) {
-                    try {
-                        String param = Joiner.on("&").withKeyValueSeparator("=").join(params);
-                        if (path.contains("?")) {
-                            path += ("&" + param);
-                        } else {
-                            if (params.size() != 0) {
-                                path += ("?" + param);
-                            }
+                    String param = Joiner.on("&").withKeyValueSeparator("=").join(params);
+                    if (path.contains("?")) {
+                        path += ("&" + param);
+                    } else {
+                        if (params.size() != 0) {
+                            path += ("?" + param);
                         }
-                        httpServletResponse.sendRedirect(path);
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
+                    this.redirectPath = path;
                 }
 
                 @Override
@@ -191,6 +197,10 @@ public class HttpServer {
                 }
 
                 public void send() throws IOException {
+                    if (!isNull(redirectPath)) {
+                        httpServletResponse.sendRedirect(httpServletResponse.encodeRedirectURL(redirectPath));
+                        return;
+                    }
                     if (content != null) {
                         output(content);
                         return;
