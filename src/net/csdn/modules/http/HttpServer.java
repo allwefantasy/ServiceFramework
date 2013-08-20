@@ -277,9 +277,10 @@ public class HttpServer {
 
                  */
                 long endTime = System.currentTimeMillis();
-                logger.info("Completed " + channel.status + " in " + (endTime - startTime) + "ms (ActiveORM: " + (CSDNStatFilterstat.SQLTIME().get() / 1000l) + "ms)");
+                logger.info("Completed " + channel.status + " in " + (endTime - startTime) + "ms (ActiveORM: " + CSDNStatFilterstat.SQLTIME().get() + "ms)");
                 logger.info(httpServletRequest.getMethod() +
                         " " + httpServletRequest.getRequestURI() + "?" + httpServletRequest.getQueryString());
+                logger.info("\n\n\n\n");
                 CSDNStatFilterstat.removeSQLTIME();
             }
 
