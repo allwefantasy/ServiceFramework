@@ -7,6 +7,7 @@ import net.csdn.common.scan.ScanModule;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
+import net.csdn.modules.cache.AppCacheModule;
 import net.csdn.modules.cache.CacheModule;
 import net.csdn.modules.http.HttpModule;
 import net.csdn.modules.settings.SettingsModule;
@@ -34,6 +35,7 @@ public class ModuelLoader implements Loader {
         if (!disableRedis) {
             moduleList.add(new CacheModule());
         }
+        moduleList.add(new AppCacheModule());
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
 
         if (!disableMysql) {
@@ -58,7 +60,7 @@ public class ModuelLoader implements Loader {
             });
         }
 
-
+        moduleList.addAll(ServiceFramwork.modules);
         ServiceFramwork.injector = Guice.createInjector(Stage.PRODUCTION, moduleList);
     }
 }

@@ -1,6 +1,8 @@
 package net.csdn.junit;
 
+import net.csdn.ServiceFramwork;
 import net.csdn.common.exception.RenderFinish;
+import net.csdn.common.settings.Settings;
 import net.csdn.modules.http.RestController;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.RestResponse;
@@ -36,11 +38,18 @@ public class BaseControllerTest extends IocTest {
         return response;
     }
 
+    boolean disableMysql = injector.getInstance(Settings.class).getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+
     private void catchRenderFinish(Exception e) throws Exception {
         if (e instanceof RenderFinish) {
+            if (!disableMysql) {
+                commitTransaction();
+            }
         } else if (e instanceof InvocationTargetException) {
             if (((InvocationTargetException) e).getTargetException() instanceof RenderFinish) {
-
+                if (!disableMysql) {
+                    commitTransaction();
+                }
             } else {
                 throw e;
             }

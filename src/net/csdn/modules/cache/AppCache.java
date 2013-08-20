@@ -39,16 +39,19 @@ public class AppCache {
             return (T) defaultCache.get(name, callable);
         } catch (ExecutionException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
+
     }
 
-    public <K, V> AppCache buildCache(String name, CacheLoader<K, V> cacheLoader) {
-        LoadingCache<K, V> cache = CacheBuilder.newBuilder().
-                refreshAfterWrite(settings.getAsInt("cache.refresh.minutes", 2), TimeUnit.MINUTES).
-                maximumSize(settings.getAsInt("cache.maximumSize", 10000)).
-                build(cacheLoader);
-        cacheMap.put(name, cache);
+    public <K, V> AppCache buildCache(String name, CacheLoader<K, V> cacheLoader, int timeByMINUTES) {
+        if (!cacheMap.containsKey(name)) {
+            LoadingCache<K, V> cache = CacheBuilder.newBuilder().
+                    expireAfterWrite(timeByMINUTES, TimeUnit.MINUTES).
+                    maximumSize(1).
+                    build(cacheLoader);
+            cacheMap.put(name, cache);
+        }
         return this;
     }
 

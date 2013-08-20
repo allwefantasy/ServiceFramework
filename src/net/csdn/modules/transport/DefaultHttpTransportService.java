@@ -16,13 +16,10 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 import static net.csdn.common.collections.WowCollections.map;
 
@@ -60,14 +58,16 @@ public class DefaultHttpTransportService implements HttpTransportService {
 
     */
     public DefaultHttpTransportService() {
-        ThreadSafeClientConnManager threadSafeClientConnManager = new ThreadSafeClientConnManager();
-//        threadSafeClientConnManager.setDefaultMaxPerRoute(1000);
-//        threadSafeClientConnManager.setMaxTotal(500);
+        PoolingClientConnectionManager poolingClientConnectionManager = new PoolingClientConnectionManager();
+        poolingClientConnectionManager.setMaxTotal(50);
+        poolingClientConnectionManager.setDefaultMaxPerRoute(25);
 
-        HttpParams httpParams = new BasicHttpParams();
-//        HttpConnectionParams.setSoTimeout(httpParams, 1000);
-//        HttpConnectionParams.setConnectionTimeout(httpParams, 1000);
-        httpClient = new DefaultHttpClient(threadSafeClientConnManager, httpParams);
+        httpClient = new DefaultHttpClient(poolingClientConnectionManager);
+        int timeout = 2;
+        httpClient.getParams().setParameter("http.socket.timeout", timeout * 1000);
+        httpClient.getParams().setParameter("http.connection.timeout", timeout * 1000);
+        httpClient.getParams().setParameter("http.connection-manager.timeout", new Long(timeout * 1000));
+        httpClient.getParams().setParameter("http.protocol.head-body-timeout", timeout * 1000);
     }
 
 
@@ -93,12 +93,11 @@ public class DefaultHttpTransportService implements HttpTransportService {
 
             HttpResponse response = httpClient.execute(post);
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
-        } catch (IOException e) {
-            logger.error("Error when remote search url:[{}] ", url.toString());
-            return null;
-        } finally {
+        } catch (Exception e) {
             if (post != null)
                 post.abort();
+            logger.error("Error when remote search url:[{}] ", url.toString());
+            return null;
         }
     }
 
@@ -109,8 +108,6 @@ public class DefaultHttpTransportService implements HttpTransportService {
 
     public SResponse put(Url url, Map data, Map<String, String> headers) {
         HttpPut put = null;
-
-        String result = "";
         try {
             put = new HttpPut(url.toURI());
             UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(mapToNameValuesPairs(data), charset);
@@ -123,12 +120,11 @@ public class DefaultHttpTransportService implements HttpTransportService {
             put.setEntity(urlEncodedFormEntity);
             HttpResponse response = httpClient.execute(put);
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(getClass().getName() + " error when visit url:[{}] ", url.toString());
-            return null;
-        } finally {
             if (put != null)
                 put.abort();
+            return null;
         }
     }
 
@@ -139,7 +135,7 @@ public class DefaultHttpTransportService implements HttpTransportService {
     public SResponse http(Url url, String jsonData, Map<String, String> headers, RestRequest.Method method) {
         HttpRequestBase httpRequestBase = null;
         try {
-            httpRequestBase = createMethod(url.toURI(), jsonData, method);
+            httpRequestBase = createMethod(url, jsonData, method);
             if (headers != null) {
                 for (Map.Entry<String, String> entry : headers.entrySet()) {
                     httpRequestBase.setHeader(entry.getKey(), entry.getValue());
@@ -147,15 +143,10 @@ public class DefaultHttpTransportService implements HttpTransportService {
             }
             HttpResponse response = httpClient.execute(httpRequestBase);
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
-        } catch (IOException e) {
-//            if (e instanceof HttpHostConnectException) {
-//
-//            }
-
-            return new SResponse(HttpStatus.HttpStatusServerDown, "", url);
-        } finally {
+        } catch (Exception e) {
             if (httpRequestBase != null)
                 httpRequestBase.abort();
+            return new SResponse(HttpStatus.HttpStatusServerDown, "", url);
         }
     }
 
@@ -224,15 +215,15 @@ public class DefaultHttpTransportService implements HttpTransportService {
         for (int i = 0; i < urls.size(); i++) {
             final Url url = urls.get(i);
             FutureTask<SResponse> getRemoteDataTask = asyncHttp(url, jsonData, method);
-            threadPoolService.executor(ThreadPoolService.Names.SEARCH).execute(getRemoteDataTask);
             futureTasks.add(getRemoteDataTask);
         }
         for (FutureTask<SResponse> futureTask : futureTasks) {
             try {
-                SResponse sResponse = futureTask.get();
+                SResponse sResponse = futureTask.get(5, TimeUnit.SECONDS);
                 responses.add(sResponse);
             } catch (Exception e) {
                 e.printStackTrace();
+                futureTask.cancel(true);
                 continue;
             }
         }
@@ -241,8 +232,9 @@ public class DefaultHttpTransportService implements HttpTransportService {
     }
 
 
-    private HttpRequestBase createMethod(URI uri, String jsonData, RestRequest.Method method) {
+    private HttpRequestBase createMethod(Url url, String jsonData, RestRequest.Method method) {
         HttpRequestBase httpRequestBase;
+        URI uri = url.toURI();
         if (method == RestRequest.Method.GET) {
             httpRequestBase = new HttpGet(uri);
         } else if (method == RestRequest.Method.PUT) {
@@ -252,12 +244,11 @@ public class DefaultHttpTransportService implements HttpTransportService {
         } else if (method == RestRequest.Method.DELETE) {
             if (jsonData != null && !jsonData.isEmpty()) {
                 httpRequestBase = new HttpPost(uri);
+                url.addParam("_method", "DELETE");
                 ((HttpPost) httpRequestBase).setEntity(stringEntity(jsonData));
             } else {
                 httpRequestBase = new HttpDelete(uri);
             }
-
-
         } else if (method == RestRequest.Method.HEAD) {
             httpRequestBase = new HttpHead(uri);
         } else if (method == RestRequest.Method.OPTIONS) {

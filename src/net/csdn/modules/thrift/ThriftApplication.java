@@ -67,7 +67,7 @@ public class ThriftApplication {
     }
 
     public static Map double_list_to_map(List keys, List values) {
-        return WowCollections.double_list_to_map(keys, values);
+        return WowCollections.doubleListToMap(keys, values);
     }
 
     public static String join(Collection collection, String split, String wrapper) {

@@ -11,6 +11,7 @@ import net.csdn.common.exception.RecordNotFoundException;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
+import net.csdn.hibernate.support.filter.CSDNStatFilterstat;
 import net.csdn.jpa.JPA;
 import net.csdn.modules.http.support.HttpStatus;
 import net.sf.json.JSONException;
@@ -32,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static net.csdn.common.collections.WowCollections.isNull;
 
@@ -197,6 +199,7 @@ public class HttpServer {
                 }
 
                 public void send() throws IOException {
+                    httpServletResponse.setContentType(content_type);
                     if (!isNull(redirectPath)) {
                         httpServletResponse.sendRedirect(httpServletResponse.encodeRedirectURL(redirectPath));
                         return;
@@ -220,14 +223,12 @@ public class HttpServer {
                     } else {
                         status = HttpStatus.HttpStatusSystemError;
                     }
+                    httpServletResponse.setContentType("text/plain;charset=UTF-8");
                     httpServletResponse.setStatus(status);
                     output(e.getMessage());
                 }
 
                 public void output(String msg) throws IOException {
-                    httpServletResponse.setContentType(content_type);
-                    httpServletResponse.setStatus(status);
-                    //httpServletResponse.setContentLength(msg.length());
                     PrintWriter printWriter = httpServletResponse.getWriter();
                     printWriter.write(msg);
                     printWriter.flush();
@@ -255,6 +256,8 @@ public class HttpServer {
             }
 
             DefaultResponse channel = new DefaultResponse();
+            long startTime = System.currentTimeMillis();
+            CSDNStatFilterstat.setSQLTIME(new AtomicLong(0l));
             try {
                 channel.internalDispatchRequest();
                 if (!disableMysql) {
@@ -268,6 +271,16 @@ public class HttpServer {
                     JPA.getJPAConfig().getJPAContext().closeTx(true);
                 }
                 channel.error(e);
+            } finally {
+                /*
+                Completed 200 OK in 1378ms (Views: 45.0ms | ActiveRecord: 34.0ms)
+
+                 */
+                long endTime = System.currentTimeMillis();
+                logger.info("Completed " + channel.status + " in " + (endTime - startTime) + "ms (ActiveORM: " + (CSDNStatFilterstat.SQLTIME().get() / 1000l) + "ms)");
+                logger.info(httpServletRequest.getMethod() +
+                        " " + httpServletRequest.getRequestURI() + "?" + httpServletRequest.getQueryString());
+                CSDNStatFilterstat.removeSQLTIME();
             }
 
 

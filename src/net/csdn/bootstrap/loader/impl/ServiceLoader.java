@@ -57,8 +57,7 @@ public class ServiceLoader implements Loader {
                 return null;
             }
         });
-
-
+        moduleList.addAll(ServiceFramwork.serviceModules);
         ServiceFramwork.injector = ServiceFramwork.injector.createChildInjector(moduleList);
     }
 }

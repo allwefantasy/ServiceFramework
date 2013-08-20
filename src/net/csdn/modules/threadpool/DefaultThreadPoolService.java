@@ -42,6 +42,7 @@ public class DefaultThreadPoolService implements ThreadPoolService {
         try {
             return futureTask.get(timeValue, TimeUnit.MILLISECONDS);
         } catch (Exception e) {
+            futureTask.cancel(true);
             //ingore
         }
         return null;
