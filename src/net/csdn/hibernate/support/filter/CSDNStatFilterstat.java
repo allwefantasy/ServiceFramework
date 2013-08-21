@@ -441,7 +441,7 @@ public class CSDNStatFilterstat extends FilterEventAdapter implements StatFilter
                 }
             }
 
-            long millis = nanos / (1000 * 1000);
+              long millis = nanos / (1000 * 1000);
             if (SQLTIME.get() != null) {
                 SQLTIME.get().addAndGet(millis);
             }
@@ -450,7 +450,7 @@ public class CSDNStatFilterstat extends FilterEventAdapter implements StatFilter
                 sqlStat.setLastSlowParameters(slowParameters);
 
                 if (logSlowSql) {
-                    LOG.info("slow sql " + millis + " millis. \n" + statement.getLastExecuteSql() + "\n"
+                    LOG.info("sql execute " + millis + " millis. \n" + statement.getLastExecuteSql() + "\n"
                             + slowParameters);
                 }
             }

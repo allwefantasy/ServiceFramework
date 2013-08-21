@@ -1,44 +1,13 @@
 rootLogger: INFO,console,file
 
-logger:
-   hadoo: INFO,hadoo
-   hotdocs: INFO,hotdocs
-   query: INFO,query
-   org.apache: INFO
-
-additivity:
-   hadoo: false
-   hotdocs: false
-   query: false
-
 
 appender:
   console:
     type: console
+    threshold: ERROR
     layout:
       type: consolePattern
       conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
-  hadoo:
-    type: dailyRollingFile
-    file: ${path.logs}/hadoo.log
-    datePattern: "'.'yyyy-MM-dd"
-    layout:
-      type: pattern
-      conversionPattern: "[%d{ISO8601}] %m%n"
-  hotdocs:
-    type: dailyRollingFile
-    file: ${path.logs}/hotdocs.log
-    datePattern: "'.'yyyy-MM-dd"
-    layout:
-      type: pattern
-      conversionPattern: "[%d{ISO8601}] %m%n"
-  query:
-      type: dailyRollingFile
-      file: ${path.logs}/query.log
-      datePattern: "'.'yyyy-MM-dd"
-      layout:
-        type: pattern
-        conversionPattern: "[%d{ISO8601}] %m%n"
 
   file:
     type: dailyRollingFile
@@ -47,4 +16,3 @@ appender:
     layout:
       type: pattern
       conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"
-      

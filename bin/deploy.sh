@@ -72,7 +72,7 @@ start()
 {
   echo "staring system [`cd $DEPLOY_CURRENT;pwd -P`]....."
   cd $DEPLOY_CURRENT
-  nohup java -Xms$min_heap_size -Xmx$max_heap_size -XX:PermSize=128m -Xloggc:gc.log -XX:+PrintGCTimeStamps -XX:-PrintGCDetails -cp $classpath $S_MainClass  > /dev/null 2>&1  &
+  nohup java -Xms$min_heap_size -Xmx$max_heap_size -XX:PermSize=128m -Xloggc:gc.log -XX:+PrintGCTimeStamps -XX:-PrintGCDetails -cp $classpath $S_MainClass  > application.log  &
   echo $! > application.pid
 }
 stop()

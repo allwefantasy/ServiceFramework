@@ -60,13 +60,6 @@ production:
                 port: 6379
                 disable: true
 
-orm:
-    show_sql: true
-    pool_min_size: 5
-    pool_max_size: 10
-    timeout: 300
-    max_statements: 50
-    idle_test_period: 3000
 ###############application config##################
 #'model' for relational database  like MySQL
 #'document' for NoSQL database model configuration,  MongoDB
