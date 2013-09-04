@@ -90,6 +90,16 @@ public class DefaultRestRequest implements RestRequest {
     }
 
     @Override
+    public String url() {
+        return servletRequest.getRequestURL().toString();
+    }
+
+    @Override
+    public String queryString() {
+        return servletRequest.getQueryString();
+    }
+
+    @Override
     public String rawPath() {
         return servletRequest.getRequestURI();
     }

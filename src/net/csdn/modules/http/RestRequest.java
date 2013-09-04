@@ -28,6 +28,10 @@ public interface RestRequest {
      */
     String rawPath();
 
+
+    public String url();
+    public String queryString();
+
     /**
      * The path part of the URI (without the query string), decoded.
      */

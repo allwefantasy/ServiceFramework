@@ -92,6 +92,10 @@ public abstract class ApplicationController {
         return request.session(key);
     }
 
+    public String url() {
+        return request.url();
+    }
+
     //flash
     public void flash(String key, Object value) {
         request.flash(key, value);
@@ -195,7 +199,7 @@ public abstract class ApplicationController {
     private Object findHelper() {
         String wow = StringUtils.substringAfter(
                 StringUtils.substringBefore(getClass().getName(), "." + getClass().getSimpleName()),
-                settings.get("application.controller", "")+".");
+                settings.get("application.controller", "") + ".");
         wow = (settings.get("application.helper", "") + "." + wow + "." + getControllerNameWithoutSuffix() + "Helper");
         Object instance;
         try {

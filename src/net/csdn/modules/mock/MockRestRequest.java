@@ -73,6 +73,16 @@ public class MockRestRequest implements RestRequest {
     }
 
     @Override
+    public String url() {
+        return null;
+    }
+
+    @Override
+    public String queryString() {
+        return null;
+    }
+
+    @Override
     public boolean hasContent() {
         return content.length > 0;
     }
