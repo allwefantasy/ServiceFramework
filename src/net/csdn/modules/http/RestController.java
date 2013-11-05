@@ -28,6 +28,10 @@ public class RestController {
 
     private CSLogger logger = Loggers.getLogger(getClass());
 
+    private Tuple<Class<ApplicationController>, Method> defaultHandlerKey;
+    private Tuple<Class<ApplicationController>, Method> errorHandlerKey;
+
+
     private final PathTrie<Tuple<Class<ApplicationController>, Method>> getHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
     private final PathTrie<Tuple<Class<ApplicationController>, Method>> postHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
     private final PathTrie<Tuple<Class<ApplicationController>, Method>> putHandlers = new PathTrie<Tuple<Class<ApplicationController>, Method>>();
@@ -60,20 +64,43 @@ public class RestController {
         }
     }
 
-
-    public void dispatchRequest(final RestRequest request, RestResponse restResponse) throws Exception {
-        final Tuple<Class<ApplicationController>, Method> handlerKey = getHandler(request);
-        if (handlerKey == null) {
-            throw new RecordNotFoundException(format("你请求的URL地址[{}]不存在", request.rawPath().toString()));
-        }
-        ApplicationController applicationController = ServiceFramwork.injector.getInstance(handlerKey.v1());
-
-        enhanceApplicationController(applicationController, request, restResponse);
-
-        filter(handlerKey, applicationController);
+    public void setDefaultHandlerKey(Tuple<Class<ApplicationController>, Method> defaultHandlerKey) {
+        this.defaultHandlerKey = defaultHandlerKey;
     }
 
-    private void enhanceApplicationController(ApplicationController applicationController, final RestRequest request, RestResponse restResponse) throws Exception {
+    public void setErrorHandlerKey(Tuple<Class<ApplicationController>, Method> errorHandlerKey) {
+        this.errorHandlerKey = errorHandlerKey;
+    }
+
+    public Tuple<Class<ApplicationController>, Method> defaultHandlerKey() {
+        return defaultHandlerKey;
+    }
+
+    public Tuple<Class<ApplicationController>, Method> errorHandlerKey() {
+        return errorHandlerKey;
+    }
+
+    public void dispatchRequest(final RestRequest request, RestResponse restResponse) throws Exception {
+        Tuple<Class<ApplicationController>, Method> handlerKey = getHandler(request);
+        if (handlerKey == null) {
+            if (defaultHandlerKey != null) {
+                handlerKey = defaultHandlerKey;
+            } else {
+                throw new RecordNotFoundException(format("你请求的URL地址[{}]不存在", request.rawPath().toString()));
+            }
+
+        }
+        ApplicationController applicationController = ServiceFramwork.injector.getInstance(handlerKey.v1());
+        enhanceApplicationController(applicationController, request, restResponse);
+        if (handlerKey == defaultHandlerKey) {
+            handlerKey.v2().invoke(applicationController);
+        } else {
+            filter(handlerKey, applicationController);
+        }
+
+    }
+
+    public static void enhanceApplicationController(ApplicationController applicationController, final RestRequest request, RestResponse restResponse) throws Exception {
         ReflectHelper.field(applicationController, "request", request);
         ReflectHelper.field(applicationController, "restResponse", restResponse);
     }
@@ -82,26 +109,27 @@ public class RestController {
     private void filter(Tuple<Class<ApplicationController>, Method> handlerKey, ApplicationController applicationController) throws Exception {
         Map<Method, Map<Class, List<Method>>> result = FilterHelper2.create(handlerKey.v1());
         Map<Class, List<Method>> filters = result.get(handlerKey.v2());
-
-
-        for (Method filter : filters.get(BeforeFilter.class)) {
-            filter.setAccessible(true);
-            filter.invoke(applicationController);
-        }
-
-        Iterator<Method> iterator = filters.get(AroundFilter.class).iterator();
-
-        WowAroundFilter wowAroundFilter = null;
         WowAroundFilter first = null;
-        if (iterator.hasNext()) {
-            Method currentFilter = iterator.next();
-            wowAroundFilter = new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController);
-            first = wowAroundFilter;
+        if (filters.containsKey(BeforeFilter.class)) {
+            for (Method filter : filters.get(BeforeFilter.class)) {
+                filter.setAccessible(true);
+                filter.invoke(applicationController);
+            }
         }
-        while (iterator.hasNext()) {
-            Method currentFilter = iterator.next();
-            wowAroundFilter.setNext(new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController));
-            wowAroundFilter = wowAroundFilter.getNext();
+        if (filters.containsKey(AroundFilter.class)) {
+            Iterator<Method> iterator = filters.get(AroundFilter.class).iterator();
+
+            WowAroundFilter wowAroundFilter = null;
+            if (iterator.hasNext()) {
+                Method currentFilter = iterator.next();
+                wowAroundFilter = new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController);
+                first = wowAroundFilter;
+            }
+            while (iterator.hasNext()) {
+                Method currentFilter = iterator.next();
+                wowAroundFilter.setNext(new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController));
+                wowAroundFilter = wowAroundFilter.getNext();
+            }
         }
 
         if (first != null) {

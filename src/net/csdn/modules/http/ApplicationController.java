@@ -15,6 +15,7 @@ import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.model.Model;
+import net.csdn.modules.log.SystemLogger;
 import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
 import net.sf.json.JSON;
@@ -48,7 +49,8 @@ public abstract class ApplicationController {
     protected CSLogger logger = Loggers.getLogger(getClass());
     protected RestRequest request;
     protected RestResponse restResponse;
-    private Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
+    protected Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
+    protected SystemLogger systemLogger = ServiceFramwork.injector.getInstance(SystemLogger.class);
 
     public Class const_document_get(String name) {
         return inner_const_get("document", name);

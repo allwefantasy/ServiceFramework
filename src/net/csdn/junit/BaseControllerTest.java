@@ -3,9 +3,11 @@ package net.csdn.junit;
 import net.csdn.ServiceFramwork;
 import net.csdn.common.exception.RenderFinish;
 import net.csdn.common.settings.Settings;
+import net.csdn.modules.http.HttpServer;
 import net.csdn.modules.http.RestController;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.RestResponse;
+import net.csdn.modules.http.support.HttpHolder;
 import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
 
@@ -31,7 +33,9 @@ public class BaseControllerTest extends IocTest {
 
         RestController controller = injector.getInstance(RestController.class);
         try {
-            controller.dispatchRequest(new MockRestRequest(path, newParams, method, null), response);
+            RestRequest restRequest = new MockRestRequest(path, newParams, method, null);
+            HttpServer.setHttpHolder(new HttpHolder(restRequest, response));
+            controller.dispatchRequest(restRequest, response);
         } catch (Exception e) {
             catchRenderFinish(e);
         }

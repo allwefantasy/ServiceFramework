@@ -58,9 +58,10 @@ public class FilterHelper2 {
 
     private static void createFromStaticBlock(Map<Method, Map<Class, List<Method>>> result, Class clzz) {
 
-
+       //知道controller类中所有actions
         List<Method> actions = findMethodsByAnnotation(clzz, At.class);
         List<String> filterFileNames = list("parent$_before_filter_info", "parent$_around_filter_info");
+
         for (Method action : actions) {
             for (String name : filterFileNames) {
                 Class annotation = "parent$_before_filter_info".equals(name) ? BeforeFilter.class : AroundFilter.class;
@@ -69,6 +70,8 @@ public class FilterHelper2 {
                 } else if (!result.get(action).containsKey(annotation)) {
                     result.get(action).put(annotation, new ArrayList<Method>());
                 }
+
+                //获取过滤器配置信息
                 Map<String, Map> temp = (Map) ReflectHelper.staticMethod(clzz, name);
 
                 for (Map.Entry<String, Map> entry : temp.entrySet()) {

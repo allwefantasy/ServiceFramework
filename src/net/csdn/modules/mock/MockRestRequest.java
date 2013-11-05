@@ -29,7 +29,7 @@ public class MockRestRequest implements RestRequest {
 
     private final String rawPath;
 
-    private byte[] content;
+    private byte[] content = new byte[0];
 
 
     public MockRestRequest(Map<String, String> params, RestRequest.Method method, String bodyContentNotForm) {
@@ -124,27 +124,27 @@ public class MockRestRequest implements RestRequest {
 
     @Override
     public String cookie(String name) {
-        throw new RuntimeException("not implemented yet...");
+        return null;
     }
 
     @Override
     public Object session(String key) {
-        throw new RuntimeException("not implemented yet...");
+        return null;
     }
 
     @Override
     public void session(String key, Object value) {
-        throw new RuntimeException("not implemented yet...");
+
     }
 
     @Override
     public Object flash(String key) {
-        throw new RuntimeException("not implemented yet...");
+        return null;
     }
 
     @Override
     public void flash(String key, Object value) {
-        throw new RuntimeException("not implemented yet...");
+
     }
 
 

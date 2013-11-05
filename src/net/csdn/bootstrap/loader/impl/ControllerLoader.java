@@ -5,10 +5,15 @@ import com.google.inject.Module;
 import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.rest.At;
+import net.csdn.annotation.rest.ErrorAction;
+import net.csdn.annotation.rest.NoAction;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.collect.Tuple;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
 import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
+import net.csdn.constants.CError;
 import net.csdn.enhancer.ControllerEnhancer;
 import net.csdn.filter.FilterEnhancer;
 import net.csdn.modules.http.ApplicationController;
@@ -29,6 +34,8 @@ import static net.csdn.common.collections.WowCollections.list;
  * Time: 上午11:31
  */
 public class ControllerLoader implements Loader {
+
+    private final static CSLogger logger = Loggers.getLogger(ControllerLoader.class);
 
     @Override
     public void load(Settings settings) throws Exception {
@@ -82,11 +89,23 @@ public class ControllerLoader implements Loader {
 
                     for (Method method : methods) {
                         if (method.getModifiers() == Modifier.PRIVATE) continue;
+                        RestController restController = ServiceFramwork.injector.getInstance(RestController.class);
+
+                        NoAction noAction = method.getAnnotation(NoAction.class);
+                        if (noAction != null) {
+                            restController.setDefaultHandlerKey(new Tuple<Class<ApplicationController>, Method>(clzz, method));
+                        }
+
+                        ErrorAction errorAction = method.getAnnotation(ErrorAction.class);
+                        if (errorAction != null) {
+                            restController.setErrorHandlerKey(new Tuple<Class<ApplicationController>, Method>(clzz, method));
+                        }
+
                         At at = method.getAnnotation(At.class);
                         if (at == null) continue;
                         String url = at.path()[0];
                         RestRequest.Method[] httpMethods = at.types();
-                        RestController restController = ServiceFramwork.injector.getInstance(RestController.class);
+
                         for (RestRequest.Method httpMethod : httpMethods) {
                             Tuple<Class<ApplicationController>, Method> tuple = new Tuple<Class<ApplicationController>, Method>(clzz, method);
                             restController.registerHandler(httpMethod, url, tuple);
@@ -94,7 +113,7 @@ public class ControllerLoader implements Loader {
                         bind(clzz);
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    logger.error(CError.SystemInitializeError, e);
                 }
             }
         };

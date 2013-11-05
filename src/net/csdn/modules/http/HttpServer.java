@@ -11,9 +11,12 @@ import net.csdn.common.exception.RecordNotFoundException;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
+import net.csdn.constants.CError;
 import net.csdn.hibernate.support.filter.CSDNStatFilterstat;
 import net.csdn.jpa.JPA;
+import net.csdn.modules.http.support.HttpHolder;
 import net.csdn.modules.http.support.HttpStatus;
+import net.csdn.modules.log.SystemLogger;
 import net.sf.json.JSONException;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
@@ -24,6 +27,7 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -50,16 +54,36 @@ public class HttpServer {
     private RestController restController;
     private boolean disableMysql = false;
     private Settings settings;
+    private SystemLogger systemLogger;
+
+    private static ThreadLocal<HttpHolder> httpHolder = new ThreadLocal<HttpHolder>();
+
+    public static void setHttpHolder(HttpHolder value) {
+        httpHolder.set(value);
+    }
+
+    public static void removeHttpHolder() {
+        httpHolder.remove();
+    }
+
+    public static HttpHolder httpHolder() {
+        return httpHolder.get();
+    }
+
 
     @Inject
-    public HttpServer(Settings settings, RestController restController) {
+    public HttpServer(Settings settings, SystemLogger systemLogger, RestController restController) {
         this.settings = settings;
+        this.systemLogger = systemLogger;
         this.restController = restController;
         Environment environment = new Environment(settings);
         disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         server = new Server();
         SelectChannelConnector connector = new SelectChannelConnector();
-
+        QueuedThreadPool threadPool = new QueuedThreadPool();
+        threadPool.setMinThreads(settings.getAsInt("http.threads.min", 100));
+        threadPool.setMaxThreads(settings.getAsInt("http.threads.max", 1000));
+        connector.setThreadPool(threadPool);
         connector.setPort(settings.getAsInt("http.port", 8080));
         server.addConnector(connector);
 
@@ -130,6 +154,7 @@ public class HttpServer {
                 public void write(int httpStatus, String content, ViewType viewType) {
                     configureMimeType(viewType);
                     this.content = content;
+                    this.status = httpStatus;
                 }
 
 
@@ -229,6 +254,7 @@ public class HttpServer {
                 }
 
                 public void output(String msg) throws IOException {
+                    httpServletResponse.setStatus(status);
                     PrintWriter printWriter = httpServletResponse.getWriter();
                     printWriter.write(msg);
                     printWriter.flush();
@@ -247,6 +273,7 @@ public class HttpServer {
                 public void internalDispatchRequest() throws Exception {
                     RestController controller = restController;
                     RestRequest restRequest = new DefaultRestRequest(httpServletRequest);
+                    HttpServer.setHttpHolder(new HttpHolder(restRequest, this));
                     try {
                         controller.dispatchRequest(restRequest, this);
                     } catch (Exception e) {
@@ -257,7 +284,9 @@ public class HttpServer {
 
             DefaultResponse channel = new DefaultResponse();
             long startTime = System.currentTimeMillis();
-            CSDNStatFilterstat.setSQLTIME(new AtomicLong(0l));
+            if (!disableMysql) {
+                CSDNStatFilterstat.setSQLTIME(new AtomicLong(0l));
+            }
             try {
                 channel.internalDispatchRequest();
                 if (!disableMysql) {
@@ -265,24 +294,51 @@ public class HttpServer {
                 }
                 channel.send();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error(CError.SystemProcessingError, e);
                 //回滚
                 if (!disableMysql) {
-                    JPA.getJPAConfig().getJPAContext().closeTx(true);
+                    try {
+                        JPA.getJPAConfig().getJPAContext().closeTx(true);
+                    } catch (Exception e2) {
+                        //ignore
+                    }
                 }
-                channel.error(e);
+                if (restController.errorHandlerKey() != null) {
+                    ApplicationController errorApplicationController = ServiceFramwork.injector.getInstance(restController.errorHandlerKey().v1());
+                    try {
+                        RestController.enhanceApplicationController(errorApplicationController, HttpServer.httpHolder().restRequest(), channel);
+                        try {
+                            restController.errorHandlerKey().v2().invoke(errorApplicationController, e);
+                        } catch (Exception e2) {
+                            ExceptionHandler.renderHandle(e2);
+                            channel.send();
+                        }
+                    } catch (Exception e1) {
+                        logger.error(CError.SystemProcessingError, e1);
+                    }
+                } else {
+                    channel.error(e);
+                }
+
             } finally {
                 /*
                 Completed 200 OK in 1378ms (Views: 45.0ms | ActiveRecord: 34.0ms)
 
                  */
-                long endTime = System.currentTimeMillis();
-                String url = httpServletRequest.getQueryString();
-                logger.info("Completed " + channel.status + " in " + (endTime - startTime) + "ms (ActiveORM: " + CSDNStatFilterstat.SQLTIME().get() + "ms)");
-                logger.info(httpServletRequest.getMethod() +
-                        " " + httpServletRequest.getRequestURI() + (isNull(url) ? "" : ("?" + url)));
-                logger.info("\n\n\n\n");
-                CSDNStatFilterstat.removeSQLTIME();
+                boolean logEnable = settings.getAsBoolean("application.log.enable", true);
+                if (logEnable) {
+                    long endTime = System.currentTimeMillis();
+                    String url = httpServletRequest.getQueryString();
+                    logger.info("Completed " + channel.status + " in " + (endTime - startTime) + "ms (ActiveORM: " + (disableMysql ? 0 : CSDNStatFilterstat.SQLTIME().get()) + "ms)");
+                    logger.info(httpServletRequest.getMethod() +
+                            " " + httpServletRequest.getRequestURI() + (isNull(url) ? "" : ("?" + url)));
+                    logger.info("\n\n\n\n");
+                }
+                if (!disableMysql) {
+                    CSDNStatFilterstat.removeSQLTIME();
+                }
+                HttpServer.removeHttpHolder();
+
             }
 
 
