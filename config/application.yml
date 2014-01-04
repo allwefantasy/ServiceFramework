@@ -13,12 +13,12 @@ development:
            database: wow
            username: root
            password: root
-           disable: false
+           disable: true
         mongodb:
            host: 127.0.0.1
            port: 27017
            database: wow
-           disable: false
+           disable: true
         redis:
             host: 127.0.0.1
             port: 6379
