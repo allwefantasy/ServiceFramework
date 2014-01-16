@@ -6,17 +6,24 @@
 
 ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高效性，其开发效率可以比肩Rails.
 
+注： 目前项目已经使用Maven进行了管理，但是部分jar包只能从公司内部仓库访问到(这些jar包的源码也都是开源的)。所以使用
+时可直接使用lib目录下的jar即可。
+
 1. ActiveRecord化的Model层，支持 MongoDB 和 MySQL.
   
   
 		    List<Tag> tags = Tag.where(map("name","java")).fetch;
    
-2. 完全重新设计的Controller层,支持方法级过滤器，大量便利的函数
+2. 完全重新设计的Controller层,大量便利的函数。创新的过滤器设计，比如下面的代码表示validate 方法会拦截 push方法
+
+           static {
+             beforeFilter("validate", WowCollections.map(only, WowCollections.list("push")));
+           }
 
 3. 大部分对象使用IOC自动管理,使用简单。
   
-			  @inject
-			  Service service;
+		   @inject
+		   Service service;
    
 4. 不依赖容器，单元测试简单，从action到service,都可做到测试代码最少
   
@@ -50,7 +57,7 @@ ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高�
 		        load: ["127.0.0.1:7701"]
 
 	  
-6. 支持 Velocity, 页面可直接访问所有实例变量以及helper类的方法
+6. 支持 Velocity, 页面可直接访问所有实例变量以及helper类的方法。支持Velocity 进行模板配置
 
 	 
 			    @At(path = "/hello", types = GET)
