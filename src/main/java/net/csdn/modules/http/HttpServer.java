@@ -1,6 +1,7 @@
 package net.csdn.modules.http;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import net.csdn.ServiceFramwork;
 import net.csdn.common.env.Environment;
@@ -21,10 +22,12 @@ import net.sf.json.JSONException;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.SessionManager;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -36,6 +39,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -97,7 +102,9 @@ public class HttpServer {
                 e.printStackTrace();
             }
             if (settings.getAsBoolean("application.session.enable", false)) {
-                handlers.setHandlers(new Handler[]{resource_handler, new SessionHandler(), new DefaultHandler()});
+                SessionManager sessionManager = new HashSessionManager();
+                sessionManager.setSessionIdPathParameterName("none");
+                handlers.setHandlers(new Handler[]{resource_handler, new SessionHandler(sessionManager), new DefaultHandler()});
             } else {
                 handlers.setHandlers(new Handler[]{resource_handler, new DefaultHandler()});
             }
@@ -202,7 +209,20 @@ public class HttpServer {
 
                 @Override
                 public void redirectTo(String path, Map params) {
-                    String param = Joiner.on("&").withKeyValueSeparator("=").join(params);
+                    Map temp = Maps.newHashMap();
+                    try {
+                        for (Object o : params.keySet()) {
+                            if (params.get(o) instanceof String) {
+                                temp.put(o, URLEncoder.encode((String) params.get(o), "UTF-8"));
+                            } else {
+                                temp.put(o, params.get(o));
+                            }
+                        }
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    String param = Joiner.on("&").withKeyValueSeparator("=").join(temp);
+
                     if (path.contains("?")) {
                         path += ("&" + param);
                     } else {

@@ -13,8 +13,6 @@ import net.csdn.common.settings.Settings;
 import net.csdn.common.time.NumberExtendedForTime;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
-import net.csdn.jpa.JPA;
-import net.csdn.jpa.model.Model;
 import net.csdn.modules.log.SystemLogger;
 import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
@@ -140,6 +138,13 @@ public abstract class ApplicationController {
         StringWriter w = new StringWriter();
         Velocity.mergeTemplate(path, "utf-8", context, w);
         restResponse.write(status, w.toString(), ViewType.html);
+    }
+
+    public void renderHtmlWithMaster(int status, String path, Map result) {
+        if (!result.containsKey("template")) {
+            result.put("template", toUnderscoreCase(getControllerNameWithoutSuffix()) + "/" + toUnderscoreCase(getActionName()) + ".vm");
+        }
+        renderHtml(status, path, result);
     }
 
 
@@ -448,10 +453,6 @@ public abstract class ApplicationController {
         }
     }
 
-    //获取model类
-    public Class<Model> const_model_get(String type) {
-        return JPA.models.get(type);
-    }
 
     //单元测试可以调用
     public ApplicationController mockRequest(Map<String, String> params, RestRequest.Method method, String xmlOrJsonData) {
@@ -465,139 +466,139 @@ public abstract class ApplicationController {
     }
 
     //各种工具方法
-    public static <T> Set<T> newHashSet(T... arrays) {
+    public <T> Set<T> newHashSet(T... arrays) {
         return WowCollections.newHashSet(arrays);
     }
 
 
     //@see  selectMap
-    public static Map selectMap(Map map, String... keys) {
+    public Map selectMap(Map map, String... keys) {
         return WowCollections.selectMap(map, keys);
     }
 
-    public static Map paramByKeys(Map map, String... keys) {
+    public Map paramByKeys(Map map, String... keys) {
         return WowCollections.selectMap(map, keys);
     }
 
     //@see aliasParamKeys
-    public static Map selectMapWithAliasName(Map map, String... keys) {
+    public Map selectMapWithAliasName(Map map, String... keys) {
         return WowCollections.selectMapWithAliasName(map, keys);
     }
 
-    public static Map aliasParamKeys(Map params, String... keys) {
+    public Map aliasParamKeys(Map params, String... keys) {
         return WowCollections.selectMapWithAliasName(params, keys);
     }
 
-    public static Map map(Object... arrays) {
+    public Map map(Object... arrays) {
         return WowCollections.map(arrays);
     }
 
 
-    public static <T> List<T> list(T... arrays) {
+    public <T> List<T> list(T... arrays) {
         return WowCollections.list(arrays);
     }
 
     //@see project
-    public static <T> List<T> projectionColumn(List<Map> maps, String column) {
+    public <T> List<T> projectionColumn(List<Map> maps, String column) {
         return WowCollections.projectionColumn(maps, column);
     }
 
-    public static List project(List<Map> list, String key) {
+    public List project(List<Map> list, String key) {
         return WowCollections.project(list, key);
     }
 
-    public static String join(Collection collection, String split) {
+    public String join(Collection collection, String split) {
         return WowCollections.join(collection, split);
     }
 
-    public static String join(Collection collection) {
+    public String join(Collection collection) {
         return WowCollections.join(collection);
     }
 
-    public static List projectByMethod(List list, String method, Object... params) {
+    public List projectByMethod(List list, String method, Object... params) {
         return WowCollections.projectByMethod(list, method, params);
     }
 
-    public static Map double_list_to_map(List keys, List values) {
+    public Map double_list_to_map(List keys, List values) {
         return WowCollections.doubleListToMap(keys, values);
     }
 
-    public static String join(Collection collection, String split, String wrapper) {
+    public String join(Collection collection, String split, String wrapper) {
         return WowCollections.join(collection, split, wrapper);
     }
 
-    public static String join(Object[] collection, String split, String wrapper) {
+    public String join(Object[] collection, String split, String wrapper) {
         return WowCollections.join(collection, split, wrapper);
     }
 
-    public static String getString(Map map, String key) {
+    public String getString(Map map, String key) {
         return WowCollections.getString(map, key);
     }
 
-    public static String getStringNoNull(Map map, String key) {
+    public String getStringNoNull(Map map, String key) {
         return WowCollections.getStringNoNull(map, key);
     }
 
-    public static Date getDate(Map map, String key) {
+    public Date getDate(Map map, String key) {
         return WowCollections.getDate(map, key);
     }
 
-    public static long getDateAsLong(Map map, String key) {
+    public long getDateAsLong(Map map, String key) {
         return WowCollections.getDateAsLong(map, key);
     }
 
-    public static int getInt(Map map, String key) {
+    public int getInt(Map map, String key) {
         return WowCollections.getInt(map, key);
     }
 
-    public static long getLong(Map map, String key) {
+    public long getLong(Map map, String key) {
         return WowCollections.getLong(map, key);
     }
 
-    public static Set hashSet(Object[] array) {
+    public Set hashSet(Object[] array) {
         return WowCollections.hashSet(array);
     }
 
 
-    public static List toList(Object[] array) {
+    public List toList(Object[] array) {
         return WowCollections.toList(array);
     }
 
 
-    public static Set hashSet(int[] array) {
+    public Set hashSet(int[] array) {
         return WowCollections.hashSet(array);
     }
 
-    public static List jsonArrayToList(JSONArray jsonArray) {
+    public List jsonArrayToList(JSONArray jsonArray) {
         return toList(jsonArray.toArray());
 
     }
 
-    public static String join(Object[] arrays, String split) {
+    public String join(Object[] arrays, String split) {
         return WowCollections.join(arrays, split);
     }
 
-    public static String join(int[] arrays, String split) {
+    public String join(int[] arrays, String split) {
 
         return WowCollections.join(arrays, split);
     }
 
-    public static <T> T or(T a, T b) {
+    public <T> T or(T a, T b) {
         if (a == null) {
             return b;
         }
         return a;
     }
 
-    public static Map selectMapWithAliasNameInclude(Map map, String... keys) {
+    public Map selectMapWithAliasNameInclude(Map map, String... keys) {
         return WowCollections.selectMapWithAliasNameInclude(map, keys);
     }
 
-    public static Pattern RegEx(String reg) {
+    public Pattern RegEx(String reg) {
         return Pattern.compile(reg);
     }
 
-    public static Pattern regEx(String reg) {
+    public Pattern regEx(String reg) {
         return RegEx(reg);
     }
 

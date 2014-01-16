@@ -71,11 +71,10 @@ public class DefaultRestRequest implements RestRequest {
             return;
         }
 
-        if ("application/x-www-form-urlencoded".equals(contentType))
+        try {
             RestUtils.decodeQueryString(wow, 0, params);
-
-        if (params.containsKey("_method")) {
-            this.method = Method.valueOf(params.get("_method"));
+        } catch (Exception e) {
+            //ignore
         }
     }
 

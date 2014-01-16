@@ -33,9 +33,11 @@ public interface HttpTransportService {
 
     public SResponse http(Url url, String jsonData, RestRequest.Method method, int timeout);
 
-    public SResponse http(Url url, String jsonData, Map<String, String> headers,RestRequest.Method method,  int timeout);
+    public SResponse http(Url url, String jsonData, Map<String, String> headers, RestRequest.Method method, int timeout);
 
     public FutureTask<SResponse> asyncHttp(final Url url, final String jsonData, RestRequest.Method method);
+
+    public void header(String header, String value);
 
     public List<SResponse> asyncHttps(final List<Url> urls, final String jsonData, RestRequest.Method method);
 

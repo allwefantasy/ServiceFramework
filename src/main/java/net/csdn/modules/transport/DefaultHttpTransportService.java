@@ -67,7 +67,11 @@ public class DefaultHttpTransportService implements HttpTransportService {
         httpClient.getParams().setParameter("http.socket.timeout", timeout * 1000);
         httpClient.getParams().setParameter("http.connection.timeout", timeout * 1000);
         httpClient.getParams().setParameter("http.connection-manager.timeout", new Long(timeout * 1000));
-        httpClient.getParams().setParameter("http.protocol.head-body-timeout", timeout * 1000);
+    }
+
+    @Override
+    public void header(String header, String value) {
+        httpClient.getParams().setParameter(header, value);
     }
 
 
