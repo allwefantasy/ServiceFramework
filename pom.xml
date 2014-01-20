@@ -8,6 +8,32 @@
     <artifactId>ServiceFramework</artifactId>
     <version>1.1.1-SNAPSHOT</version>
 
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>allwefantasy</id>
+            <name>allwefantasy</name>
+            <email>allwefantasy@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>https://github.com/allwefantasy/ServiceFramework</connection>
+        <url>https://github.com/allwefantasy/ServiceFramework</url>
+    </scm>
+
+    <issueManagement>
+        <system>github</system>
+        <url>https://github.com/allwefantasy/ServiceFramework/issues</url>
+    </issueManagement>
+
     <dependencies>
         <dependency>
             <groupId>net.csdn</groupId>
@@ -83,47 +109,47 @@
 
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>releases</id>
-            <name>releases</name>
-            <url>http://mvn.csdn.net:8081/nexus/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <url>http://mvn.csdn.net:8081/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <!--<distributionManagement>-->
+    <!--<repository>-->
+    <!--<id>releases</id>-->
+    <!--<name>releases</name>-->
+    <!--<url>http://mvn.csdn.net:8081/nexus/content/repositories/releases/</url>-->
+    <!--</repository>-->
+    <!--<snapshotRepository>-->
+    <!--<id>snapshots</id>-->
+    <!--<url>http://mvn.csdn.net:8081/nexus/content/repositories/snapshots</url>-->
+    <!--</snapshotRepository>-->
+    <!--</distributionManagement>-->
 
-    <build>
-        <plugins>
-            <!--   要将源码放上去，需要加入这个插件    -->
-            <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.1</version>
-                <configuration>
-                    <attach>true</attach>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <compilerArgument>-g</compilerArgument>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <!--<build>-->
+    <!--<plugins>-->
+    <!--&lt;!&ndash;   要将源码放上去，需要加入这个插件    &ndash;&gt;-->
+    <!--<plugin>-->
+    <!--<artifactId>maven-source-plugin</artifactId>-->
+    <!--<version>2.1</version>-->
+    <!--<configuration>-->
+    <!--<attach>true</attach>-->
+    <!--</configuration>-->
+    <!--<executions>-->
+    <!--<execution>-->
+    <!--<phase>compile</phase>-->
+    <!--<goals>-->
+    <!--<goal>jar</goal>-->
+    <!--</goals>-->
+    <!--</execution>-->
+    <!--</executions>-->
+    <!--</plugin>-->
+    <!--<plugin>-->
+    <!--<groupId>org.apache.maven.plugins</groupId>-->
+    <!--<artifactId>maven-compiler-plugin</artifactId>-->
+    <!--<version>3.1</version>-->
+    <!--<configuration>-->
+    <!--<compilerArgument>-g</compilerArgument>-->
+    <!--<source>1.6</source>-->
+    <!--<target>1.6</target>-->
+    <!--</configuration>-->
+    <!--</plugin>-->
+    <!--</plugins>-->
+    <!--</build>-->
 
 </project>
