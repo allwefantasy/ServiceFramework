@@ -161,11 +161,20 @@ Step12 > 创建测试类 test.com.example.TagControllerTest
 
 Step13 >  运行 DynamicSuiteRunner 跑起测试
 
+Step14 >  补充：你也可以不使用DynamicSuiteRunner去跑。直接使用IDE跑单元测试类。需要做的是在你的单元测试类中加几句代码：
+
+    static {
+        initEnv(ExampleApplication.class);
+    }
+
+加这句主要是保证启动容器，并且采用了合适的类加载器。
 
 QuickStart 的一些常见错误:
 
-1. application 文件 数据连接配置错误。你可以将test,development环境下的连接配置弄成相同的
-2. 包名和类名必须保证和示例一致。如果你需要使用不同的package,那么你需要修改application.yml中的application 配置。如下:
+1. application 文件 数据连接配置错误。单元测试一定需要单独配置test的配置。因为单元测试一般可能会会有数据清理等，系统强制使用
+   test的配置。
+
+2. ServiceFramework 是使用配置文件来找类并且加载的，所以你需要正确配置contorller等所在位置。在上述测试中，包名和类名必须保证和示例一致。如果你需要使用不同的package,那么你需要修改application.yml中的application 配置。如下:
   
 		  application:
 		    controller: com.example.controller.http
