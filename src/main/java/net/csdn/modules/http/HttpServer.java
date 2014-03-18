@@ -314,6 +314,9 @@ public class HttpServer {
                 }
                 channel.send();
             } catch (Exception e) {
+                if (settings.getAsBoolean("framework.printStackTrace", false)) {
+                    e.printStackTrace();
+                }
                 logger.error(CError.SystemProcessingError, e);
                 //回滚
                 if (!disableMysql) {
