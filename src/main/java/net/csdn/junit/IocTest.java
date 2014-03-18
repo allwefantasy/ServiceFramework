@@ -4,7 +4,6 @@ import com.google.inject.Injector;
 import javassist.CtClass;
 import net.csdn.ServiceFramwork;
 import net.csdn.jpa.JPA;
-import net.csdn.modules.http.RestUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,11 +17,25 @@ public class IocTest {
 
     protected static Injector injector = ServiceFramwork.injector;
 
+
+    public static boolean checkClassLoaded(String name) throws Exception {
+        java.lang.reflect.Method m = ClassLoader.class.getDeclaredMethod("findLoadedClass", new Class[]{String.class});
+        m.setAccessible(true);
+        ClassLoader cl = ClassLoader.getSystemClassLoader();
+        Object test1 = m.invoke(cl, name);
+        return test1 != null;
+
+
+    }
+
     public static void initEnv(Class classLoader) {
         try {
             ServiceFramwork.mode = ServiceFramwork.Mode.test;
             ServiceFramwork.scanService.setLoader(classLoader);
             CtClass ctClass = ServiceFramwork.classPool.get("net.csdn.bootstrap.Bootstrap");
+            if (checkClassLoaded(ctClass.getName())) {
+                return;
+            }
             //加载Guice容器
             Method method = ctClass.toClass().getDeclaredMethod("configureSystem");
             method.setAccessible(true);
