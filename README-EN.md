@@ -158,6 +158,16 @@ Step12 > create test class test.com.example.TagControllerTest
 
 Step13 >  run DynamicSuiteRunner 
 
+Step14 >   However,DynamicSuteRunner is not required。 You can also add following lines
+to you test class and then you can use your IDE to test the class directly.
+
+    static {
+        initEnv(ExampleApplication.class);
+    }
+
+initEnv method promise that your container will be started propertly and right ClassLoader be
+used.   
+
 
 
 ## Tutorial Usefull
