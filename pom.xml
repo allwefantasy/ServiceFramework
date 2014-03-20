@@ -9,7 +9,7 @@
 
     <groupId>net.csdn</groupId>
     <artifactId>ServiceFramework</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
 
     <licenses>
         <license>
