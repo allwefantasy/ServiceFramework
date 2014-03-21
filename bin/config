@@ -1,0 +1,3 @@
+s_main_class=net.csdn.alpaca.Alpaca
+s_java_options="-Xms1000m -Xmx1000m -XX:PermSize=128m -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/dump.hprof"
+application_file=application.acceptor.yml

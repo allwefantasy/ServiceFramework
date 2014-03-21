@@ -213,6 +213,7 @@ ServiceFramework 不适合遗留项目。我们倾向于在一个全新的项目
 * [Model](https://github.com/allwefantasy/ServiceFramework/tree/master/doc/ServiceFrameworkWiki-model.md)
 * [Controller](https://github.com/allwefantasy/ServiceFramework/tree/master/doc/ServiceFrameworkWiki-controller.md)
 * [Test](https://github.com/allwefantasy/ServiceFramework/tree/master/doc/ServiceFrameworkWiki-test.md)
+* [Deploy](https://github.com/allwefantasy/ServiceFramework/tree/master/doc/ServiceFrameworkWiki-deploy.md)
 
 ## Step by Step tutorial
 Step-by-Step-tutorial-for-ServiceFramework(continue...)
@@ -221,6 +222,7 @@ Step-by-Step-tutorial-for-ServiceFramework(continue...)
 * [Step-by-Step-tutorial-for-ServiceFramework(2)](https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework\(2\).md)
 * [Step-by-Step-tutorial-for-ServiceFramework(3)](https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework\(3\).md)
 * [Step-by-Step-tutorial-for-ServiceFramework(4)](https://github.com/allwefantasy/service_framework_example/blob/master/doc/Step-by-Step-tutorial-for-ServiceFramework\(4\).md)
+
 
 
 ##  Some projects based on ServiceFramework
