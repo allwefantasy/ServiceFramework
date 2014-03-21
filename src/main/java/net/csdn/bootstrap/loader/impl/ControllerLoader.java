@@ -11,6 +11,7 @@ import net.csdn.annotation.rest.ErrorAction;
 import net.csdn.annotation.rest.NoAction;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.collect.Tuple;
+import net.csdn.common.collections.WowCollections;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.scan.ScanService;
@@ -41,24 +42,26 @@ public class ControllerLoader implements Loader {
 
     @Override
     public void load(Settings settings) throws Exception {
-        ServiceFramwork.injector = Guice.createInjector(Stage.PRODUCTION,ServiceFramwork.AllModules);
+        ServiceFramwork.injector = Guice.createInjector(Stage.PRODUCTION, ServiceFramwork.AllModules);
         final List<Module> moduleList = new ArrayList<Module>();
         final List<CtClass> controllers = list();
         final ControllerEnhancer enhancer = new FilterEnhancer(settings);
-        //自动加载所有Action类
-        ServiceFramwork.scanService.scanArchives(settings.get("application.controller"), new ScanService.LoadClassEnhanceCallBack() {
-            @Override
-            public Class loaded(DataInputStream classFile) {
-                try {
-                    CtClass ctClass = enhancer.enhanceThisClass(classFile);
-                    controllers.add(ctClass);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        for (String item : WowCollections.split2(settings.get("application.controller"), ",")) {
+            //自动加载所有Action类
+            ServiceFramwork.scanService.scanArchives(item, new ScanService.LoadClassEnhanceCallBack() {
+                @Override
+                public Class loaded(DataInputStream classFile) {
+                    try {
+                        CtClass ctClass = enhancer.enhanceThisClass(classFile);
+                        controllers.add(ctClass);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
 
-                return null;
-            }
-        });
+                    return null;
+                }
+            });
+        }
 
         enhancer.enhanceThisClass2(controllers);
 
