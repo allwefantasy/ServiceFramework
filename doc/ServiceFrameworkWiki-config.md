@@ -49,6 +49,7 @@ development:
            database: tag_engine
            username: tag
            password: tag
+           disable: true
         mongodb:
            host: 127.0.0.1
            port: 27017
@@ -82,7 +83,7 @@ orm:
     idle_test_period: 3000
 ###############application config##################
 application:
-    controller: com.example.controller
+    controller: com.example.controller  
     model:      com.example.model
     service:    com.example.service
     util:       com.example.util
@@ -113,4 +114,31 @@ type_mapping:  net.csdn.jpa.type.impl.MysqlType
 
 ```
 
-对于数据库等的配置是区分开发或者生产环境的
+对于数据库等的配置默认区分开发，生产，测试。单元测试强制使用测试环境。
+
+除了默认的的一些配置，你可以随意按标准的yaml格式添加配置，在实际代码中，你可以通过下面的方式获取
+配置
+
+首先注入Settings类
+
+      @Inject
+      private Settings settings;
+
+然后就可以如下使用了:
+
+      boolean enable = settings.getAsBoolean("foo.bar.yes",false)
+
+
+在ServiceFramework中，Controller,Service,Util，Model等是需要在配置文件中明确指定的。类似配置如下：
+
+      application:
+          controller: com.example.controller  
+          model:      com.example.model
+          service:    com.example.service
+          util:       com.example.util
+          test:       test.com.example
+
+
+理论上，ServiceFramework的配置就是数据库配置类的扫描路径配置。
+
+

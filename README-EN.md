@@ -7,6 +7,19 @@ like [ActiveORM](https://github.com/allwefantasy/active_orm) and [MongoMongo](ht
 written by  java language according to the Model-View-Controller(MVC) pattern.
 
 
+### How to use ServiceFramework in Maven
+
+add Dependency in your pom.xml:
+
+        <dependency>
+            <groupId>net.csdn</groupId>
+            <artifactId>ServiceFramework</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+make sure config/application.yml,config/logging.yml are present in your project root.
+
+
 1.  ActiveORM in ServiceFramework like ActiveRecord in Rails,Awesome.
   
   
@@ -167,6 +180,7 @@ to you test class and then you can use your IDE to test the class directly.
 
 initEnv method promise that your container will be started propertly and right ClassLoader be
 used.   
+
 
 
 

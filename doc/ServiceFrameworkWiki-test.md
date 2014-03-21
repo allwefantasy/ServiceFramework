@@ -100,6 +100,8 @@ Service层的测试:
 
 这个时候，searchService中的transportService就会呗你的Mock对象所替代，该对象你可以直接继承TransportService 类。
 
+
+
 			
 
 	   

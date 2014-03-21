@@ -2,12 +2,21 @@
 
 [README-EN](https://github.com/allwefantasy/ServiceFramework/blob/master/README-EN.md)
 
-![logo](http://allwefantasy.com/service_framework_logo_big.jpg)
-
 ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高效性，其开发效率可以比肩Rails.
 
-注： 目前项目已经使用Maven进行了管理，但是部分jar包只能从公司内部仓库访问到(这些jar包的源码也都是开源的)。所以使用
-时可直接使用lib目录下的jar即可。
+### 在Maven中使用该项目
+
+在你的pom.xml 文件中中添加如下引用:
+
+        <dependency>
+            <groupId>net.csdn</groupId>
+            <artifactId>ServiceFramework</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+
+
+接着确保 项目根目录下有config/application.yml,config/logging.yml 两个文件即可。示例可参看该项目中config文件夹。
 
 1. ActiveRecord化的Model层，支持 MongoDB 和 MySQL.
   
@@ -183,6 +192,9 @@ QuickStart 的一些常见错误:
 		    service:    com.example.service
 		    util:       com.example.util
 		    test:       test.com.example
+
+
+
 
 
 
