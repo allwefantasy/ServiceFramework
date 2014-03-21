@@ -47,12 +47,14 @@ public class ControllerLoader implements Loader {
         final List<CtClass> controllers = list();
         final ControllerEnhancer enhancer = new FilterEnhancer(settings);
         for (String item : WowCollections.split2(settings.get("application.controller"), ",")) {
+            logger.info("load controller from package:"+item);
             //自动加载所有Action类
             ServiceFramwork.scanService.scanArchives(item, new ScanService.LoadClassEnhanceCallBack() {
                 @Override
                 public Class loaded(DataInputStream classFile) {
                     try {
                         CtClass ctClass = enhancer.enhanceThisClass(classFile);
+                        logger.info("load controller class:"+ctClass.getName());
                         controllers.add(ctClass);
                     } catch (Exception e) {
                         e.printStackTrace();

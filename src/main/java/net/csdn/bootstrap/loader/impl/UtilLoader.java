@@ -8,6 +8,8 @@ import net.csdn.annotation.AnnotationException;
 import net.csdn.annotation.Util;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.collections.WowCollections;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
 import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
 
@@ -23,10 +25,12 @@ import static net.csdn.common.logging.support.MessageFormat.format;
  * Time: 上午11:32
  */
 public class UtilLoader implements Loader {
+    private CSLogger logger = Loggers.getLogger(UtilLoader.class);
     @Override
     public void load(Settings settings) throws Exception {
         final List<Module> moduleList = new ArrayList<Module>();
         for (String item : WowCollections.split2(settings.get("application.util"), ",")) {
+            logger.info("load util from package:"+item);
             ServiceFramwork.scanService.scanArchives(item, new ScanService.LoadClassEnhanceCallBack() {
                 @Override
                 public Class loaded(DataInputStream classFile) {
@@ -35,6 +39,7 @@ public class UtilLoader implements Loader {
                         if (!ctClass.hasAnnotation(Util.class)) {
                             return null;
                         }
+                        logger.info("load util class:"+ctClass.getName());
                         final Class clzz = ctClass.toClass();
                         final Util util = (Util) clzz.getAnnotation(Util.class);
                         if (clzz.isInterface())

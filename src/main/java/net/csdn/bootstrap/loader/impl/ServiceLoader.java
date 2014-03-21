@@ -8,6 +8,8 @@ import net.csdn.annotation.AnnotationException;
 import net.csdn.annotation.Service;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.collections.WowCollections;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
 import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
 
@@ -23,11 +25,12 @@ import static net.csdn.common.logging.support.MessageFormat.format;
  * Time: 上午11:32
  */
 public class ServiceLoader implements Loader {
-
+    private CSLogger logger = Loggers.getLogger(ServiceLoader.class);
     @Override
     public void load(Settings settings) throws Exception {
         final List<Module> moduleList = new ArrayList<Module>();
         for (String item : WowCollections.split2(settings.get("application.service"), ",")) {
+            logger.info("load service from package:"+item);
             ServiceFramwork.scanService.scanArchives(item, new ScanService.LoadClassEnhanceCallBack() {
                 @Override
                 public Class loaded(DataInputStream classFile) {
@@ -37,6 +40,7 @@ public class ServiceLoader implements Loader {
                         if (!ctClass.hasAnnotation(Service.class)) {
                             return null;
                         }
+                        logger.info("load service class:"+ctClass.getName());
                         final Class clzz = ctClass.toClass();
                         final Service service = (Service) clzz.getAnnotation(Service.class);
                         if (clzz.isInterface() && service.implementedBy() == null)
