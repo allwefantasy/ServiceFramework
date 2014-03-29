@@ -14,7 +14,8 @@ public class TestController extends ApplicationController {
 
     @At(path = "/say/hello", types = {RestRequest.Method.GET})
     public void say() {
-        render(200, testService.say(param("wow")), ViewType.string);
+        String sya = testService.say(param("wow"));
+        render(200, sya, ViewType.string);
     }
 
     @Inject

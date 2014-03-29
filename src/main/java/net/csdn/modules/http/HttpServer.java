@@ -1,24 +1,21 @@
 package net.csdn.modules.http;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import net.csdn.ServiceFramwork;
 import net.csdn.common.env.Environment;
-import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.common.exception.ExceptionHandler;
-import net.csdn.common.exception.RecordExistedException;
-import net.csdn.common.exception.RecordNotFoundException;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.constants.CError;
-import net.csdn.hibernate.support.filter.CSDNStatFilterstat;
 import net.csdn.jpa.JPA;
+import net.csdn.modules.http.processor.HttpFinishProcessor;
+import net.csdn.modules.http.processor.HttpStartProcessor;
+import net.csdn.modules.http.processor.ProcessInfo;
+import net.csdn.modules.http.processor.impl.DefaultHttpFinishProcessor;
+import net.csdn.modules.http.processor.impl.DefaultHttpStartProcessor;
 import net.csdn.modules.http.support.HttpHolder;
-import net.csdn.modules.http.support.HttpStatus;
 import net.csdn.modules.log.SystemLogger;
-import net.sf.json.JSONException;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -33,18 +30,11 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static net.csdn.common.collections.WowCollections.isNull;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -60,6 +50,9 @@ public class HttpServer {
     private boolean disableMysql = false;
     private Settings settings;
     private SystemLogger systemLogger;
+
+    private List<HttpStartProcessor> httpStartProcessorList = new ArrayList();
+    private List<HttpFinishProcessor> httpFinishProcessorList = new ArrayList();
 
     private static ThreadLocal<HttpHolder> httpHolder = new ThreadLocal<HttpHolder>();
 
@@ -81,6 +74,8 @@ public class HttpServer {
         this.settings = settings;
         this.systemLogger = systemLogger;
         this.restController = restController;
+        registerHttpStartProcessor(new DefaultHttpStartProcessor());
+        registerHttpFinishProcessor(new DefaultHttpFinishProcessor());
         Environment environment = new Environment(settings);
         disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         server = new Server();
@@ -117,251 +112,81 @@ public class HttpServer {
         server.setHandler(handlers);
     }
 
+    public void registerHttpStartProcessor(HttpStartProcessor httpStartProcessor) {
+        httpStartProcessorList.add(httpStartProcessor);
+    }
+
+    public void registerHttpFinishProcessor(HttpFinishProcessor httpFinishProcessor) {
+        httpFinishProcessorList.add(httpFinishProcessor);
+    }
 
     class DefaultHandler extends AbstractHandler {
+
+
+        private void rollback() {
+            if (!disableMysql) {
+                try {
+                    JPA.getJPAConfig().getJPAContext().closeTx(true);
+                } catch (Exception e2) {
+                    //ignore
+                }
+            }
+        }
+
+        private void defaultErrorAction(DefaultResponse channel, Exception e) {
+            if (restController.errorHandlerKey() != null) {
+                ApplicationController errorApplicationController = ServiceFramwork.injector.getInstance(restController.errorHandlerKey().v1());
+                try {
+                    RestController.enhanceApplicationController(errorApplicationController, HttpServer.httpHolder().restRequest(), channel);
+                    try {
+                        restController.errorHandlerKey().v2().invoke(errorApplicationController, e);
+                    } catch (Exception e2) {
+                        ExceptionHandler.renderHandle(e2);
+                        channel.send();
+                    }
+                } catch (Exception e1) {
+                    logger.error(CError.SystemProcessingError, e1);
+                }
+            } else {
+                try {
+                    channel.error(e);
+                } catch (IOException e1) {
+                    logger.error(CError.SystemProcessingError, e1);
+                }
+            }
+        }
+
 
         @Override
         public void handle(String s, Request request, final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) throws IOException, ServletException {
 
-            class DefaultResponse implements RestResponse {
+            DefaultResponse channel = new DefaultResponse(httpServletRequest, httpServletResponse, restController);
+            ProcessInfo processInfo = new ProcessInfo();
 
-                private String content;
-                private byte[] contentByte;
-                private int status = HttpStatus.HttpStatusOK;
-                private String content_type = "application/json; charset=UTF-8";
-
-                public void write(String content) {
-                    this.content = content;
-                }
-
-                private void configureMimeType(ViewType viewType) {
-                    if (viewType == ViewType.xml) {
-                        content_type = "application/xml;charset=UTF-8";
-                    } else if (viewType == ViewType.image) {
-                        content_type = "image/jpeg";
-                    } else if (viewType == ViewType.string) {
-                        content_type = "text/plain;charset=UTF-8";
-                    } else if (viewType == ViewType.html) {
-                        content_type = "text/html;charset=UTF-8";
-                    }
-                }
-
-                @Override
-                public void write(String content, ViewType viewType) {
-                    configureMimeType(viewType);
-                    this.content = content;
-                }
-
-                public void write(int httpStatus, String content) {
-                    this.content = content;
-                    this.status = httpStatus;
-                }
-
-                @Override
-                public void write(int httpStatus, String content, ViewType viewType) {
-                    configureMimeType(viewType);
-                    this.content = content;
-                    this.status = httpStatus;
-                }
-
-
-                public void write(byte[] contentByte) {
-                    this.contentByte = contentByte;
-                }
-
-                @Override
-                public void cookie(String name, String value) {
-                    httpServletResponse.addCookie(new Cookie(name, value));
-                }
-
-                @Override
-                public void cookie(Map cookieInfo) {
-                    Cookie cookie = new Cookie((String) cookieInfo.get("name"), (String) cookieInfo.get("value"));
-                    if (cookieInfo.containsKey("domain")) {
-                        cookie.setDomain((String) cookieInfo.get("domain"));
-                    }
-                    if (cookieInfo.containsKey("max_age")) {
-                        cookie.setMaxAge((Integer) cookieInfo.get("max_age"));
-                    }
-                    if (cookieInfo.containsKey("path")) {
-                        cookie.setPath((String) cookieInfo.get("path"));
-                    }
-                    if (cookieInfo.containsKey("secure")) {
-                        cookie.setSecure((Boolean) cookieInfo.get("secure"));
-                    }
-
-                    if (cookieInfo.containsKey("version")) {
-                        cookie.setVersion((Integer) cookieInfo.get("version"));
-                    }
-                    httpServletResponse.addCookie(cookie);
-                }
-
-                public String content() {
-                    return this.content;
-                }
-
-                @Override
-                public Object originContent() {
-                    return null;
-                }
-
-                private String redirectPath;
-
-                @Override
-                public void redirectTo(String path, Map params) {
-                    Map temp = Maps.newHashMap();
-                    try {
-                        for (Object o : params.keySet()) {
-                            if (params.get(o) instanceof String) {
-                                temp.put(o, URLEncoder.encode((String) params.get(o), "UTF-8"));
-                            } else {
-                                temp.put(o, params.get(o));
-                            }
-                        }
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                    String param = Joiner.on("&").withKeyValueSeparator("=").join(temp);
-
-                    if (path.contains("?")) {
-                        path += ("&" + param);
-                    } else {
-                        if (params.size() != 0) {
-                            path += ("?" + param);
-                        }
-                    }
-                    this.redirectPath = path;
-                }
-
-                @Override
-                public RestResponse originContent(Object obj) {
-                    return null;
-                }
-
-                @Override
-                public int status() {
-                    return status;
-                }
-
-                public void send() throws IOException {
-                    httpServletResponse.setContentType(content_type);
-                    if (!isNull(redirectPath)) {
-                        httpServletResponse.sendRedirect(httpServletResponse.encodeRedirectURL(redirectPath));
-                        return;
-                    }
-                    if (content != null) {
-                        output(content);
-                        return;
-                    }
-                    if (contentByte != null) {
-                        outputAsByte(contentByte);
-                        return;
-                    }
-                }
-
-                public void error(Exception e) throws IOException {
-
-                    if (e instanceof RecordNotFoundException) {
-                        status = HttpStatus.HttpStatusNotFound;
-                    } else if (e instanceof RecordExistedException || e instanceof ArgumentErrorException || e instanceof JSONException) {
-                        status = HttpStatus.HttpStatusBadRequest;
-                    } else {
-                        status = HttpStatus.HttpStatusSystemError;
-                    }
-                    httpServletResponse.setContentType("text/plain;charset=UTF-8");
-                    httpServletResponse.setStatus(status);
-                    output(e.getMessage());
-                }
-
-                public void output(String msg) throws IOException {
-                    httpServletResponse.setStatus(status);
-                    PrintWriter printWriter = httpServletResponse.getWriter();
-                    printWriter.write(msg);
-                    printWriter.flush();
-                    printWriter.close();
-                }
-
-                public void outputAsByte(byte[] msg) throws IOException {
-                    //httpServletResponse.setContentType("application/json; charset=UTF-8");
-                    httpServletResponse.setStatus(status);
-                    ServletOutputStream outputStream = httpServletResponse.getOutputStream();
-                    outputStream.write(msg);
-                    outputStream.flush();
-                    outputStream.close();
-                }
-
-                public void internalDispatchRequest() throws Exception {
-                    RestController controller = restController;
-                    RestRequest restRequest = new DefaultRestRequest(httpServletRequest);
-                    HttpServer.setHttpHolder(new HttpHolder(restRequest, this));
-                    try {
-                        controller.dispatchRequest(restRequest, this);
-                    } catch (Exception e) {
-                        ExceptionHandler.renderHandle(e);
-                    }
-                }
-            }
-
-            DefaultResponse channel = new DefaultResponse();
-            long startTime = System.currentTimeMillis();
-            if (!disableMysql) {
-                CSDNStatFilterstat.setSQLTIME(new AtomicLong(0l));
-            }
             try {
-                channel.internalDispatchRequest();
-                if (!disableMysql) {
-                    JPA.getJPAConfig().getJPAContext().closeTx(false);
+                for (HttpStartProcessor httpStartProcessor : httpStartProcessorList) {
+                    httpStartProcessor.process(settings, httpServletRequest, httpServletResponse, processInfo);
+                }
+                RestRequest restRequest = new DefaultRestRequest(httpServletRequest);
+                HttpServer.setHttpHolder(new HttpHolder(restRequest, channel));
+                try {
+                    restController.dispatchRequest(restRequest, channel);
+                } catch (Exception e) {
+                    ExceptionHandler.renderHandle(e);
                 }
                 channel.send();
             } catch (Exception e) {
-                if (settings.getAsBoolean("framework.printStackTrace", false)) {
-                    e.printStackTrace();
-                }
                 logger.error(CError.SystemProcessingError, e);
                 //回滚
-                if (!disableMysql) {
-                    try {
-                        JPA.getJPAConfig().getJPAContext().closeTx(true);
-                    } catch (Exception e2) {
-                        //ignore
-                    }
-                }
-                if (restController.errorHandlerKey() != null) {
-                    ApplicationController errorApplicationController = ServiceFramwork.injector.getInstance(restController.errorHandlerKey().v1());
-                    try {
-                        RestController.enhanceApplicationController(errorApplicationController, HttpServer.httpHolder().restRequest(), channel);
-                        try {
-                            restController.errorHandlerKey().v2().invoke(errorApplicationController, e);
-                        } catch (Exception e2) {
-                            ExceptionHandler.renderHandle(e2);
-                            channel.send();
-                        }
-                    } catch (Exception e1) {
-                        logger.error(CError.SystemProcessingError, e1);
-                    }
-                } else {
-                    channel.error(e);
-                }
-
+                rollback();
+                //如果有默认的action处理异常统一展示结果的话
+                defaultErrorAction(channel, e);
             } finally {
-                /*
-                Completed 200 OK in 1378ms (Views: 45.0ms | ActiveRecord: 34.0ms)
-
-                 */
-                boolean logEnable = settings.getAsBoolean("application.log.enable", true);
-                if (logEnable) {
-                    long endTime = System.currentTimeMillis();
-                    String url = httpServletRequest.getQueryString();
-                    logger.info("Completed " + channel.status + " in " + (endTime - startTime) + "ms (ActiveORM: " + (disableMysql ? 0 : CSDNStatFilterstat.SQLTIME().get()) + "ms)");
-                    logger.info(httpServletRequest.getMethod() +
-                            " " + httpServletRequest.getRequestURI() + (isNull(url) ? "" : ("?" + url)));
-                    logger.info("\n\n\n\n");
-                }
-                if (!disableMysql) {
-                    CSDNStatFilterstat.removeSQLTIME();
+                processInfo.status = channel.status();
+                for (HttpFinishProcessor httpFinishProcessor : httpFinishProcessorList) {
+                    httpFinishProcessor.process(settings, httpServletRequest, httpServletResponse, processInfo);
                 }
                 HttpServer.removeHttpHolder();
-
             }
 
 

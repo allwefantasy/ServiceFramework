@@ -12,33 +12,16 @@ import java.io.IOException;
  */
 public class SystemLoggerImpl implements SystemLogger {
 
-    private Logger applicationLogger;
-    private Logger behaviorLogger;
-    private Logger healthLogger;
+
     private Settings settings;
+    private Logger traceLogger;
 
     @Inject
     public SystemLoggerImpl(Settings settings) {
         this.settings = settings;
-        this.applicationLogger = createLogger("sapplication");
-        this.behaviorLogger = createLogger("sbehavior");
-        this.healthLogger = createLogger("shealth");
+        this.traceLogger = createLogger("tracer");
     }
 
-    @Override
-    public Logger applicationLogger() {
-        return applicationLogger;
-    }
-
-    @Override
-    public Logger behaviorLogger() {
-        return behaviorLogger;
-    }
-
-    @Override
-    public Logger healthLogger() {
-        return healthLogger;
-    }
 
     private Logger createLogger(String name) {
         Logger logger = Logger.getLogger(name);
@@ -52,5 +35,10 @@ public class SystemLoggerImpl implements SystemLogger {
         }
         logger.addAppender(appender);
         return logger;
+    }
+
+    @Override
+    public Logger traceLogger() {
+        return traceLogger;
     }
 }

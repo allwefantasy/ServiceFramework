@@ -52,6 +52,7 @@ public class Bootstrap {
     }
 
 
+
     //配置整个系统模块
     private static void configureSystem() throws Exception {
         if (isSystemConfigured) return;

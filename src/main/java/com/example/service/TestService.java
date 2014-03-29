@@ -9,4 +9,6 @@ import net.csdn.annotation.Service;
 public interface TestService {
 
     public String say(String wow);
+
+    public String say2(String wow);
 }

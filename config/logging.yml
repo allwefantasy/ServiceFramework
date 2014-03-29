@@ -4,7 +4,7 @@ rootLogger: INFO,console,file
 appender:
   console:
     type: console
-    threshold: ERROR
+    threshold: INFO
     layout:
       type: consolePattern
       conversionPattern: "[%d{ISO8601}][%-5p][%-25c] %m%n"

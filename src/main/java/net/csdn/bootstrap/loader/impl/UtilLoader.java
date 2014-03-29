@@ -30,7 +30,6 @@ public class UtilLoader implements Loader {
     public void load(Settings settings) throws Exception {
         final List<Module> moduleList = new ArrayList<Module>();
         for (String item : WowCollections.split2(settings.get("application.util"), ",")) {
-            logger.info("load util from package:"+item);
             ServiceFramwork.scanService.scanArchives(item, new ScanService.LoadClassEnhanceCallBack() {
                 @Override
                 public Class loaded(DataInputStream classFile) {
@@ -39,7 +38,7 @@ public class UtilLoader implements Loader {
                         if (!ctClass.hasAnnotation(Util.class)) {
                             return null;
                         }
-                        logger.info("load util class:"+ctClass.getName());
+                        logger.info("util load :    "+ctClass.getName());
                         final Class clzz = ctClass.toClass();
                         final Util util = (Util) clzz.getAnnotation(Util.class);
                         if (clzz.isInterface())
