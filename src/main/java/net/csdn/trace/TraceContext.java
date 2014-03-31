@@ -4,7 +4,11 @@ import net.csdn.ServiceFramwork;
 import net.csdn.annotation.FDesc;
 import net.csdn.modules.log.SystemLogger;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static net.csdn.common.collections.WowCollections.map;
 
 /**
  * 3/29/14 WilliamZhu(allwefantasy@gmail.com)
@@ -13,8 +17,9 @@ public class TraceContext {
     private String traceId;
     private String traceAppName;
     private String traceAPI;
-    private int traceParent = -1;
-    private int traceSpan = 0;
+    private String traceParent;
+    private String traceSpan = "0";
+    private AtomicInteger traceSpanInc = new AtomicInteger(-1);
 
 
     private long requestLen = 0;
@@ -32,9 +37,20 @@ public class TraceContext {
         return this;
     }
 
+    public static Map sendHttpTtraceContext(TraceContext context) {
+        return map(
+                "traceSpan", context.traceSpan + "." + context.traceSpanInc.incrementAndGet(),
+                "traceId", context.traceId);
+
+    }
+
+    public static Trace receiveHttpTrateContext(Map items) {
+        return null;
+    }
+
     private void log(String enterOrExit, String methodName) {
         StringBuffer buffer = new StringBuffer();
-        buffer.append(traceId + " " + traceParent + " " + traceSpan + " " + traceAppName + " " + methodName);
+        buffer.append(traceId + " " + traceAPI + " " + traceParent + " " + traceSpan + " " + traceAppName + " " + methodName);
         buffer.append(" " + enterOrExit);
         buffer.append(" " + System.currentTimeMillis());
         ServiceFramwork.injector.getInstance(SystemLogger.class).traceLogger().info(buffer.toString());
@@ -48,8 +64,8 @@ public class TraceContext {
             @FDesc("服务/方法") String api,
             long requestLen,
             String traceId,
-            int traceParent,
-            int traceSpan
+            String traceParent,
+            String traceSpan
     ) {
         TraceContext context = new TraceContext();
         if (traceId == null) {
@@ -59,7 +75,7 @@ public class TraceContext {
         } else {
             context.traceId = traceId;
             context.traceParent = traceParent;
-            //如果是其他系统的调用，那么该值会由请求系统递增过了的
+            //如果是其他系统的调用，那么该值会由请求系统递增过了的。
             context.traceSpan = traceSpan;
         }
 

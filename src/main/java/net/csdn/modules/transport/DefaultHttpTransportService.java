@@ -8,6 +8,7 @@ import net.csdn.common.path.Url;
 import net.csdn.common.settings.Settings;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.support.HttpStatus;
+import net.csdn.modules.log.SystemLogger;
 import net.csdn.modules.threadpool.ThreadPoolService;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -18,6 +19,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -48,6 +52,8 @@ public class DefaultHttpTransportService implements HttpTransportService {
     private ThreadPoolService threadPoolService;
     @Inject
     private Settings settings;
+    @Inject
+    private SystemLogger systemLogger;
     private static final Map<String, String> EMPTY_MAP = map();
 
     /*
@@ -59,14 +65,12 @@ public class DefaultHttpTransportService implements HttpTransportService {
     */
     public DefaultHttpTransportService() {
         PoolingClientConnectionManager poolingClientConnectionManager = new PoolingClientConnectionManager();
-        poolingClientConnectionManager.setMaxTotal(50);
-        poolingClientConnectionManager.setDefaultMaxPerRoute(25);
-
-        httpClient = new DefaultHttpClient(poolingClientConnectionManager);
-        int timeout = 2;
-        httpClient.getParams().setParameter("http.socket.timeout", timeout * 1000);
-        httpClient.getParams().setParameter("http.connection.timeout", timeout * 1000);
-        httpClient.getParams().setParameter("http.connection-manager.timeout", new Long(timeout * 1000));
+        poolingClientConnectionManager.setMaxTotal(settings.getAsInt("http.client.max_total", 100));
+        poolingClientConnectionManager.setDefaultMaxPerRoute(settings.getAsInt("http.client.default_max_per_route", 50));
+        final HttpParams httpParams = new BasicHttpParams();
+        HttpConnectionParams.setConnectionTimeout(httpParams, settings.getAsInt("http.client.connect.timeout", 1000));
+        HttpConnectionParams.setSoTimeout(httpParams, settings.getAsInt("http.client.accept.timeout", 2000));
+        httpClient = new DefaultHttpClient(poolingClientConnectionManager, httpParams);
     }
 
     @Override
@@ -98,11 +102,14 @@ public class DefaultHttpTransportService implements HttpTransportService {
             HttpResponse response = httpClient.execute(post);
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
         } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("Error when request url:[{}] reason:[{}] ", url.toString(), e.getMessage());
+            return null;
+        } finally {
             if (post != null)
                 post.abort();
-            logger.error("Error when remote search url:[{}] ", url.toString());
-            return null;
         }
+
     }
 
 
@@ -126,9 +133,10 @@ public class DefaultHttpTransportService implements HttpTransportService {
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
         } catch (Exception e) {
             logger.error(getClass().getName() + " error when visit url:[{}] ", url.toString());
+            return null;
+        } finally {
             if (put != null)
                 put.abort();
-            return null;
         }
     }
 
