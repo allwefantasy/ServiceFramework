@@ -18,6 +18,9 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -59,14 +62,12 @@ public class DefaultHttpTransportService implements HttpTransportService {
     */
     public DefaultHttpTransportService() {
         PoolingClientConnectionManager poolingClientConnectionManager = new PoolingClientConnectionManager();
-        poolingClientConnectionManager.setMaxTotal(50);
-        poolingClientConnectionManager.setDefaultMaxPerRoute(25);
-
-        httpClient = new DefaultHttpClient(poolingClientConnectionManager);
-        int timeout = 2;
-        httpClient.getParams().setParameter("http.socket.timeout", timeout * 1000);
-        httpClient.getParams().setParameter("http.connection.timeout", timeout * 1000);
-        httpClient.getParams().setParameter("http.connection-manager.timeout", new Long(timeout * 1000));
+        poolingClientConnectionManager.setMaxTotal(settings.getAsInt("http.client.max_total", 100));
+        poolingClientConnectionManager.setDefaultMaxPerRoute(settings.getAsInt("http.client.default_max_per_route", 50));
+        final HttpParams httpParams = new BasicHttpParams();
+        HttpConnectionParams.setConnectionTimeout(httpParams, settings.getAsInt("http.client.connect.timeout", 5000));
+        HttpConnectionParams.setSoTimeout(httpParams, settings.getAsInt("http.client.accept.timeout", 5000));
+        httpClient = new DefaultHttpClient(poolingClientConnectionManager, httpParams);
     }
 
     @Override
