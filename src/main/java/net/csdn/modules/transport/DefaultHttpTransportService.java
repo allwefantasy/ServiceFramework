@@ -47,9 +47,8 @@ public class DefaultHttpTransportService implements HttpTransportService {
     public final static String charset = "utf-8";
     private final static Tuple<String, String> content_type = new Tuple<String, String>("Content-Type", "application/x-www-form-urlencoded");
 
-    @Inject
+
     private ThreadPoolService threadPoolService;
-    @Inject
     private Settings settings;
     private static final Map<String, String> EMPTY_MAP = map();
 
@@ -60,7 +59,10 @@ public class DefaultHttpTransportService implements HttpTransportService {
        `HttpConnectionParams.setSoTimeout()`
 
     */
-    public DefaultHttpTransportService() {
+    @Inject
+    public DefaultHttpTransportService(ThreadPoolService threadPoolService, Settings settings) {
+        this.threadPoolService = threadPoolService;
+        this.settings = settings;
         PoolingClientConnectionManager poolingClientConnectionManager = new PoolingClientConnectionManager();
         poolingClientConnectionManager.setMaxTotal(settings.getAsInt("http.client.max_total", 100));
         poolingClientConnectionManager.setDefaultMaxPerRoute(settings.getAsInt("http.client.default_max_per_route", 50));
