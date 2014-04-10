@@ -8,23 +8,37 @@
 
 
     <dependencies>
+
         <dependency>
             <groupId>net.csdn</groupId>
             <artifactId>csdn-common</artifactId>
-            <version>1.0</version>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>net.csdn</groupId>
             <artifactId>MongoMongo</artifactId>
             <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.csdn</groupId>
+                    <artifactId>csdn-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>net.csdn</groupId>
             <artifactId>ActiveORM</artifactId>
             <version>1.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.csdn</groupId>
+                    <artifactId>csdn-common</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -82,16 +96,5 @@
 
     </dependencies>
 
-    <distributionManagement>
-        <repository>
-            <id>releases</id>
-            <name>releases</name>
-            <url>http://mvn.csdn.net:8081/nexus/content/repositories/releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <url>http://mvn.csdn.net:8081/nexus/content/repositories/snapshots</url>
-        </snapshotRepository>
 
-    </distributionManagement>
 </project>

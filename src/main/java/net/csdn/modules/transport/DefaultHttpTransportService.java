@@ -8,7 +8,6 @@ import net.csdn.common.path.Url;
 import net.csdn.common.settings.Settings;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.support.HttpStatus;
-import net.csdn.modules.log.SystemLogger;
 import net.csdn.modules.threadpool.ThreadPoolService;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -48,12 +47,9 @@ public class DefaultHttpTransportService implements HttpTransportService {
     public final static String charset = "utf-8";
     private final static Tuple<String, String> content_type = new Tuple<String, String>("Content-Type", "application/x-www-form-urlencoded");
 
-    @Inject
+
     private ThreadPoolService threadPoolService;
-    @Inject
     private Settings settings;
-    @Inject
-    private SystemLogger systemLogger;
     private static final Map<String, String> EMPTY_MAP = map();
 
     /*
@@ -63,13 +59,16 @@ public class DefaultHttpTransportService implements HttpTransportService {
        `HttpConnectionParams.setSoTimeout()`
 
     */
-    public DefaultHttpTransportService() {
+    @Inject
+    public DefaultHttpTransportService(ThreadPoolService threadPoolService, Settings settings) {
+        this.threadPoolService = threadPoolService;
+        this.settings = settings;
         PoolingClientConnectionManager poolingClientConnectionManager = new PoolingClientConnectionManager();
         poolingClientConnectionManager.setMaxTotal(settings.getAsInt("http.client.max_total", 100));
         poolingClientConnectionManager.setDefaultMaxPerRoute(settings.getAsInt("http.client.default_max_per_route", 50));
         final HttpParams httpParams = new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(httpParams, settings.getAsInt("http.client.connect.timeout", 1000));
-        HttpConnectionParams.setSoTimeout(httpParams, settings.getAsInt("http.client.accept.timeout", 2000));
+        HttpConnectionParams.setConnectionTimeout(httpParams, settings.getAsInt("http.client.connect.timeout", 5000));
+        HttpConnectionParams.setSoTimeout(httpParams, settings.getAsInt("http.client.accept.timeout", 5000));
         httpClient = new DefaultHttpClient(poolingClientConnectionManager, httpParams);
     }
 
@@ -81,6 +80,16 @@ public class DefaultHttpTransportService implements HttpTransportService {
 
     public SResponse post(Url url, Map data) {
         return post(url, data, EMPTY_MAP);
+    }
+
+    public SResponse post(final Url url, final Map data, final int timeout) {
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.post(url, data);
+            }
+        });
+        return response;
     }
 
     public SResponse post(Url url, Map data, Map<String, String> headers) {
@@ -102,19 +111,47 @@ public class DefaultHttpTransportService implements HttpTransportService {
             HttpResponse response = httpClient.execute(post);
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
         } catch (Exception e) {
-            e.printStackTrace();
-            logger.error("Error when request url:[{}] reason:[{}] ", url.toString(), e.getMessage());
-            return null;
-        } finally {
             if (post != null)
                 post.abort();
+            logger.error("Error when remote search url:[{}] ", url.toString());
+            return null;
         }
+    }
 
+    public SResponse post(final Url url, final Map data, final Map<String, String> headers, final int timeout) {
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.post(url, data, headers);
+            }
+        });
+        return response;
     }
 
 
     public SResponse put(Url url, Map data) {
         return put(url, data, EMPTY_MAP);
+    }
+
+
+    public SResponse put(final Url url, final Map data, final int timeout) {
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.put(url, data);
+            }
+        });
+        return response;
+    }
+
+    public SResponse put(final Url url, final Map data, final Map<String, String> headers, final int timeout) {
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.put(url, data, headers);
+            }
+        });
+        return response;
     }
 
     public SResponse put(Url url, Map data, Map<String, String> headers) {
@@ -133,12 +170,44 @@ public class DefaultHttpTransportService implements HttpTransportService {
             return new SResponse(response.getStatusLine().getStatusCode(), EntityUtils.toString(response.getEntity(), charset), url);
         } catch (Exception e) {
             logger.error(getClass().getName() + " error when visit url:[{}] ", url.toString());
-            return null;
-        } finally {
             if (put != null)
                 put.abort();
+            return null;
         }
     }
+
+    public SResponse get(Url url) {
+        return http(url, null, RestRequest.Method.GET);
+    }
+
+    public SResponse get(Url url, Map<String, String> data) {
+        for (Map.Entry<String, String> item : data.entrySet()) {
+            url.addParam(item.getKey(), item.getValue());
+        }
+        return get(url);
+    }
+
+    public SResponse get(final Url url, final int timeout) {
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.get(url);
+            }
+        });
+        return response;
+    }
+
+    public SResponse get(final Url url, final Map<String, String> data, final int timeout) {
+
+        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
+            @Override
+            public Object run() {
+                return DefaultHttpTransportService.this.get(url, data);
+            }
+        });
+        return response;
+    }
+
 
     public SResponse http(Url url, String jsonData, RestRequest.Method method) {
         return http(url, jsonData, EMPTY_MAP, method);
@@ -181,27 +250,6 @@ public class DefaultHttpTransportService implements HttpTransportService {
             @Override
             public Object run() {
                 return DefaultHttpTransportService.this.http(url, jsonData, headers, method);
-            }
-        });
-        return response;
-    }
-
-
-    public SResponse post(final Url url, final Map data, final Map<String, String> headers, final int timeout) {
-        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
-            @Override
-            public Object run() {
-                return DefaultHttpTransportService.this.post(url, data, headers);
-            }
-        });
-        return response;
-    }
-
-    public SResponse post(final Url url, final Map data, final int timeout) {
-        SResponse response = (SResponse) threadPoolService.runWithTimeout(timeout, new ThreadPoolService.Run<Object>() {
-            @Override
-            public Object run() {
-                return DefaultHttpTransportService.this.post(url, data);
             }
         });
         return response;

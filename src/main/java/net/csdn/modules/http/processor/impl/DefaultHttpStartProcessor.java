@@ -5,8 +5,6 @@ import net.csdn.common.settings.Settings;
 import net.csdn.hibernate.support.filter.CSDNStatFilterstat;
 import net.csdn.modules.http.processor.HttpStartProcessor;
 import net.csdn.modules.http.processor.ProcessInfo;
-import net.csdn.trace.Trace;
-import net.csdn.trace.TraceContext;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -24,15 +22,15 @@ public class DefaultHttpStartProcessor implements HttpStartProcessor {
         String traceParent = request.getParameter("traceParent");
         String traceSpan = request.getParameter("traceSpan");
 
-        Trace.set(TraceContext.initial(
-                settings.get("application.name", "default_system"),
-                request.getRequestURI().toString(),
-                request.getContentLength(),
-                traceId,
-                traceParent == null ? -1 : Integer.parseInt(traceParent),
-                traceSpan == null ? -1 : Integer.parseInt(traceSpan)
-        )
-        );
+//        Trace.set(TraceContext.initial(
+//                settings.get("application.name", "default_system"),
+//                request.getRequestURI().toString(),
+//                request.getContentLength(),
+//                traceId,
+//                traceParent == null ? -1 : Integer.parseInt(traceParent),
+//                traceSpan == null ? -1 : Integer.parseInt(traceSpan)
+//        )
+//        );
         disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         startORM(disableMysql);
 

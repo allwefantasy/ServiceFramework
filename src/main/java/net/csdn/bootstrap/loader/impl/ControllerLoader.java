@@ -19,6 +19,7 @@ import net.csdn.common.settings.Settings;
 import net.csdn.constants.CError;
 import net.csdn.enhancer.ControllerEnhancer;
 import net.csdn.filter.FilterEnhancer;
+import net.csdn.modules.controller.API;
 import net.csdn.modules.http.ApplicationController;
 import net.csdn.modules.http.RestController;
 import net.csdn.modules.http.RestRequest;
@@ -95,7 +96,7 @@ public class ControllerLoader implements Loader {
                     for (Method method : methods) {
                         if (method.getModifiers() == Modifier.PRIVATE) continue;
                         RestController restController = ServiceFramwork.injector.getInstance(RestController.class);
-
+                        API api = ServiceFramwork.injector.getInstance(API.class);
                         NoAction noAction = method.getAnnotation(NoAction.class);
                         if (noAction != null) {
                             restController.setDefaultHandlerKey(new Tuple<Class<ApplicationController>, Method>(clzz, method));
@@ -114,6 +115,7 @@ public class ControllerLoader implements Loader {
                         for (RestRequest.Method httpMethod : httpMethods) {
                             Tuple<Class<ApplicationController>, Method> tuple = new Tuple<Class<ApplicationController>, Method>(clzz, method);
                             restController.registerHandler(httpMethod, url, tuple);
+                            api.addPath(tuple.v2());
                         }
                         bind(clzz);
                     }
