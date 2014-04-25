@@ -1,5 +1,6 @@
 package net.csdn.modules.controller;
 
+import com.google.inject.Inject;
 import net.csdn.annotation.FDesc;
 import net.csdn.annotation.MDesc;
 import net.csdn.annotation.Param;
@@ -30,12 +31,12 @@ public class API {
     /*
       在特定internal 时间内的QPS
      */
-    private ConcurrentHashMap<Method, Tuple3<AtomicLong, AtomicLong, AtomicLong>> APIQPS = new ConcurrentHashMap<Method, Tuple3<AtomicLong, AtomicLong, AtomicLong>>();
+    private ConcurrentHashMap<Method, Tuple3<AtomicLong/*时间戳*/, AtomicLong/*当前interval时间内正在累积的访问数*/, AtomicLong/*上一个interval计算出的结果QPS*/>> APIQPS = new ConcurrentHashMap<Method, Tuple3<AtomicLong, AtomicLong, AtomicLong>>();
 
     /*
       每个API 从系统启动开始，各个http状态码数目
      */
-    private ConcurrentHashMap<Method, ConcurrentHashMap<String, AtomicLong>> APISTATUS = new ConcurrentHashMap<Method, ConcurrentHashMap<String, AtomicLong>>();
+    private ConcurrentHashMap<Method, ConcurrentHashMap<Integer, AtomicLong>> APISTATUS = new ConcurrentHashMap<Method, ConcurrentHashMap<Integer, AtomicLong>>();
 
     private ConcurrentHashMap<Method, APIDesc> APIDescs = new ConcurrentHashMap<Method, APIDesc>();
 
@@ -45,6 +46,7 @@ public class API {
 
     private int internal = 1000;
 
+    @Inject
     public API(Settings settings) {
         this.settings = settings;
         this.internal = settings.getAsInt("application.api.qps.internal", 1000);
@@ -57,7 +59,7 @@ public class API {
      */
     public void addPath(Method api) {
         APIQPS.putIfAbsent(api, new Tuple3<AtomicLong, AtomicLong, AtomicLong>(new AtomicLong(SystemStartTime), new AtomicLong(), new AtomicLong()));
-        APISTATUS.putIfAbsent(api, new ConcurrentHashMap<String, AtomicLong>());
+        APISTATUS.putIfAbsent(api, new ConcurrentHashMap<Integer, AtomicLong>());
     }
 
     /*
@@ -87,7 +89,7 @@ public class API {
             apiDesc.qps = APIQPS.get(method).v3().get();
             apiDesc.paramDesces = createParamDescs(method);
             List<ResponseStatus> responseStatuses = new ArrayList<ResponseStatus>();
-            for (Map.Entry<String, AtomicLong> item : APISTATUS.get(method).entrySet()) {
+            for (Map.Entry<Integer, AtomicLong> item : APISTATUS.get(method).entrySet()) {
                 ResponseStatus responseStatus = new ResponseStatus();
                 responseStatus.status = item.getKey();
                 responseStatus.count = item.getValue().get();
@@ -136,15 +138,20 @@ public class API {
     }
 
     class ResponseStatus {
-        String status;
+        int status;
         long count;
     }
 
+    /*
+      QPS 统计
+     */
     public synchronized void qpsIncrement(Method api) {
+        if(api==null)return;
         long now = System.currentTimeMillis();
         Tuple3<AtomicLong, AtomicLong, AtomicLong> info = APIQPS.get(api);
         if (now - info.v1().get() > internal) {
             info.v3().set(info.v2().get());
+            info.v2().set(0);
             info.v1().set(now);
         } else {
             info.v2().incrementAndGet();
@@ -152,8 +159,12 @@ public class API {
 
     }
 
-    public synchronized void statusIncrement(Method api, String status) {
-        ConcurrentHashMap<String, AtomicLong> chm = APISTATUS.get(api);
+    /*
+      状态码统计
+     */
+    public synchronized void statusIncrement(Method api, int status) {
+        if(api==null)return;
+        ConcurrentHashMap<Integer, AtomicLong> chm = APISTATUS.get(api);
         if (!chm.contains(status)) {
             chm.put(status, new AtomicLong());
         }

@@ -2,6 +2,7 @@ package net.csdn.modules.http;
 
 import com.google.inject.Inject;
 import net.csdn.ServiceFramwork;
+import net.csdn.common.collect.Tuple;
 import net.csdn.common.env.Environment;
 import net.csdn.common.exception.ExceptionHandler;
 import net.csdn.common.logging.CSLogger;
@@ -9,6 +10,7 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.constants.CError;
 import net.csdn.jpa.JPA;
+import net.csdn.modules.controller.API;
 import net.csdn.modules.http.processor.HttpFinishProcessor;
 import net.csdn.modules.http.processor.HttpStartProcessor;
 import net.csdn.modules.http.processor.ProcessInfo;
@@ -33,6 +35,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,6 +53,7 @@ public class HttpServer {
     private boolean disableMysql = false;
     private Settings settings;
     private SystemLogger systemLogger;
+    private API api;
 
     private List<HttpStartProcessor> httpStartProcessorList = new ArrayList();
     private List<HttpFinishProcessor> httpFinishProcessorList = new ArrayList();
@@ -70,10 +74,11 @@ public class HttpServer {
 
 
     @Inject
-    public HttpServer(Settings settings, SystemLogger systemLogger, RestController restController) {
+    public HttpServer(Settings settings, SystemLogger systemLogger, RestController restController, API api) {
         this.settings = settings;
         this.systemLogger = systemLogger;
         this.restController = restController;
+        this.api = api;
         registerHttpStartProcessor(new DefaultHttpStartProcessor());
         registerHttpFinishProcessor(new DefaultHttpFinishProcessor());
         Environment environment = new Environment(settings);
@@ -162,13 +167,17 @@ public class HttpServer {
 
             DefaultResponse channel = new DefaultResponse(httpServletRequest, httpServletResponse, restController);
             ProcessInfo processInfo = new ProcessInfo();
-
             try {
+
+                RestRequest restRequest = new DefaultRestRequest(httpServletRequest);
+                HttpServer.setHttpHolder(new HttpHolder(restRequest, channel));
+                Tuple<Class<ApplicationController>, Method> tuple = restController.getHandler(restRequest);
+                if (tuple != null) {
+                    processInfo.method = tuple.v2();
+                }
                 for (HttpStartProcessor httpStartProcessor : httpStartProcessorList) {
                     httpStartProcessor.process(settings, httpServletRequest, httpServletResponse, processInfo);
                 }
-                RestRequest restRequest = new DefaultRestRequest(httpServletRequest);
-                HttpServer.setHttpHolder(new HttpHolder(restRequest, channel));
                 try {
                     restController.dispatchRequest(restRequest, channel);
                 } catch (Exception e) {

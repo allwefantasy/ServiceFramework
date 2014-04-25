@@ -6,6 +6,7 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.hibernate.support.filter.CSDNStatFilterstat;
 import net.csdn.jpa.JPA;
+import net.csdn.modules.controller.API;
 import net.csdn.modules.http.processor.HttpFinishProcessor;
 import net.csdn.modules.http.processor.ProcessInfo;
 import net.csdn.trace.Trace;
@@ -29,6 +30,7 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
         closeTx(settings);
         systemLog(processInfo.startTime, request, settings, processInfo);
         Trace.clean();
+        ServiceFramwork.injector.getInstance(API.class).statusIncrement(processInfo.method,processInfo.status);
     }
 
     private void endORM(boolean _disableMysql) {
