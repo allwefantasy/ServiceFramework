@@ -35,6 +35,7 @@ public class ServiceLoader implements Loader {
     public void load(Settings settings) throws Exception {
         final List<Module> moduleList = new ArrayList<Module>();
         final Set<Class> ctClasses = new HashSet<Class>();
+        logger.info("scan service package => " + settings.get("application.service"));
         for (String item : WowCollections.split2(settings.get("application.service"), ",")) {
 
             ServiceFramwork.scanService.scanArchives(item, new ScanService.LoadClassEnhanceCallBack() {
@@ -43,12 +44,15 @@ public class ServiceLoader implements Loader {
                     try {
 
                         CtClass ctClass = ServiceFramwork.classPool.makeClass(classFile);
-                        logger.info("service load :    " + ctClass.getName());
                         TraceEnhancer.enhanceMethod(ctClass);
                         try {
                             ctClasses.add(ctClass.toClass());
                         } catch (Exception e) {
-
+                            String name = ctClass.getName();
+                            Class me = Class.forName(name);
+                            if (!ctClasses.contains(me)) {
+                                ctClasses.add(me);
+                            }
                         }
 
                     } catch (Exception e) {
@@ -60,7 +64,9 @@ public class ServiceLoader implements Loader {
             });
         }
         for (final Class clzz : ctClasses) {
+
             if (clzz.getAnnotation(Singleton.class) != null) {
+                logger.info("load  service with @Singleton  => " + clzz.getName());
                 moduleList.add(new AbstractModule() {
                     @Override
                     protected void configure() {
@@ -70,23 +76,28 @@ public class ServiceLoader implements Loader {
                 continue;
             }
             final Service service = (Service) clzz.getAnnotation(Service.class);
+
             if (service == null) continue;
             if (clzz.isInterface() && service.implementedBy() == null)
                 throw new AnnotationException(format("{} no implemented class configured", clzz.getName()));
+
             moduleList.add(new AbstractModule() {
                 @Override
                 protected void configure() {
                     if (clzz.isInterface()) {
+                        logger.info("load  service with @Service => " + clzz.getName() + " to " + service.implementedBy().getName() + " in " + service.value().getName());
                         bind(clzz).to(service.implementedBy()).in(service.value());
                     } else {
+                        logger.info("load  service with @Service => " + clzz.getName() + " in " + service.value().getName());
                         bind(clzz).in(service.value());
                     }
 
                 }
             });
         }
-
+        logger.info("load service in ServiceFramwork.serviceModules =>" + ServiceFramwork.serviceModules.size());
         moduleList.addAll(ServiceFramwork.serviceModules);
         ServiceFramwork.AllModules.addAll(moduleList);
+        logger.info("total load service  =>" + ServiceFramwork.AllModules.size());
     }
 }

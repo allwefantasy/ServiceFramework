@@ -62,11 +62,19 @@ public class BaseControllerTest extends IocTest {
         }
     }
 
-    public RestResponse runAction(String path, String rawParamsStr, RestRequest.Method method) throws Exception {
+    public RestResponse runAction(String path, Map params, String rawParamsStr, RestRequest.Method method) throws Exception {
         RestResponse response = new MockRestResponse();
+
+        Map newParams = new HashMap();
+        if (params != null) {
+            for (Object key : params.keySet()) {
+                newParams.put(key, params.get(key).toString());
+            }
+        }
+
         RestController controller = injector.getInstance(RestController.class);
         try {
-            controller.dispatchRequest(new MockRestRequest(path, map(), method, rawParamsStr), response);
+            controller.dispatchRequest(new MockRestRequest(path, newParams, method, rawParamsStr), response);
         } catch (Exception e) {
             catchRenderFinish(e);
         }
@@ -84,7 +92,7 @@ public class BaseControllerTest extends IocTest {
     public Map<RestRequest.Method, RestResponse> each(List<RestRequest.Method> methods, String path, String rawParamStr) throws Exception {
         Map<RestRequest.Method, RestResponse> maps = map();
         for (RestRequest.Method method : methods) {
-            maps.put(method, runAction(path, rawParamStr, method));
+            maps.put(method, runAction(path, null, rawParamStr, method));
         }
         return maps;
     }
@@ -106,18 +114,35 @@ public class BaseControllerTest extends IocTest {
     }
 
     public RestResponse get(String path, String rawParamsStr) throws Exception {
-        return runAction(path, rawParamsStr, RestRequest.Method.GET);
+        return runAction(path, null, rawParamsStr, RestRequest.Method.GET);
+    }
+
+    public RestResponse get(String path, Map params, String rawParamsStr) throws Exception {
+        return runAction(path, params, rawParamsStr, RestRequest.Method.GET);
+    }
+
+    public RestResponse post(String path, Map params, String rawParamsStr) throws Exception {
+        return runAction(path, params, rawParamsStr, RestRequest.Method.POST);
     }
 
     public RestResponse post(String path, String rawParamsStr) throws Exception {
-        return runAction(path, rawParamsStr, RestRequest.Method.POST);
+        return runAction(path, null, rawParamsStr, RestRequest.Method.POST);
+    }
+
+    public RestResponse delete(String path, Map params, String rawParamsStr) throws Exception {
+        return runAction(path, params, rawParamsStr, RestRequest.Method.DELETE);
     }
 
     public RestResponse delete(String path, String rawParamsStr) throws Exception {
-        return runAction(path, rawParamsStr, RestRequest.Method.DELETE);
+        return runAction(path, null, rawParamsStr, RestRequest.Method.DELETE);
+    }
+
+
+    public RestResponse put(String path, Map params, String rawParamsStr) throws Exception {
+        return runAction(path, params, rawParamsStr, RestRequest.Method.PUT);
     }
 
     public RestResponse put(String path, String rawParamsStr) throws Exception {
-        return runAction(path, rawParamsStr, RestRequest.Method.PUT);
+        return runAction(path, null, rawParamsStr, RestRequest.Method.PUT);
     }
 }

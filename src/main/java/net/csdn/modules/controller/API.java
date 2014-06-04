@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 
 public class API {
+
     private Settings settings;
 
     private CSLogger logger = Loggers.getLogger(API.class);
@@ -96,7 +97,7 @@ public class API {
                 responseStatuses.add(responseStatus);
             }
             apiDesc.responseStatuses = responseStatuses;
-            APIDescs.put(method,apiDesc);
+            APIDescs.put(method, apiDesc);
         }
 
     }
@@ -142,11 +143,15 @@ public class API {
         long count;
     }
 
+    private boolean enable() {
+        return (settings.getAsBoolean("application.api.qps.enable", false));
+    }
+
     /*
       QPS 统计
      */
     public synchronized void qpsIncrement(Method api) {
-        if(api==null)return;
+        if (!enable()||api == null) return;
         long now = System.currentTimeMillis();
         Tuple3<AtomicLong, AtomicLong, AtomicLong> info = APIQPS.get(api);
         if (now - info.v1().get() > internal) {
@@ -163,7 +168,7 @@ public class API {
       状态码统计
      */
     public synchronized void statusIncrement(Method api, int status) {
-        if(api==null)return;
+        if (!enable() || api == null) return;
         ConcurrentHashMap<Integer, AtomicLong> chm = APISTATUS.get(api);
         if (!chm.contains(status)) {
             chm.put(status, new AtomicLong());

@@ -7,6 +7,7 @@ import net.csdn.bootstrap.loader.Loader;
 import net.csdn.bootstrap.loader.impl.*;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.env.Environment;
+import net.csdn.common.logging.Loggers;
 import net.csdn.common.scan.DefaultScanService;
 import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
@@ -52,7 +53,6 @@ public class Bootstrap {
     }
 
 
-
     //配置整个系统模块
     private static void configureSystem() throws Exception {
         if (isSystemConfigured) return;
@@ -65,7 +65,7 @@ public class Bootstrap {
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
         boolean disableHttp = settings.getAsBoolean("http.disable", false);
-        boolean disableThrift = settings.getAsBoolean("thrift.disable", false);
+        boolean disableThrift = settings.getAsBoolean("thrift.disable", true);
 
         Loader loggerLoader = new LoggerLoader();
 
@@ -111,20 +111,30 @@ public class Bootstrap {
             MongoMongo.injector(ServiceFramwork.injector);
         }
 
+        for (Class clzz : ServiceFramwork.startWithSystem) {
+            Loggers.getLogger(Bootstrap.class).debug("initialize " + clzz.getName());
+            ServiceFramwork.injector.getInstance(clzz);
+        }
         isSystemConfigured = true;
 
-
-        if (!disableThrift && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
-            thriftServer = ServiceFramwork.injector.getInstance(ThriftServer.class);
-            thriftServer.start();
+        if (!ServiceFramwork.DisableThrift) {
+            if (!disableThrift && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
+                thriftServer = ServiceFramwork.injector.getInstance(ThriftServer.class);
+                thriftServer.start();
+            }
         }
 
-        if (!disableHttp && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
-            httpServer = ServiceFramwork.injector.getInstance(HttpServer.class);
-            httpServer.start();
+        if (!ServiceFramwork.DisableHTTP) {
+            if (!disableHttp && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
+                httpServer = ServiceFramwork.injector.getInstance(HttpServer.class);
+                httpServer.start();
+            }
         }
-        if ((!disableHttp || !disableThrift) && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
-            Thread.currentThread().join();
+
+        if (!ServiceFramwork.DisableHTTP && !ServiceFramwork.DisableThrift) {
+            if ((!disableHttp || !disableThrift) && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
+                Thread.currentThread().join();
+            }
         }
 
     }

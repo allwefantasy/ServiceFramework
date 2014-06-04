@@ -3,6 +3,8 @@ package net.csdn.modules.http.support;
 import net.csdn.annotation.filter.AroundFilter;
 import net.csdn.annotation.filter.BeforeFilter;
 import net.csdn.annotation.rest.At;
+import net.csdn.common.logging.CSLogger;
+import net.csdn.common.logging.Loggers;
 import net.csdn.common.reflect.ReflectHelper;
 import net.csdn.filter.FilterHelper;
 
@@ -21,6 +23,8 @@ import static net.csdn.common.reflect.ReflectHelper.findMethodsByAnnotation;
  * 4/8/13 WilliamZhu(allwefantasy@gmail.com)
  */
 public class FilterHelper2 {
+
+    private static CSLogger logger = Loggers.getLogger(FilterHelper2.class);
 
     public static Map<Method, Map<Class, List<Method>>> create(Class clzz) {
         Map<Method, Map<Class, List<Method>>> result = map();
@@ -56,9 +60,12 @@ public class FilterHelper2 {
 
     }
 
+    /*
+      从静态代码块中构建过滤器集合
+     */
     private static void createFromStaticBlock(Map<Method, Map<Class, List<Method>>> result, Class clzz) {
 
-       //知道controller类中所有actions
+        //知道controller类中所有actions
         List<Method> actions = findMethodsByAnnotation(clzz, At.class);
         List<String> filterFileNames = list("parent$_before_filter_info", "parent$_around_filter_info");
 
@@ -88,16 +95,32 @@ public class FilterHelper2 {
         if (filterInfo.containsKey(FilterHelper.BeforeFilter.only)) {
             List<String> actions = (List<String>) filterInfo.get(FilterHelper.BeforeFilter.only);
             if (actions.contains(method.getName())) {
-                result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
+                Method method1 = ReflectHelper.findMethodByName(clzz, filterMethod);
+                if (method1 != null) {
+                    result.add(method1);
+                } else {
+                    logger.error("method filter: " + filterMethod + " not exists");
+                }
             }
         } else {
             if (filterInfo.containsKey(FilterHelper.BeforeFilter.except)) {
                 List<String> actions = (List<String>) filterInfo.get(FilterHelper.BeforeFilter.except);
                 if (!actions.contains(method.getName())) {
-                    result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
+                    Method method1 = ReflectHelper.findMethodByName(clzz, filterMethod);
+                    if (method1 != null) {
+                        result.add(method1);
+                    } else {
+                        logger.error("method filter: " + filterMethod + " not exists");
+                    }
                 }
             } else {
-                result.add(ReflectHelper.findMethodByName(clzz, filterMethod));
+                Method method1 = ReflectHelper.findMethodByName(clzz, filterMethod);
+
+                if (method1 != null) {
+                    result.add(method1);
+                } else {
+                    logger.error("method filter: " + filterMethod + " not exists");
+                }
             }
         }
 
