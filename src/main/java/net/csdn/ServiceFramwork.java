@@ -25,8 +25,24 @@ public class ServiceFramwork {
     public static List<Class> startWithSystem = new ArrayList<Class>();
     public static List<Module> AllModules = new ArrayList<Module>();
 
-    public static boolean DisableHTTP = false;
-    public static boolean DisableThrift = true;
+    private static boolean DisableHTTP = false;
+    private static boolean DisableThrift = true;
+
+    public static void disableHTTP() {
+        DisableHTTP = true;
+    }
+
+    public static void disableThrift() {
+        DisableThrift = true;
+    }
+
+    public static boolean isDisableHTTP() {
+        return DisableHTTP;
+    }
+
+    public static boolean isDisabledThrift() {
+        return DisableThrift;
+    }
 
     public static void registerModule(Module module) {
         modules.add(module);
@@ -36,7 +52,7 @@ public class ServiceFramwork {
         serviceModules.add(module);
     }
 
-    public static void registerStartWithSystemServices(Class clzz){
+    public static void registerStartWithSystemServices(Class clzz) {
         startWithSystem.add(clzz);
     }
 

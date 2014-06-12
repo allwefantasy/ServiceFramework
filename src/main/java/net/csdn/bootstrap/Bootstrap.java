@@ -117,21 +117,21 @@ public class Bootstrap {
         }
         isSystemConfigured = true;
 
-        if (!ServiceFramwork.DisableThrift) {
+        if (!ServiceFramwork.isDisabledThrift()) {
             if (!disableThrift && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
                 thriftServer = ServiceFramwork.injector.getInstance(ThriftServer.class);
                 thriftServer.start();
             }
         }
 
-        if (!ServiceFramwork.DisableHTTP) {
+        if (!ServiceFramwork.isDisableHTTP()) {
             if (!disableHttp && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
                 httpServer = ServiceFramwork.injector.getInstance(HttpServer.class);
                 httpServer.start();
             }
         }
 
-        if (!ServiceFramwork.DisableHTTP && !ServiceFramwork.DisableThrift) {
+        if (!ServiceFramwork.isDisabledThrift() && !ServiceFramwork.isDisableHTTP()) {
             if ((!disableHttp || !disableThrift) && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
                 Thread.currentThread().join();
             }
