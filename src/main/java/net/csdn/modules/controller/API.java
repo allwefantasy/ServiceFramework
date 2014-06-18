@@ -15,6 +15,7 @@ import org.joda.time.DateTime;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,7 +40,6 @@ public class API {
      */
     private ConcurrentHashMap<Method, ConcurrentHashMap<Integer, AtomicLong>> APISTATUS = new ConcurrentHashMap<Method, ConcurrentHashMap<Integer, AtomicLong>>();
 
-    private ConcurrentHashMap<Method, APIDesc> APIDescs = new ConcurrentHashMap<Method, APIDesc>();
 
     private Long SystemStartTime = 0l;
     private boolean forceAPICheck = false;
@@ -77,8 +77,8 @@ public class API {
     /*
      收集每个API的详细信息
      */
-    public void collectAPIInfoes() {
-
+    public Map<Method, APIDesc> collectAPIInfoes() {
+        Map<Method, APIDesc> APIDescs = new HashMap<Method, APIDesc>();
         for (Method method : APIQPS.keySet()) {
             At path = method.getAnnotation(At.class);
             MDesc mDesc = method.getAnnotation(MDesc.class);
@@ -99,7 +99,7 @@ public class API {
             apiDesc.responseStatuses = responseStatuses;
             APIDescs.put(method, apiDesc);
         }
-
+        return APIDescs;
     }
 
     private List<ParamDesc> createParamDescs(Method method) {
@@ -124,26 +124,7 @@ public class API {
         return paramDescs;
     }
 
-    class APIDesc {
-        String path;
-        String desc;
-        long qps;
-        List<ParamDesc> paramDesces;
-        List<ResponseStatus> responseStatuses;
-    }
-
-    class ParamDesc {
-        String name;
-        String desc;
-        String ptype;
-    }
-
-    class ResponseStatus {
-        int status;
-        long count;
-    }
-
-    private boolean enable() {
+    public boolean enable() {
         return (settings.getAsBoolean("application.api.qps.enable", false));
     }
 
@@ -151,7 +132,7 @@ public class API {
       QPS 统计
      */
     public synchronized void qpsIncrement(Method api) {
-        if (!enable()||api == null) return;
+        if (!enable() || api == null) return;
         long now = System.currentTimeMillis();
         Tuple3<AtomicLong, AtomicLong, AtomicLong> info = APIQPS.get(api);
         if (now - info.v1().get() > internal) {
@@ -170,7 +151,7 @@ public class API {
     public synchronized void statusIncrement(Method api, int status) {
         if (!enable() || api == null) return;
         ConcurrentHashMap<Integer, AtomicLong> chm = APISTATUS.get(api);
-        if (!chm.contains(status)) {
+        if (!chm.containsKey(status)) {
             chm.put(status, new AtomicLong());
         }
         chm.get(status).incrementAndGet();
