@@ -23,4 +23,8 @@ public interface ThreadPoolService {
         public static final String MERGE = "merge";
         public static final String REFRESH = "refresh";
     }
+
+    public void shutdown();
+
+    public void shutdownNow();
 }
