@@ -46,7 +46,11 @@ ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高�
 	         Assert.assertTrue(page.getResult().size() > 0);
 	     }
 
-5. Thrift 和 RESTFul 只需简单配置即可同时提供 Thrift 和 RESTFul 接口
+5. 强大的监控。可实时查看每个接口的QPS，从系统启动开始总访问次数。
+
+6. 可对每个接口进行降级，每个接口可设置不同的阈值，保证系统不被大访问量压垮。
+
+7. Thrift 和 RESTFul 只需简单配置即可同时提供 Thrift 和 RESTFul 接口
     
 			 
 		###############http config##################
@@ -66,7 +70,7 @@ ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高�
 		        load: ["127.0.0.1:7701"]
 
 	  
-6. 支持 Velocity, 页面可直接访问所有实例变量以及helper类的方法。支持Velocity 进行模板配置
+8. 支持 Velocity, 页面可直接访问所有实例变量以及helper类的方法。支持Velocity 进行模板配置
 
 	 
 			    @At(path = "/hello", types = GET)
