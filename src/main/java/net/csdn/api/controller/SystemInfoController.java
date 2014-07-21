@@ -16,7 +16,7 @@ import java.util.Collection;
  */
 public class SystemInfoController extends ApplicationController {
 
-    @At(path = "/81269a3e47b589ac26ad065d571006ad44dbdf2c/service/monitor", types = {RestRequest.Method.GET, RestRequest.Method.POST})
+    @At(path = "/service/monitor", types = {RestRequest.Method.GET, RestRequest.Method.POST})
     public void systemInfo() {
         if (!api.enable()) {
             render(map("ok", false, "message", "该服务没有启用。可通过设置application.api.qps.enable 进行设置"));
@@ -29,7 +29,7 @@ public class SystemInfoController extends ApplicationController {
         render(WowCollections.map("systemStartTime", api.systemStartTime(), "api", apiDescs));
     }
 
-    @At(path = "/81269a3e47b589ac26ad065d571006ad44dbdf2c/service/qps/limit", types = {RestRequest.Method.POST})
+    @At(path = "/service/qps/limit", types = {RestRequest.Method.POST})
     public void qpsLimit() {
         if (!api.enable()) {
             render(map("ok", false, "message", "该服务没有启用。可通过设置application.api.qps.enable 进行设置"));
