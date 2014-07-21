@@ -2,6 +2,7 @@ package net.csdn.modules.http;
 
 import com.google.inject.Inject;
 import net.csdn.ServiceFramwork;
+import net.csdn.annotation.NoTransaction;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.env.Environment;
 import net.csdn.common.exception.ExceptionHandler;
@@ -128,8 +129,8 @@ public class HttpServer {
     class DefaultHandler extends AbstractHandler {
 
 
-        private void rollback() {
-            if (!disableMysql) {
+        private void rollback(Method action) {
+            if (!disableMysql && action != null && action.getAnnotation(NoTransaction.class) == null) {
                 try {
                     JPA.getJPAConfig().getJPAContext().closeTx(true);
                 } catch (Exception e2) {
@@ -185,9 +186,11 @@ public class HttpServer {
                 }
                 channel.send();
             } catch (Exception e) {
-                logger.error(CError.SystemProcessingError, e);
+                if (!"qps-overflow".equals(e.getMessage())) {
+                    logger.error(CError.SystemProcessingError, e);
+                }
                 //回滚
-                rollback();
+                rollback(processInfo.method);
                 //如果有默认的action处理异常统一展示结果的话
                 defaultErrorAction(channel, e);
             } finally {

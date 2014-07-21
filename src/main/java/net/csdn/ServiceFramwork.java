@@ -6,6 +6,7 @@ import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import net.csdn.common.scan.DefaultScanService;
 import net.csdn.common.scan.ScanService;
+import net.csdn.modules.threadpool.ThreadPoolService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,10 @@ public class ServiceFramwork {
 
     public static void registerStartWithSystemServices(Class clzz) {
         startWithSystem.add(clzz);
+    }
+
+    public static void shutdown() {
+        ServiceFramwork.injector.getInstance(ThreadPoolService.class).shutdownNow();
     }
 
     public static enum Mode {

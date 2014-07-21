@@ -2,6 +2,7 @@ package net.csdn.bootstrap.loader.impl;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
+import com.google.inject.Scopes;
 import com.google.inject.Singleton;
 import javassist.CtClass;
 import net.csdn.ServiceFramwork;
@@ -16,10 +17,7 @@ import net.csdn.common.settings.Settings;
 import net.csdn.trace.TraceEnhancer;
 
 import java.io.DataInputStream;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static net.csdn.common.logging.support.MessageFormat.format;
 
@@ -70,7 +68,7 @@ public class ServiceLoader implements Loader {
                 moduleList.add(new AbstractModule() {
                     @Override
                     protected void configure() {
-                        bind(clzz).in(Singleton.class);
+                        bind(clzz).in(Scopes.SINGLETON);
                     }
                 });
                 continue;
@@ -95,6 +93,35 @@ public class ServiceLoader implements Loader {
                 }
             });
         }
+        for (final Map.Entry<String, String> entry : settings.getByPrefix("application.dynamic.implemented.singleton").getAsMap().entrySet()) {
+            moduleList.add(new AbstractModule() {
+                @Override
+                protected void configure() {
+                    try {
+                        Class clzz = Class.forName(entry.getValue());
+                        bind(Class.forName(entry.getKey())).to(clzz).in(Scopes.SINGLETON);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+        for (final Map.Entry<String, String> entry : settings.getByPrefix("application.dynamic.implemented.prototype").getAsMap().entrySet()) {
+            moduleList.add(new AbstractModule() {
+                @Override
+                protected void configure() {
+                    try {
+                        Class clzz = Class.forName(entry.getValue());
+                        bind(Class.forName(entry.getKey())).to(clzz).in(Scopes.NO_SCOPE);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+
+
         logger.info("load service in ServiceFramwork.serviceModules =>" + ServiceFramwork.serviceModules.size());
         moduleList.addAll(ServiceFramwork.serviceModules);
         ServiceFramwork.AllModules.addAll(moduleList);

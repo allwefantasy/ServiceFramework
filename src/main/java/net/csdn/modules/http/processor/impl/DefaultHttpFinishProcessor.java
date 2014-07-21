@@ -1,6 +1,7 @@
 package net.csdn.modules.http.processor.impl;
 
 import net.csdn.ServiceFramwork;
+import net.csdn.annotation.NoTransaction;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
@@ -26,11 +27,13 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
     @Override
     public void process(Settings settings, HttpServletRequest request, HttpServletResponse response, ProcessInfo processInfo) {
         boolean disableMySql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
-        endORM(disableMySql);
-        closeTx(settings);
         systemLog(processInfo.startTime, request, settings, processInfo);
+        endORM(disableMySql);
+        closeTx(settings, processInfo);
         Trace.clean();
-        ServiceFramwork.injector.getInstance(API.class).statusIncrement(processInfo.method,processInfo.status);
+        API api = ServiceFramwork.injector.getInstance(API.class);
+        api.statusIncrement(processInfo.method, processInfo.status);
+        api.averageTimeIncrement(processInfo.method, System.currentTimeMillis() - processInfo.startTime);
     }
 
     private void endORM(boolean _disableMysql) {
@@ -40,9 +43,9 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
     }
 
 
-    private void closeTx(Settings settings) {
+    private void closeTx(Settings settings, ProcessInfo processInfo) {
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
-        if (!disableMysql) {
+        if (!disableMysql && processInfo.method != null && processInfo.method.getAnnotation(NoTransaction.class) == null) {
             try {
                 JPA.getJPAConfig().getJPAContext().closeTx(false);
             } catch (Exception e2) {
@@ -57,7 +60,8 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
         if (logEnable) {
             long endTime = System.currentTimeMillis();
             String url = httpServletRequest.getQueryString();
-            logger.info("Completed " + processInfo.status + " in " + (endTime - startTime) + "ms (ActiveORM: " + (disableMysql ? 0 : CSDNStatFilterstat.SQLTIME().get()) + "ms)");
+            String activeOrmTime = disableMysql ? "" : "(ActiveORM: " + CSDNStatFilterstat.SQLTIME().get() + "ms)";
+            logger.info("Completed " + processInfo.status + " in " + (endTime - startTime) + "ms " + activeOrmTime);
             logger.info(httpServletRequest.getMethod() +
                     " " + httpServletRequest.getRequestURI() + (isNull(url) ? "" : ("?" + url)));
             logger.info("\n\n\n\n");
