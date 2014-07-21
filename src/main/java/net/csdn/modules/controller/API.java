@@ -27,14 +27,27 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class API {
 
-    private Settings settings;
+    class AvgTime {
+        AtomicLong timeStart;
+        AtomicLong nowTimeRange;
+        AtomicLong lastTimeRange;
+        AtomicLong count;
 
+        AvgTime(AtomicLong timeStart, AtomicLong nowTimeRange, AtomicLong lastTimeRange, AtomicLong count) {
+            this.timeStart = timeStart;
+            this.nowTimeRange = nowTimeRange;
+            this.lastTimeRange = lastTimeRange;
+            this.count = count;
+        }
+    }
+
+    private Settings settings;
     private CSLogger logger = Loggers.getLogger(API.class);
     /*
       在特定internal 时间内的QPS
      */
     private ConcurrentHashMap<Method, Tuple3<AtomicLong/*时间戳*/, AtomicLong/*当前interval时间内正在累积的访问数*/, AtomicLong/*上一个interval计算出的结果QPS*/>> APIQPS = new ConcurrentHashMap<Method, Tuple3<AtomicLong, AtomicLong, AtomicLong>>();
-
+    private ConcurrentHashMap<Method, AvgTime> APIAVGTIME = new ConcurrentHashMap<Method, AvgTime>();
     /*
       每个API 从系统启动开始，各个http状态码数目
      */
@@ -46,11 +59,13 @@ public class API {
 
 
     private int internal = 1000;
+    private int averageTimeInternal = 1000;
 
     @Inject
     public API(Settings settings) {
         this.settings = settings;
         this.internal = settings.getAsInt("application.api.qps.internal", 1000);
+        this.averageTimeInternal = settings.getAsInt("application.api.qps.average-time-internal", 1000);
         this.forceAPICheck = settings.getAsBoolean("application.api.strict.check", false);
         this.SystemStartTime = System.currentTimeMillis();
     }
@@ -60,6 +75,7 @@ public class API {
      */
     public void addPath(Method api) {
         APIQPS.putIfAbsent(api, new Tuple3<AtomicLong, AtomicLong, AtomicLong>(new AtomicLong(SystemStartTime), new AtomicLong(), new AtomicLong()));
+        APIAVGTIME.putIfAbsent(api, new AvgTime(new AtomicLong(SystemStartTime), new AtomicLong(), new AtomicLong(), new AtomicLong()));
         APISTATUS.putIfAbsent(api, new ConcurrentHashMap<Integer, AtomicLong>());
     }
 
@@ -88,6 +104,7 @@ public class API {
             apiDesc.path = path.path()[0];
             apiDesc.desc = mDesc != null ? mDesc.value() : "";
             apiDesc.qps = APIQPS.get(method).v3().get();
+            apiDesc.avgTime = APIAVGTIME.get(method).lastTimeRange.get();
             apiDesc.paramDesces = createParamDescs(method);
             List<ResponseStatus> responseStatuses = new ArrayList<ResponseStatus>();
             for (Map.Entry<Integer, AtomicLong> item : APISTATUS.get(method).entrySet()) {
@@ -136,11 +153,30 @@ public class API {
         long now = System.currentTimeMillis();
         Tuple3<AtomicLong, AtomicLong, AtomicLong> info = APIQPS.get(api);
         if (now - info.v1().get() > internal) {
-            info.v3().set(info.v2().get());
+            info.v3().set(info.v2().get() / internal);
             info.v2().set(0);
             info.v1().set(now);
         } else {
             info.v2().incrementAndGet();
+        }
+
+    }
+
+    public synchronized void averageTimeIncrement(Method api, long time) {
+        if (!enable() || api == null) return;
+        long now = System.currentTimeMillis();
+        AvgTime info = APIAVGTIME.get(api);
+        info.count.incrementAndGet();
+        if (now - info.timeStart.get() > averageTimeInternal) {
+            if (info.count.get() == 0) {
+                info.lastTimeRange.set(0);
+            } else {
+                info.lastTimeRange.set(info.nowTimeRange.get() / info.count.get());
+            }
+            info.nowTimeRange.set(0);
+            info.timeStart.set(now);
+        } else {
+            info.nowTimeRange.addAndGet(time);
         }
 
     }

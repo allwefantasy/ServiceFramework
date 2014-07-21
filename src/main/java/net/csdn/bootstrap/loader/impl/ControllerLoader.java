@@ -54,7 +54,7 @@ public class ControllerLoader implements Loader {
                 public Class loaded(DataInputStream classFile) {
                     try {
                         CtClass ctClass = enhancer.enhanceThisClass(classFile);
-                        logger.info("controller load :    "+ctClass.getName());
+                        logger.info("controller load :    " + ctClass.getName());
                         controllers.add(ctClass);
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -66,7 +66,13 @@ public class ControllerLoader implements Loader {
         }
 
         enhancer.enhanceThisClass2(controllers);
-
+        for (String item : WowCollections.split2(settings.get("application.controller.default","net.csdn.api.controller.SystemInfoController"), ",")) {
+            try {
+                moduleList.add(bindAction(Class.forName(item)));
+            } catch (Exception e) {
+                logger.error("load default controller error:" + e);
+            }
+        }
         for (CtClass ctClass : controllers) {
             if (Modifier.isAbstract(ctClass.getModifiers())) continue;
             moduleList.add(bindAction(Class.forName(ctClass.getName())));

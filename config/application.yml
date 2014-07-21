@@ -12,8 +12,8 @@ development:
            port: 3306
            database: wow
            username: root
-           password: root
-           disable: true
+           password: csdn.net
+           disable: false
         mongodb:
            host: 127.0.0.1
            port: 27017
@@ -73,7 +73,7 @@ application:
     test:       test.com.example
     template:
         engine:
-           enable: true
+           enable: false
     api:
         qps:
            enable: true
@@ -118,3 +118,9 @@ mongo_validator:
 
 ################ 数据库类型映射 ####################
 type_mapping:  net.csdn.jpa.type.impl.MysqlType
+
+qps:
+   /say/hello: 10
+
+qpslimit:
+   enable: true

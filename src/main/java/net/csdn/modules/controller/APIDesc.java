@@ -10,7 +10,8 @@ import java.util.List;
 public class APIDesc {
     String path;
     String desc;
-    long qps;
+    long qps = 0;
+    long avgTime = 0;
     List<ParamDesc> paramDesces;
     List<ResponseStatus> responseStatuses;
 
@@ -54,6 +55,14 @@ public class APIDesc {
 
     public void setResponseStatuses(List<ResponseStatus> responseStatuses) {
         this.responseStatuses = responseStatuses;
+    }
+
+    public long getAvgTime() {
+        return avgTime;
+    }
+
+    public void setAvgTime(long avgTime) {
+        this.avgTime = avgTime;
     }
 
     public static void main(String[] args) {

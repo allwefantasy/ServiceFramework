@@ -156,6 +156,10 @@ public class DefaultResponse implements RestResponse {
             httpServletResponse.sendRedirect(httpServletResponse.encodeRedirectURL(redirectPath));
             return;
         }
+        if (content == null) {
+            output("null");
+            return;
+        }
         if (content != null) {
             output(content);
             return;
