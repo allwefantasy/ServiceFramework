@@ -115,6 +115,7 @@
             <groupId>csdn</groupId>
             <artifactId>program-stats-client</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
