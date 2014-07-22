@@ -18,7 +18,7 @@ ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高�
 
 接着确保 项目根目录下有config/application.yml,config/logging.yml 两个文件即可。示例可参看该项目中config文件夹。
 
-QuickStart：[搭建自己的第一个项目](https://github.com/allwefantasy/ServiceFramework/blob/master/doc/ServiceFrameworkWiki-config.md)
+QuickStart：[搭建自己的第一个项目](https://github.com/allwefantasy/ServiceFramework/blob/master/doc/ServiceFrameworkWiki-example.md)
 
 ServiceFramework 特点：
 
