@@ -1,0 +1,44 @@
+mode:
+  development
+
+development:
+    datasources:
+        mysql:
+           host: 127.0.0.1
+           port: 3306
+           database: wow
+           username: root
+           password: tiancai
+           disable: false
+        mongodb:
+           disable: true
+
+test:
+    datasources:
+            mysql:
+               disable: true
+            mongodb:
+               disable: true
+production:
+    datasources:
+            mysql:
+               disable: true
+            mongodb:
+               disable: true
+
+application:
+    controller: com.example.controller.http
+    model:      com.example.model
+    document:   com.example.document
+    service:    com.example.service
+    util:       com.example.util
+    test:       test.com.example
+
+
+http:
+    port: 9002
+    disable: false
+
+
+
+

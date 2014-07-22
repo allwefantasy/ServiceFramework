@@ -11,12 +11,16 @@ ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高�
         <dependency>
             <groupId>net.csdn</groupId>
             <artifactId>ServiceFramework</artifactId>
-            <version>1.0</version>
+            <version>1.1</version>
         </dependency>
 
 
 
 接着确保 项目根目录下有config/application.yml,config/logging.yml 两个文件即可。示例可参看该项目中config文件夹。
+
+QuickStart：[搭建自己的第一个项目](https://github.com/allwefantasy/ServiceFramework/blob/master/doc/ServiceFrameworkWiki-config.md)
+
+ServiceFramework 特点：
 
 1. ActiveRecord化的Model层，支持 MongoDB 和 MySQL.
   
@@ -46,9 +50,25 @@ ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高�
 	         Assert.assertTrue(page.getResult().size() > 0);
 	     }
 
-5. 强大的监控。可实时查看每个接口的QPS，从系统启动开始总访问次数。
+5. 接口调用监控
 
-6. 可对每个接口进行降级，每个接口可设置不同的阈值，保证系统不被大访问量压垮。
+	* 接口 QPS 监控
+	* 接口平均响应耗时监控
+	* 接口调用量(如果是http的话，则是各种状态码统计)
+	* 内置http接口，提供json数据展示以上的系统状态
+
+6. 服务降级限流。
+
+ServiceFramework主要面向后端服务，如果没有自我保护机制，系统很容易过载而不可用。经过一定的容量规划，或者通过对接口调用平均响应耗时的监控，我们可以动态调整 ServiceFramework 的QPS限制，从而达到保护系统的目的。这些都可以通过配置以及内置的http接口完成。
+
+监控将会是ServiceFramework后续的重点。早期ServiceFramework也通过日志让用户对自己系统有更多的感性认识，日志会打印：
+
+ * http请求url
+ * 整个请求耗时
+ * 数据库耗时(如果有)
+ * 响应状态码
+
+你可以很方便的通过shell脚本做各项统计
 
 7. Thrift 和 RESTFul 只需简单配置即可同时提供 Thrift 和 RESTFul 接口
     
