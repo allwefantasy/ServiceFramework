@@ -58,7 +58,8 @@ ServiceFramework 特点：
 	* 内置http接口，提供json数据展示以上的系统状态
 
 6. 服务降级限流
-ServiceFramework主要面向后端服务，如果没有自我保护机制，系统很容易过载而不可用。经过一定的容量规划，或者通过对接口调用平均响应耗时的监控，我们可以动态调整 ServiceFramework 的QPS限制，从而达到保护系统的目的。这些都可以通过配置以及内置的http接口完成。
+ServiceFramework主要面向后端服务，如果没有自我保护机制，系统很容易过载而不可用。经过一定的容量规划，或者通过对接口调用平均响应耗时的监控，
+我们可以动态调整 ServiceFramework 的QPS限制，从而达到保护系统的目的。这些都可以通过配置以及内置的http接口完成。
 监控将会是ServiceFramework后续的重点。早期ServiceFramework也通过日志让用户对自己系统有更多的感性认识，日志会打印：
 
 	 * http请求url
