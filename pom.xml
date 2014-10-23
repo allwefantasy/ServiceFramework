@@ -28,7 +28,8 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git@github.com:allwefantasy/ServiceFramework.git</connection>
+        <connection>
+            scm:git:git@github.com:allwefantasy/ServiceFramework.git</connection>
         <developerConnection>scm:git:git@github.com:allwefantasy/ServiceFramework.git</developerConnection>
         <url>https://github.com/allwefantasy/ServiceFramework</url>
     </scm>
@@ -109,13 +110,6 @@
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
             <version>2.2.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>csdn</groupId>
-            <artifactId>program-stats-client</artifactId>
-            <version>1.0</version>
-            <scope>compile</scope>
         </dependency>
 
         <dependency>

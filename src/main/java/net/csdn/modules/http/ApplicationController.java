@@ -140,6 +140,10 @@ public abstract class ApplicationController {
         restResponse.write(status, w.toString(), ViewType.html);
     }
 
+    public void renderHtml(int status, String w) {
+        restResponse.write(status, w, ViewType.html);
+    }
+
     public void renderHtmlWithMaster(int status, String path, Map result) {
         if (!result.containsKey("template")) {
             result.put("template", toUnderscoreCase(getControllerNameWithoutSuffix()) + "/" + toUnderscoreCase(getActionName()) + ".vm");

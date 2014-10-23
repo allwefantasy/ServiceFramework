@@ -1,15 +1,18 @@
 package net.csdn.modules.counter;
 
 
+import net.csdn.common.reflect.ReflectHelper;
+
 /**
  * 7/21/14 WilliamZhu(allwefantasy@gmail.com)
  */
 public class DefaultAccumulator implements Accumulator {
     private boolean enable = enable();
+    private Class clzz = null;
 
     public boolean enable() {
         try {
-            Class.forName("csdn.pstats.client.StatsManager");
+            clzz = Class.forName("csdn.pstats.client.StatsManager");
         } catch (ClassNotFoundException e) {
             return false;
         }
@@ -19,21 +22,21 @@ public class DefaultAccumulator implements Accumulator {
     @Override
     public void addStats(String module, String statsKey, int value) {
         if (enable) {
-            csdn.pstats.client.StatsManager.addStats(module, statsKey, value);
+            ReflectHelper.staticMethod(clzz, "addStats", module, statsKey, value);
         }
     }
 
     @Override
     public void addStats(String module, String statsKey) {
         if (enable) {
-            csdn.pstats.client.StatsManager.addStats(module, statsKey);
+            ReflectHelper.staticMethod(clzz, "addStats", module, statsKey);
         }
     }
 
     @Override
     public void stop() {
         if (enable) {
-            csdn.pstats.client.StatsManager.stop();
+            ReflectHelper.staticMethod(clzz, "stop");
         }
     }
 

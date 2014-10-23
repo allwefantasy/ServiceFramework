@@ -153,7 +153,7 @@ public class API {
         long now = System.currentTimeMillis();
         Tuple3<AtomicLong, AtomicLong, AtomicLong> info = APIQPS.get(api);
         if (now - info.v1().get() > internal) {
-            info.v3().set(info.v2().get() / internal);
+            info.v3().set(info.v2().get());
             info.v2().set(0);
             info.v1().set(now);
         } else {
