@@ -23,6 +23,14 @@ public interface HttpTransportService {
 
     public SResponse post(final Url url, final Map data, final Map<String, String> headers, final int timeout);
 
+    public SResponse get(final Url url, final int timeout);
+
+    public SResponse get(Url url);
+
+    public SResponse get(Url url, Map<String, String> data);
+
+    public SResponse get(final Url url, final Map<String, String> data, final int timeout);
+
     public SResponse put(Url url, Map data);
 
     public SResponse put(Url url, Map data, Map<String, String> headers);

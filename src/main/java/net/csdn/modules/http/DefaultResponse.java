@@ -192,6 +192,19 @@ public class DefaultResponse implements RestResponse {
         printWriter.close();
     }
 
+    public PrintWriter printWriter() throws IOException {
+        return httpServletResponse.getWriter();
+    }
+
+    public ServletOutputStream outputStream() throws IOException {
+        return httpServletResponse.getOutputStream();
+    }
+
+    public HttpServletResponse httpServletResponse() throws IOException {
+        return httpServletResponse;
+    }
+
+
     public void outputAsByte(byte[] msg) throws IOException {
         //httpServletResponse.setContentType("application/json; charset=UTF-8");
         httpServletResponse.setStatus(status);

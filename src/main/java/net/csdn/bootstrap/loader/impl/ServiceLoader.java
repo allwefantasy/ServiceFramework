@@ -93,7 +93,7 @@ public class ServiceLoader implements Loader {
                 }
             });
         }
-        for (final Map.Entry<String, String> entry : settings.getByPrefix("application.dynamic.implemented.singleton").getAsMap().entrySet()) {
+        for (final Map.Entry<String, String> entry : settings.getByPrefix("application.dynamic.implemented.singleton.").getAsMap().entrySet()) {
             moduleList.add(new AbstractModule() {
                 @Override
                 protected void configure() {
@@ -107,7 +107,7 @@ public class ServiceLoader implements Loader {
             });
         }
 
-        for (final Map.Entry<String, String> entry : settings.getByPrefix("application.dynamic.implemented.prototype").getAsMap().entrySet()) {
+        for (final Map.Entry<String, String> entry : settings.getByPrefix("application.dynamic.implemented.prototype.").getAsMap().entrySet()) {
             moduleList.add(new AbstractModule() {
                 @Override
                 protected void configure() {

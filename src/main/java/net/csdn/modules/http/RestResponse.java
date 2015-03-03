@@ -1,5 +1,9 @@
 package net.csdn.modules.http;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map;
 
 /**
@@ -32,4 +36,10 @@ public interface RestResponse {
     public RestResponse originContent(Object obj);
 
     public int status();
+
+    public PrintWriter printWriter() throws IOException;
+
+    public ServletOutputStream outputStream() throws IOException;
+
+    public HttpServletResponse httpServletResponse() throws IOException;
 }

@@ -25,6 +25,7 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -182,7 +183,11 @@ public class DefaultHttpTransportService implements HttpTransportService {
 
     public SResponse get(Url url, Map<String, String> data) {
         for (Map.Entry<String, String> item : data.entrySet()) {
-            url.addParam(item.getKey(), item.getValue());
+            try {
+                url.addParam(item.getKey(), URLEncoder.encode(item.getValue(), "utf-8"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
         return get(url);
     }

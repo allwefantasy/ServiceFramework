@@ -78,7 +78,7 @@ public class ThriftClient<T extends TServiceClient> {
                     return true;
                 }
             }
-    ).borrowValidation(true).min(5).max(5).build();
+    ).borrowValidation(true).min(10).max(50).build();
 
 
     public void execute(String address, Callback<T> callback) throws ThriftConnectException {
@@ -91,19 +91,19 @@ public class ThriftClient<T extends TServiceClient> {
     }
 
 
-    public void tryExecute(String address, Callback<T> callback) throws ThriftConnectException {
+    public void tryExecute(String address, Callback<T> callback,long tryTime,int tryCount) throws ThriftConnectException {
         T obj = null;
         int failCount = 0;
         boolean shouldTry = true;
 
-        while (shouldTry && failCount < 4) {
+        while (shouldTry && failCount < tryCount) {
             try {
                 obj = brow(address);
                 shouldTry = false;
             } catch (ThriftConnectException e) {
                 e.printStackTrace();
                 try {
-                    Thread.sleep(3000);
+                    Thread.sleep(tryTime);
                 } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
@@ -125,9 +125,11 @@ public class ThriftClient<T extends TServiceClient> {
         try {
             return connectionPool.borrowObject(socketAddress, 1000);
         } catch (PoolExhaustedException e) {
+            logger.error("thrift client 连接池耗尽");
             e.printStackTrace();
             throw new ThriftConnectException(e);
         } catch (NoValidObjectException e) {
+            logger.error("thrift Connection对象出现问题");
             e.printStackTrace();
             throw new ThriftConnectException(e);
         } catch (InterruptedException e) {

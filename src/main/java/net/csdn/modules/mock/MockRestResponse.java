@@ -4,7 +4,10 @@ import net.csdn.modules.http.RestResponse;
 import net.csdn.modules.http.ViewType;
 import net.csdn.modules.http.support.HttpStatus;
 
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Map;
 
 
@@ -83,6 +86,21 @@ public class MockRestResponse implements RestResponse {
     @Override
     public int status() {
         return status;
+    }
+
+    @Override
+    public PrintWriter printWriter() throws IOException {
+        throw new RuntimeException("not implemented yet...");
+    }
+
+    @Override
+    public ServletOutputStream outputStream() throws IOException {
+        throw new RuntimeException("not implemented yet...");
+    }
+
+    @Override
+    public HttpServletResponse httpServletResponse() throws IOException {
+        throw new RuntimeException("not implemented yet...");
     }
 
     public void error(Exception e) throws IOException {
