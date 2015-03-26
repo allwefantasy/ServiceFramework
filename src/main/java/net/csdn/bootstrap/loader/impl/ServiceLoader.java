@@ -30,7 +30,7 @@ public class ServiceLoader implements Loader {
     private CSLogger logger = Loggers.getLogger(ServiceLoader.class);
 
     @Override
-    public void load(Settings settings) throws Exception {
+    public void load(final Settings settings) throws Exception {
         final List<Module> moduleList = new ArrayList<Module>();
         final Set<Class> ctClasses = new HashSet<Class>();
         logger.info("scan service package => " + settings.get("application.service"));
@@ -83,8 +83,16 @@ public class ServiceLoader implements Loader {
                 @Override
                 protected void configure() {
                     if (clzz.isInterface()) {
-                        logger.info("load  service with @Service => " + clzz.getName() + " to " + service.implementedBy().getName() + " in " + service.value().getName());
-                        bind(clzz).to(service.implementedBy()).in(service.value());
+                        Map<String,String> singleton = settings.getByPrefix("application.dynamic.implemented.singleton.").getAsMap();
+                        Map<String,String> prototype = settings.getByPrefix("application.dynamic.implemented.prototype.").getAsMap();
+
+                        if(singleton.containsKey(clzz.getName())||prototype.containsKey(clzz.getName())){
+                            logger.info("service will not loaned because application.dynamic.implemented.singleton or application.dynamic.implemented.prototype configured:  with @Service => " + clzz.getName() + " to " + service.implementedBy().getName() + " in " + service.value().getName());
+                        }else{
+                            logger.info("load  service with @Service => " + clzz.getName() + " to " + service.implementedBy().getName() + " in " + service.value().getName());
+                            bind(clzz).to(service.implementedBy()).in(service.value());
+                        }
+
                     } else {
                         logger.info("load  service with @Service => " + clzz.getName() + " in " + service.value().getName());
                         bind(clzz).in(service.value());
