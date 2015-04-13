@@ -18,11 +18,11 @@ source /etc/profile
 CONDITION_FAIL=1
 SUCCESS=0
 
-PROJECT_NAME=alpaca
+PROJECT_NAME=${2:-'search_system_v2'}
 
 S_HOME=$(cd `dirname "$SCRIPT"`/..;pwd)
 S_CONFIGURATION_HOME=/data/configurations/${PROJECT_NAME}/config
-S_TARGET=${S_HOME}/target
+S_TARGET=${S_HOME}/release
 S_DEPLOY=${S_HOME}/deploy
 
 source ${S_HOME}/bin/config
@@ -45,7 +45,7 @@ check_install(){
   [ ! -f ${S_CONFIGURATION_HOME}/${application_file} ] && echo "$S_CONFIGURATION_HOME/${application_file} 文件不存在" && return ${CONDITION_FAIL}
   check_dir_empty ${S_TARGET}  && echo "$S_TARGET 文件夹不存在" && return
   check_dir_empty ${S_TARGET}/dependency && echo "$S_TARGET/dependency => 没有检查到依赖包" && return ${CONDITION_FAIL}
-  check_dir_empty ${S_TARGET}/classes && echo "没有检查到项目依赖" && return ${CONDITION_FAIL}
+  check_dir_empty ${S_TARGET}/classes && echo "$S_TARGET/classes => 没有检查到项目依赖" && return ${CONDITION_FAIL}
   echo "检查没有问题 继续..."
   return ${SUCCESS}
 }
@@ -64,6 +64,7 @@ clean(){
   write_deploy_version
 }
 deploy(){
+
    ! check_install && return  ${CONDITION_FAIL}
    local S_DEPLOY_VERSION_TIME=`date +%Y%m%d%H%M%S`
    write_deploy_version ${S_DEPLOY_VERSION_TIME}
@@ -77,13 +78,14 @@ deploy(){
    cp -r ${S_TARGET}/dependency  ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/
    cp -r ${S_TARGET}/classes  ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/
 
-   cp -r ${S_HOME}/template ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/
-
-   ln -s ${S_CONFIGURATION_HOME}/${application_file} ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/application.yml
-   ln -s ${S_CONFIGURATION_HOME}/logging.yml ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/logging.yml
+   cp -r ${S_HOME}/dictionaries ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/dictionaries
+   cp -r ${S_HOME}/template ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/template
 
    rm ${S_HOME}/current
-   ln -s  ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME} ${S_HOME}/current
+   ln -s ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}  ${S_HOME}/current
+   ln -s ${S_CONFIGURATION_HOME}/${application_file} ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/application.yml
+   ln -s ${S_CONFIGURATION_HOME}/strategy.v2.json ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/strategy.v2.json
+   ln -s ${S_CONFIGURATION_HOME}/logging.yml ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/logging.yml
 
    return ${SUCCESS}
 }
@@ -97,6 +99,8 @@ start()
   fi
   local S_DEPLOY_VERSION_TIME=`fetch_deploy_version`
   cd ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}
+  rm ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/application.yml
+  ln -s ${S_CONFIGURATION_HOME}/${application_file} ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/application.yml
   echo "java ${s_java_options} -Xloggc:gc.log -XX:+PrintGCTimeStamps -XX:-PrintGCDetails -cp dependency/*:classes ${s_main_class}"
   nohup java ${s_java_options} -Xloggc:gc.log -XX:+PrintGCTimeStamps -XX:-PrintGCDetails -cp dependency/*:classes ${s_main_class} > /dev/null 2>&1 &
   echo $! > application.pid

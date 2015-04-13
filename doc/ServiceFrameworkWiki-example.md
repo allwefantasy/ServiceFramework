@@ -12,7 +12,7 @@
             <version>1.1</version>
         </dependency>
 
-2. 在根目录下新建一个config目录，添加两个个文件
+2. 在根目录下新建一个config目录，添加两个文件
 
    * application.yml(复制application.example.yml里的内容即可)
    * logging.yml
@@ -153,7 +153,22 @@ TagSynonym.java:
 		    test:       test.com.example
 		    
 		    
-9. 右键运行Example类，就可以访问了。		    			
+9. 右键运行Example类，就可以访问了。
+
+
+### 部署到实际环境
+
+1. 运行更目录下的release.sh 脚本
+2. 打开 bin/config 做一些配置
+
+		PROJECT_NAME=example
+		s_main_class=com.example.Example
+		s_java_options="-Xms1300m -Xmx1300m -XX:PermSize=128m -XX:-HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/dump.hprof"
+		S_CONFIGURATION_HOME= #config所在目录
+		application_file=application.yml
+
+3. 运行 ./bin/deploy.sh deploy 进行部署。你会发现里面有个 current目录
+4. 启动 ./bin/deploy.sh start 就将服务器启动起来了
 
 	
 	

@@ -4,6 +4,7 @@
 
 ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高效性，其开发效率可以比肩Rails.
 
+现在代码中的pom文件用的是公司的maven仓库。更目录下有个open-source.xml，修改成pom.xml即可正常编译。
 ### 在Maven中使用该项目
 
 在你的pom.xml 文件中中添加如下引用:
