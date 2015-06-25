@@ -1,6 +1,7 @@
 package net.csdn.modules.thrift;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import net.csdn.ServiceFramwork;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
@@ -22,6 +23,7 @@ import static net.csdn.common.collections.WowCollections.map;
 /**
  * 5/23/13 WilliamZhu(allwefantasy@gmail.com)
  */
+@Singleton
 public class ThriftServer {
 
     private CSLogger logger = Loggers.getLogger(getClass());

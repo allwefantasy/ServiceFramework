@@ -12,6 +12,7 @@ import net.csdn.common.scan.DefaultScanService;
 import net.csdn.common.settings.InternalSettingsPreparer;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
+import net.csdn.modules.dubbo.DubboServer;
 import net.csdn.modules.http.HttpServer;
 import net.csdn.modules.thrift.ThriftServer;
 import net.csdn.mongo.MongoMongo;
@@ -31,6 +32,7 @@ public class Bootstrap {
 
     private static HttpServer httpServer;
     private static ThriftServer thriftServer;
+    private static DubboServer dubboServer;
     private static boolean isSystemConfigured = false;
 
     public static void main(String[] args) {
@@ -66,6 +68,7 @@ public class Bootstrap {
         boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
         boolean disableHttp = settings.getAsBoolean("http.disable", false);
         boolean disableThrift = settings.getAsBoolean("thrift.disable", true);
+        boolean disableDubbo = settings.getAsBoolean("dubbo.disable", true);
 
         Loader loggerLoader = new LoggerLoader();
 
@@ -131,10 +134,16 @@ public class Bootstrap {
             }
         }
 
-        if (!ServiceFramwork.isDisabledThrift() && !ServiceFramwork.isDisableHTTP()) {
-            if ((!disableHttp || !disableThrift) && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
-                Thread.currentThread().join();
+        if (!ServiceFramwork.isDisabledDubbo()) {
+            if (!disableDubbo && !ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) {
+                dubboServer = ServiceFramwork.injector.getInstance(DubboServer.class);
             }
+        }
+
+        if (!ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)||
+                dubboServer!=null || httpServer!=null || thriftServer!=null
+                ) {
+            Thread.currentThread().join();
         }
 
     }

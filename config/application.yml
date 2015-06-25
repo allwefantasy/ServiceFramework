@@ -13,7 +13,7 @@ development:
            database: wow
            username: root
            password: csdn.net
-           disable: false
+           disable: true
         mongodb:
            host: 127.0.0.1
            port: 27017
@@ -31,7 +31,7 @@ test:
                database: wow
                username: root
                password: root
-               disable: false
+               disable: true
             mongodb:
                host: 127.0.0.1
                port: 27017
@@ -80,7 +80,7 @@ application:
 ###############http config##################
 http:
     port: 9002
-    disable: false
+    disable: true
 
 #thrift:
 #    disable: true
@@ -124,3 +124,6 @@ qps:
 
 qpslimit:
    enable: true
+dubbo:
+   disable: false
+   server: true

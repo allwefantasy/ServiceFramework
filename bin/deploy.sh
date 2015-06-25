@@ -53,6 +53,7 @@ check_install(){
 write_deploy_version(){
    echo ${1} > ${S_HOME}/deploy_version
 }
+
 fetch_deploy_version(){
    echo `cat ${S_HOME}/deploy_version`
 }
@@ -97,14 +98,43 @@ start()
     deploy
     [ $? -ne 0 ] && echo "部署失败，无法启动应用" && return
   fi
+
   local S_DEPLOY_VERSION_TIME=`fetch_deploy_version`
   cd ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}
   rm ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/application.yml
   ln -s ${S_CONFIGURATION_HOME}/${application_file} ${S_DEPLOY}/${S_DEPLOY_VERSION_TIME}/config/application.yml
+
+  local PIDS=`cat application.pid`
+  if [ -n "$PIDS" ]; then
+    echo "ERROR: already started!"
+    echo "PID: $PIDS"
+    exit 1
+  fi
+
+  echo -e "Starting ...\c"
   echo "java ${s_java_options} -Xloggc:gc.log -XX:+PrintGCTimeStamps -XX:-PrintGCDetails -cp dependency/*:classes ${s_main_class}"
   nohup java ${s_java_options} -Xloggc:gc.log -XX:+PrintGCTimeStamps -XX:-PrintGCDetails -cp dependency/*:classes ${s_main_class} > /dev/null 2>&1 &
   echo $! > application.pid
   echo "进程号为: `cat application.pid`"
+
+#  local COUNT=0
+#  while [ $COUNT -lt 1 ]; do
+#    echo -e ".\c"
+#    sleep 1
+#    if [ -n "$SERVER_PORT" ]; then
+#        if [ "$SERVER_PROTOCOL" == "dubbo" ]; then
+#    	    COUNT=`echo status | nc -i 1 127.0.0.1 $SERVER_PORT | grep -c OK`
+#        else
+#            COUNT=`netstat -an | grep $SERVER_PORT | wc -l`
+#        fi
+#    else
+#    	COUNT=`ps -f | grep java | grep "$DEPLOY_DIR" | awk '{print $2}' | wc -l`
+#    fi
+#    if [ $COUNT -gt 0 ]; then
+#        break
+#    fi
+#  done
+#  echo "OK!"
 }
 stop()
 {

@@ -1,6 +1,7 @@
 package net.csdn.modules.http;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.NoTransaction;
 import net.csdn.common.collect.Tuple;
@@ -46,6 +47,7 @@ import java.util.List;
  * Date: 11-9-2
  * Time: 下午1:29
  */
+@Singleton
 public class HttpServer {
     private final Server server;
     private CSLogger logger = Loggers.getLogger(getClass());

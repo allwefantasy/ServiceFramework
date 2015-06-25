@@ -272,6 +272,33 @@ public class DefaultHttpTransportService implements HttpTransportService {
         return getRemoteDataTask;
     }
 
+    public List<Tuple<Url,SResponse>> asyncHttps(Map<Url,String> urlWithPostString, final RestRequest.Method method,int timeout) {
+
+        List<Tuple<Url,SResponse>> responses = new ArrayList<Tuple<Url, SResponse>>();
+
+        List<Tuple<Url,FutureTask<SResponse>>> futureTasks = new ArrayList<Tuple<Url,FutureTask<SResponse>>>(urlWithPostString.size());
+
+        for(Map.Entry<Url,String> entry:urlWithPostString.entrySet()){
+            final Url url = entry.getKey();
+            FutureTask<SResponse> getRemoteDataTask = asyncHttp(url, entry.getValue(), method);
+            futureTasks.add(new Tuple<Url,FutureTask<SResponse>>(url,getRemoteDataTask));
+        }
+
+        for (Tuple<Url,FutureTask<SResponse>> futureTask : futureTasks) {
+            try {
+                SResponse sResponse = futureTask.v2().get(timeout, TimeUnit.MILLISECONDS);
+                responses.add(new Tuple<Url, SResponse>(futureTask.v1(),sResponse));
+            } catch (Exception e) {
+                logger.error("fetch "+futureTask.v1()+" error:",e);
+                //futureTask.getV2().cancel(true);
+                responses.add(new Tuple<Url, SResponse>(futureTask.v1(),new SResponse(503,e.getMessage(),futureTask.v1())));
+                continue;
+            }
+        }
+
+        return responses;
+    }
+
 
     public List<SResponse> asyncHttps(final List<Url> urls, final String jsonData, RestRequest.Method method) {
 

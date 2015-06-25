@@ -1,5 +1,6 @@
 package net.csdn.modules.transport;
 
+import net.csdn.common.collect.Tuple;
 import net.csdn.common.path.Url;
 import net.csdn.modules.http.RestRequest;
 import net.sf.json.JSONObject;
@@ -48,6 +49,12 @@ public interface HttpTransportService {
     public void header(String header, String value);
 
     public List<SResponse> asyncHttps(final List<Url> urls, final String jsonData, RestRequest.Method method);
+
+    /*
+        该函数会确保每个URL 请求都会有Tuple<Url,SResponse> 返回结果。timeout为毫秒数。
+        如果URL请求超时或者无法连接，则SResponse会返回503状态码，并且内容为异常信息。
+     */
+    public List<Tuple<Url,SResponse>> asyncHttps(Map<Url,String> urlWithPostString, final RestRequest.Method method,int timeout);
 
     class SResponse {
         private int status = 200;

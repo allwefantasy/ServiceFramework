@@ -27,7 +27,8 @@ public class ServiceFramwork {
     public static List<Module> AllModules = new ArrayList<Module>();
 
     private static boolean DisableHTTP = false;
-    private static boolean DisableThrift = true;
+    private static boolean DisableThrift = false;
+    private static boolean DisableDubbo = false;
 
     public static void disableHTTP() {
         DisableHTTP = true;
@@ -37,6 +38,10 @@ public class ServiceFramwork {
         DisableThrift = true;
     }
 
+    public static void disableDubbo() {
+        DisableDubbo = true;
+    }
+
     public static boolean isDisableHTTP() {
         return DisableHTTP;
     }
@@ -44,6 +49,11 @@ public class ServiceFramwork {
     public static boolean isDisabledThrift() {
         return DisableThrift;
     }
+
+    public static boolean isDisabledDubbo() {
+        return DisableDubbo;
+    }
+
 
     public static void registerModule(Module module) {
         modules.add(module);
