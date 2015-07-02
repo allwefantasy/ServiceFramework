@@ -35,11 +35,11 @@ public class DubboServer {
             List<String> configFiles = new ArrayList<String>();
             for (File file : env.configFile().listFiles()) {
                 if(ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)){
-                    if (file.getName().endsWith("_client.xml")) {
+                    if (file.getName().endsWith("_test_client.xml")) {
                         configFiles.add("file:" + file.getPath());
                     }
                 }else{
-                    if (file.getName().endsWith("_server.xml")) {
+                    if (file.getName().endsWith("_server.xml")||(file.getName().endsWith("_client.xml") && !file.getName().endsWith("_test_client.xml"))) {
                         configFiles.add("file:" + file.getPath());
                     }
                 }

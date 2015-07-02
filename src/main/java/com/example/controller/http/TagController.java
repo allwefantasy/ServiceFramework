@@ -27,7 +27,11 @@ public class TagController extends ApplicationController {
             render(404, map());
         }
         render(404, list(tag));
+    }
 
+    @At(path = "/say/hello", types = {RestRequest.Method.GET})
+    public void sayHello() {
+        render(200, "hello" + param("kitty"));
     }
 
 }

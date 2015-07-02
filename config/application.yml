@@ -80,7 +80,7 @@ application:
 ###############http config##################
 http:
     port: 9002
-    disable: true
+    disable: false
 
 #thrift:
 #    disable: true
