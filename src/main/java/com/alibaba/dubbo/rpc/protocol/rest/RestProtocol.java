@@ -3,7 +3,6 @@ package com.alibaba.dubbo.rpc.protocol.rest;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
-import com.google.common.collect.Sets;
 import net.csdn.ServiceFramwork;
 import net.csdn.annotation.rest.At;
 import net.csdn.common.collections.WowCollections;
@@ -17,7 +16,10 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 7/2/15 WilliamZhu(allwefantasy@gmail.com)
@@ -72,15 +74,11 @@ public class RestProtocol extends AbstractProxyProtocol {
             this.url = url;
         }
 
-        public final String RestMethod = "__rest_method__";
-        public final String NotFormEncodeParams = "__content_type__";
-        public final Set<String> filters = Sets.newHashSet(RestMethod);
 
         private String encodeParams(Map<String, String> params) {
 
             List<String> keywords = new ArrayList<String>();
             for (Map.Entry<String, String> en : params.entrySet()) {
-                if (filters.contains(en.getKey())) continue;
                 try {
                     keywords.add(en.getKey() + "=" + URLEncoder.encode(en.getValue(), "utf-8"));
                 } catch (UnsupportedEncodingException e) {
@@ -89,26 +87,35 @@ public class RestProtocol extends AbstractProxyProtocol {
             return WowCollections.join(keywords, "&");
         }
 
-        private Map<String, String> filterParams(Map<String, String> params) {
-
-            Map<String, String> temp = new HashMap<String, String>();
-            for (Map.Entry<String, String> en : params.entrySet()) {
-                if (filters.contains(en.getKey())) continue;
-                temp.put(en.getKey(), en.getValue());
-            }
-            return temp;
-        }
 
         @Override
         public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-            Map<String, String> obj = (Map<String, String>) objects[0];
-            String reqMethodStr = obj.get(RestMethod);
-            if (reqMethodStr == null) reqMethodStr = "GET";
-            RestRequest.Method reqMethod = RestRequest.Method.valueOf(reqMethodStr);
-            boolean notFormEncodeParams = obj.get(NotFormEncodeParams) != null;
+
+//            Annotation[][] annotations = method.getParameterAnnotations();
+//            for (Annotation[] ann : annotations) {
+//                System.out.printf("%d annotatations", ann.length);
+//                System.out.println();
+//            }
+
             At at = method.getAnnotation(At.class);
+
             String path = at.path()[0];
             RestRequest.Method[] httpMethods = at.types();
+
+            Map<String, String> params = new HashMap<String, String>();
+            RestRequest.Method reqMethod = httpMethods[0];
+            String body = null;
+            for (Object abc : objects) {
+                if (abc instanceof Map) {
+                    params = (Map) abc;
+                } else if (abc instanceof RestRequest.Method) {
+                    reqMethod = (RestRequest.Method) abc;
+                } else if (abc instanceof String) {
+                    body = (String) abc;
+                }
+            }
+
+
             boolean methodSupport = false;
             for (RestRequest.Method mt : httpMethods) {
                 if (mt.equals(reqMethod)) {
@@ -116,33 +123,25 @@ public class RestProtocol extends AbstractProxyProtocol {
                 }
             }
             if (!methodSupport) throw new RuntimeException(reqMethod + "not support in invoke " + url);
+
             HttpTransportService.SResponse response = null;
             Url finalUrl = new Url(url + "/" + path);
+
             if (reqMethod.equals(RestRequest.Method.GET)) {
-                response = httpTransportService.get(finalUrl, filterParams(obj));
-            } else if (reqMethod.equals(RestRequest.Method.POST)) {
-                if (notFormEncodeParams) {
-                    response = httpTransportService.http(finalUrl, obj.get(NotFormEncodeParams), RestRequest.Method.POST);
+                response = httpTransportService.get(finalUrl, params);
+            } else {
+                if (body == null) {
+                    response = httpTransportService.post(finalUrl, params);
                 } else {
-                    response = httpTransportService.post(finalUrl, filterParams(obj));
+                    finalUrl.query(encodeParams(params));
+                    response = httpTransportService.http(finalUrl, body, reqMethod);
                 }
-            } else if (reqMethod.equals(RestRequest.Method.PUT)) {
-                if (notFormEncodeParams) {
-                    response = httpTransportService.http(finalUrl, obj.get(NotFormEncodeParams), RestRequest.Method.PUT);
-                } else {
-                    response = httpTransportService.put(finalUrl, filterParams(obj));
-                }
-            } else if (reqMethod.equals(RestRequest.Method.DELETE)) {
-                if (notFormEncodeParams) {
-                    response = httpTransportService.http(finalUrl, obj.get(NotFormEncodeParams), RestRequest.Method.DELETE);
-                } else {
-                    Map<String, String> abc = filterParams(obj);
-                    abc.put("_method", "DELETE");
-                    response = httpTransportService.post(finalUrl, abc);
-                }
+
             }
-            if (response == null || response.getStatus() != 200) return null;
-            return response.getContent();
+
+            if (response == null)
+                return new HttpTransportService.SResponse(-1, "network fail or timeout", finalUrl);
+            return response;
         }
     }
 }

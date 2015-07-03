@@ -5,6 +5,7 @@ import net.csdn.common.collections.WowCollections;
 import net.csdn.junit.BaseServiceTest;
 import net.csdn.modules.dubbo.DubboServer;
 import net.csdn.modules.dubbo.demo.server.DemoService;
+import net.csdn.modules.http.RestRequest;
 import org.junit.Test;
 
 /**
@@ -25,8 +26,10 @@ public class TestDubbo extends BaseServiceTest {
     @Test
     public void test2() {
         TagController tagController = findService(DubboServer.class).getBean("restDemoService", TagController.class);
-        System.out.println(tagController.sayHello(WowCollections.map("kitty", "你好，太脑残")));
-        System.out.println(tagController.sayHello(WowCollections.map("kitty", "你好，太脑残")));
+        System.out.println(tagController.sayHello(RestRequest.Method.GET, WowCollections.map("kitty", "你好，太脑残")).getContent());
+        System.out.println(tagController.sayHello(RestRequest.Method.GET, WowCollections.map("kitty", "你好，太脑残")).getContent());
+
+        System.out.println(tagController.sayHello2("{}", WowCollections.map("kitty", "你好，太脑残")).getContent());
 
     }
 }

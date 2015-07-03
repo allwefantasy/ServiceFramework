@@ -6,7 +6,7 @@ import com.google.inject.Singleton;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
-import net.csdn.modules.counter.Accumulator;
+
 import net.sf.json.JSONObject;
 
 import java.util.Map;
@@ -29,7 +29,7 @@ public class QpsManager {
     //当前qps和前一个周期qps
     private Map<String, QpsValue> currentQps = new ConcurrentHashMap<String, QpsValue>();
 
-    private Accumulator accumulator;
+
     private CSLogger logger = Loggers.getLogger(QpsManager.class);
     private ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1, Executors.defaultThreadFactory());
     private Settings settings;
@@ -48,8 +48,7 @@ public class QpsManager {
     }
 
     @Inject
-    public QpsManager(Settings settings, Accumulator accumulator) {
-        this.accumulator = accumulator;
+    public QpsManager(Settings settings) {
         this.settings = settings;
         ImmutableMap<String, String> confs = settings.getByPrefix("qps.").getAsMap();
         if (confs != null) {
@@ -99,8 +98,6 @@ public class QpsManager {
         currentQpsValue.value.incrementAndGet();
 
         if (max != null && currentQpsValue != null && max.intValue() < (currentQpsValue.value.get() * 1000 / timePeriod)) {
-            accumulator.addStats(module, "request-trashed-total", 1);
-            accumulator.addStats(module, "request-trashed-" + type, 1);
             return true;
         } else {
             return false;
