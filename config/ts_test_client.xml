@@ -9,6 +9,6 @@
     <dubbo:registry address="zookeeper://127.0.0.1:2181" />
     <dubbo:protocol name="rest"/>
     <dubbo:reference id="demoService" interface="net.csdn.modules.dubbo.demo.server.DemoService"/>
-    <dubbo:reference id="restDemoService" interface="com.example.controller.api.TagController" protocol="rest"/>
+    <dubbo:reference id="restDemoService" interface="com.example.controller.api.TagController" protocol="rest" />
 
 </beans>

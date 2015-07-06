@@ -4,6 +4,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.AbstractProxyProtocol;
 import net.csdn.ServiceFramwork;
+import net.csdn.annotation.Param;
 import net.csdn.annotation.rest.At;
 import net.csdn.common.collections.WowCollections;
 import net.csdn.common.path.Url;
@@ -12,6 +13,7 @@ import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.transport.HttpTransportService;
 
 import java.io.UnsupportedEncodingException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -105,13 +107,28 @@ public class RestProtocol extends AbstractProxyProtocol {
             Map<String, String> params = new HashMap<String, String>();
             RestRequest.Method reqMethod = httpMethods[0];
             String body = null;
-            for (Object abc : objects) {
+            Annotation[][] annotations = method.getParameterAnnotations();
+
+            for (int i = 0; i < objects.length; i++) {
+                Object abc = objects[i];
+                if (annotations[i].length > 0) continue;
                 if (abc instanceof Map) {
-                    params = (Map) abc;
+                    params.putAll((Map) abc);
                 } else if (abc instanceof RestRequest.Method) {
                     reqMethod = (RestRequest.Method) abc;
                 } else if (abc instanceof String) {
                     body = (String) abc;
+                }
+            }
+
+
+            for (int i = 0; i < annotations.length; i++) {
+                Annotation[] paramAnnoes = annotations[i];
+                for (Annotation paramAnno : paramAnnoes) {
+                    if (paramAnno instanceof Param) {
+                        Param temp = (Param) paramAnno;
+                        params.put(temp.value(), (String) objects[i]);
+                    }
                 }
             }
 

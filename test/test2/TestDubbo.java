@@ -31,5 +31,7 @@ public class TestDubbo extends BaseServiceTest {
 
         System.out.println(tagController.sayHello2("{}", WowCollections.map("kitty", "你好，太脑残")).getContent());
 
+        System.out.println(tagController.sayHello3("哇塞，天才呀").getContent());
+
     }
 }
