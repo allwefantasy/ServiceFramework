@@ -58,7 +58,38 @@ ServiceFramework 特点：
 	* 接口调用量(如果是http的话，则是各种状态码统计)
 	* 内置http接口，提供json数据展示以上的系统状态
 
-6. 服务降级限流
+6. 1.2 以上版本集成了Dubbo,具有Dubbo的所有有点。同时还添加RestProtocol协议，可以像RPC一样调用现有的HTTP服务。
+所有工作只需要定义一套 Interface接口即可。
+
+        在ServiceFramework中，调用一个同样也是由ServiceFramework开发的HTTP接口可以变得非常简单。
+
+        @At(path = "/say/hello", types = {RestRequest.Method.GET})
+            public void sayHello() {
+                render(200, "hello" + param("kitty"));
+        }
+
+        这里很简单通过调用 http://127.0.0.1/say/hello?kitty=wow ，服务会返回hellowow 这样的字符串。
+        使用方可以通过HttpClient直接调用这个接口。为了方便调用方，服务提供方可以添加一个接口：
+
+        public interface TagController {
+            @At(path = "/say/hello", types = {RestRequest.Method.GET, RestRequest.Method.POST})
+            public HttpTransportService.SResponse sayHello(RestRequest.Method method, Map<String, String> params);
+
+            @At(path = "/say/hello", types = {RestRequest.Method.GET})
+            public HttpTransportService.SResponse sayHello3(@Param("kitty") String kitty);
+
+        接着，调用方引入这个接口，就可以像这样调用了：
+
+        tagController.sayHello(RestRequest.Method.GET, WowCollections.map("kitty", "你好，太脑残")).getContent()
+
+        或者
+
+        tagController.sayHello3("哇塞，天才呀").getContent()
+
+        服务提供者可以针对一个http接口定义出任意个方法，每个方法都之定义一部分参数，这样可以有效方便调用者使用。
+
+
+7. 服务降级限流
 ServiceFramework主要面向后端服务，如果没有自我保护机制，系统很容易过载而不可用。经过一定的容量规划，或者通过对接口调用平均响应耗时的监控，
 我们可以动态调整 ServiceFramework 的QPS限制，从而达到保护系统的目的。这些都可以通过配置以及内置的http接口完成。
 监控将会是ServiceFramework后续的重点。早期ServiceFramework也通过日志让用户对自己系统有更多的感性认识，日志会打印：
@@ -72,7 +103,7 @@ ServiceFramework主要面向后端服务，如果没有自我保护机制，系�
 
 
 
-7. Thrift 和 RESTFul 只需简单配置即可同时提供 Thrift 和 RESTFul 接口
+8. Thrift 和 RESTFul 只需简单配置即可同时提供 Thrift 和 RESTFul 接口
     
 			 
 		###############http config##################
@@ -92,7 +123,7 @@ ServiceFramework主要面向后端服务，如果没有自我保护机制，系�
 		        load: ["127.0.0.1:7701"]
 
 	  
-8. 支持 Velocity, 页面可直接访问所有实例变量以及helper类的方法。支持Velocity 进行模板配置
+9. 支持 Velocity, 页面可直接访问所有实例变量以及helper类的方法。支持Velocity 进行模板配置
 
 	 
 			    @At(path = "/hello", types = GET)
