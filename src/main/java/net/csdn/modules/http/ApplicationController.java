@@ -13,6 +13,7 @@ import net.csdn.common.settings.Settings;
 import net.csdn.common.time.NumberExtendedForTime;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
+import net.csdn.modules.dubbo.DubboServer;
 import net.csdn.modules.log.SystemLogger;
 import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
@@ -80,6 +81,15 @@ public abstract class ApplicationController {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
+    }
+
+
+    public <T> T findService(Class<T> clzz) {
+        return ServiceFramwork.injector.getInstance(clzz);
+    }
+
+    public <T> T findRPCService(String name, Class<T> clzz) {
+        return findService(DubboServer.class).getBean(name, clzz);
     }
 
     //session
@@ -211,7 +221,12 @@ public abstract class ApplicationController {
         String wow = StringUtils.substringAfter(
                 StringUtils.substringBefore(getClass().getName(), "." + getClass().getSimpleName()),
                 settings.get("application.controller", "") + ".");
-        wow = (settings.get("application.helper", "") + "." + wow + "." + getControllerNameWithoutSuffix() + "Helper");
+        if (isEmpty(wow)) {
+            wow = (settings.get("application.helper", "") + "." + getControllerNameWithoutSuffix() + "Helper");
+        } else {
+            wow = (settings.get("application.helper", "") + "." + wow + "." + getControllerNameWithoutSuffix() + "Helper");
+        }
+
         Object instance;
         try {
             instance = Class.forName(wow).newInstance();

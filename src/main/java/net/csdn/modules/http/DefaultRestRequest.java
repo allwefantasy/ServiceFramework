@@ -130,7 +130,12 @@ public class DefaultRestRequest implements RestRequest {
 
     @Override
     public String contentAsString() {
-        return Unicode.fromBytes(contentByteArray(), contentByteArrayOffset(), contentLength());
+        try {
+            return Unicode.fromBytes(contentByteArray(), contentByteArrayOffset(), contentLength());
+        } catch (Exception e) {
+            return null;
+        }
+
     }
 
     @Override
