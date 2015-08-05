@@ -220,7 +220,7 @@
       <file leaf-file-name="RestProtocol.java" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/alibaba/dubbo/rpc/protocol/rest/RestProtocol.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="96" column="59" selection-start="3309" selection-end="3309" vertical-scroll-proportion="0.22306718" vertical-offset="1364" max-vertical-offset="3080">
+            <state line="96" column="59" selection-start="3310" selection-end="3310" vertical-scroll-proportion="0.22306718" vertical-offset="1364" max-vertical-offset="3080">
               <folding />
             </state>
           </provider>
@@ -1520,7 +1520,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/alibaba/dubbo/rpc/protocol/rest/RestProtocol.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="96" column="59" selection-start="3309" selection-end="3309" vertical-scroll-proportion="0.22306718" vertical-offset="1364" max-vertical-offset="3080">
+        <state line="96" column="59" selection-start="3310" selection-end="3310" vertical-scroll-proportion="0.22306718" vertical-offset="1364" max-vertical-offset="3080">
           <folding />
         </state>
       </provider>

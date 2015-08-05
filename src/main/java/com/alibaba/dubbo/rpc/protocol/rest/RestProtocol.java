@@ -94,7 +94,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
 
             At at = method.getAnnotation(At.class);
-            if (at == null) return method.invoke(objects);
+            if (at == null) return method.invoke(o,objects);
 
             String path = at.path()[0];
             RestRequest.Method[] httpMethods = at.types();
