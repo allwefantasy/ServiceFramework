@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.csdn</groupId>
     <artifactId>ServiceFramework</artifactId>
-    <version>1.2.4-SNAPSHOT</version>
+    <version>1.2.9-SNAPSHOT</version>
 
     <licenses>
         <license>
@@ -194,11 +194,11 @@
         <repository>
             <id>releases</id>
             <name>releases</name>
-            <url>http://mvn.csdn.net:8081/nexus/content/repositories/releases/</url>
+            <url>http://mvn.letv.com/nexus/content/repositories/releases/</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
-            <url>http://mvn.csdn.net:8081/nexus/content/repositories/snapshots</url>
+            <url>http://mvn.letv.com/nexus/content/repositories/snapshots</url>
         </snapshotRepository>
 
     </distributionManagement>

@@ -18,6 +18,8 @@ import net.csdn.modules.http.processor.HttpStartProcessor;
 import net.csdn.modules.http.processor.ProcessInfo;
 import net.csdn.modules.http.processor.impl.DefaultHttpFinishProcessor;
 import net.csdn.modules.http.processor.impl.DefaultHttpStartProcessor;
+import net.csdn.modules.http.processor.impl.TraceHttpFinishProcessor;
+import net.csdn.modules.http.processor.impl.TraceHttpStartProcessor;
 import net.csdn.modules.http.support.HttpHolder;
 import net.csdn.modules.log.SystemLogger;
 import org.eclipse.jetty.server.Handler;
@@ -84,6 +86,12 @@ public class HttpServer {
         this.api = api;
         registerHttpStartProcessor(new DefaultHttpStartProcessor());
         registerHttpFinishProcessor(new DefaultHttpFinishProcessor());
+
+        if (settings.getAsBoolean("trace.enable", false)) {
+            registerHttpStartProcessor(new TraceHttpStartProcessor());
+            registerHttpFinishProcessor(new TraceHttpFinishProcessor());
+        }
+
         Environment environment = new Environment(settings);
         disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         server = new Server();

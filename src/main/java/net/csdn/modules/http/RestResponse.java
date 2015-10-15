@@ -42,4 +42,6 @@ public interface RestResponse {
     public ServletOutputStream outputStream() throws IOException;
 
     public HttpServletResponse httpServletResponse() throws IOException;
+
+    public String contentType();
 }

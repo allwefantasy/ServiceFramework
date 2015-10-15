@@ -218,7 +218,7 @@
       <module fileurl="file://$PROJECT_DIR$/ServiceFramework.iml" filepath="$PROJECT_DIR$/ServiceFramework.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" />
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK" />
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="Git" />
   </component>
@@ -500,24 +500,24 @@
     </library>
     <library name="Maven: net.csdn:ActiveORM:1.1-SNAPSHOT">
       <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/ActiveORM/1.1-SNAPSHOT/ActiveORM-1.1-SNAPSHOT.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/ActiveORM/1.1-SNAPSHOT/ActiveORM-1.1-20150426.064732-1.jar!/" />
       </CLASSES>
       <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/ActiveORM/1.1-SNAPSHOT/ActiveORM-1.1-SNAPSHOT-javadoc.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/ActiveORM/1.1-SNAPSHOT/ActiveORM-1.1-20150426.064732-1-javadoc.jar!/" />
       </JAVADOC>
       <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/ActiveORM/1.1-SNAPSHOT/ActiveORM-1.1-SNAPSHOT-sources.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/ActiveORM/1.1-SNAPSHOT/ActiveORM-1.1-20150426.064732-1-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Maven: net.csdn:csdn-common:1.4">
+    <library name="Maven: net.csdn:csdn-common:1.4-SNAPSHOT">
       <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/csdn-common/1.4/csdn-common-1.4.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/csdn-common/1.4-SNAPSHOT/csdn-common-1.4-20150708.142424-1.jar!/" />
       </CLASSES>
       <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/csdn-common/1.4/csdn-common-1.4-javadoc.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/csdn-common/1.4-SNAPSHOT/csdn-common-1.4-20150708.142424-1-javadoc.jar!/" />
       </JAVADOC>
       <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/csdn-common/1.4/csdn-common-1.4-sources.jar!/" />
+        <root url="jar://$MAVEN_REPOSITORY$/net/csdn/csdn-common/1.4-SNAPSHOT/csdn-common-1.4-20150708.142424-1-sources.jar!/" />
       </SOURCES>
     </library>
     <library name="Maven: net.csdn:MongoMongo:1.0">

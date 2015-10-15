@@ -14,7 +14,6 @@ import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
-import net.csdn.trace.TraceEnhancer;
 
 import java.io.DataInputStream;
 import java.util.*;
@@ -42,7 +41,6 @@ public class ServiceLoader implements Loader {
                     try {
 
                         CtClass ctClass = ServiceFramwork.classPool.makeClass(classFile);
-                        TraceEnhancer.enhanceMethod(ctClass);
                         try {
                             ctClasses.add(ctClass.toClass());
                         } catch (Exception e) {

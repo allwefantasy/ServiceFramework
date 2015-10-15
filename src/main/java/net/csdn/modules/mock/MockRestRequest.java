@@ -8,6 +8,7 @@ import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.RestUtils;
 import org.apache.commons.lang.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -145,6 +146,11 @@ public class MockRestRequest implements RestRequest {
     @Override
     public void flash(String key, Object value) {
 
+    }
+
+    @Override
+    public HttpServletRequest httpServletRequest() {
+        throw new RuntimeException("not implemented yet...");
     }
 
 

@@ -9,7 +9,6 @@ import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.ControllerEnhancer;
-import net.csdn.trace.TraceEnhancer;
 
 import java.io.DataInputStream;
 import java.lang.reflect.Modifier;
@@ -44,7 +43,6 @@ public class FilterEnhancer extends ControllerEnhancer {
 
         if (Modifier.isAbstract(ctClass.getModifiers())) return ctClass;
 
-        TraceEnhancer.enhanceMethod(ctClass);
 
         CtClass controller = classPool.get("net.csdn.modules.http.ApplicationController");
 

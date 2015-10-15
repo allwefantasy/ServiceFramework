@@ -103,6 +103,11 @@ public class MockRestResponse implements RestResponse {
         throw new RuntimeException("not implemented yet...");
     }
 
+    @Override
+    public String contentType() {
+        throw new RuntimeException("not implemented yet...");
+    }
+
     public void error(Exception e) throws IOException {
 
     }

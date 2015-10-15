@@ -23,7 +23,7 @@ import static net.csdn.common.unit.TimeValue.parseTimeValue;
  * Date: 12-6-12
  * Time: 下午10:27
  */
-public class DefaultRestRequest implements RestRequest {
+public class  DefaultRestRequest implements RestRequest {
     private static final Pattern commaPattern = Pattern.compile(",");
 
     private final HttpServletRequest servletRequest;
@@ -54,8 +54,13 @@ public class DefaultRestRequest implements RestRequest {
         if (params.containsKey("_method")) {
             this.method = Method.valueOf(params.get("_method"));
         }
+
         //application/x-www-form-urlencoded
         String contentType = servletRequest.getHeader("content-type");
+        if (contentType != null && contentType.startsWith("multipart/form-data")) {
+            content = new byte[0];
+            return;
+        }
         try {
             content = Streams.copyToByteArray(servletRequest.getInputStream());
         } catch (IOException e) {
@@ -179,6 +184,11 @@ public class DefaultRestRequest implements RestRequest {
     @Override
     public void flash(String key, Object value) {
         servletRequest.setAttribute(key, value);
+    }
+
+    @Override
+    public HttpServletRequest httpServletRequest() {
+        return servletRequest;
     }
 
     @Override

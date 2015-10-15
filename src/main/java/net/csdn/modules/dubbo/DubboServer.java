@@ -2,7 +2,6 @@ package net.csdn.modules.dubbo;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import net.csdn.ServiceFramwork;
 import net.csdn.common.env.Environment;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
@@ -23,8 +22,8 @@ public class DubboServer {
     private Settings settings;
     private ApplicationContext ctx;
 
-    public  <T> T getBean(String name,Class<T> clzzz){
-        return (T)ctx.getBean(name);
+    public <T> T getBean(String name, Class<T> clzzz) {
+        return (T) ctx.getBean(name);
     }
 
     @Inject
@@ -34,17 +33,14 @@ public class DubboServer {
             // 初始化Spring
             List<String> configFiles = new ArrayList<String>();
             for (File file : env.configFile().listFiles()) {
-                if(ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)){
-                    if (file.getName().endsWith("_test_client.xml")) {
-                        configFiles.add("file:" + file.getPath());
-                    }
-                }else{
-                    if (file.getName().endsWith("_server.xml")||(file.getName().endsWith("_client.xml") && !file.getName().endsWith("_test_client.xml"))) {
-                        configFiles.add("file:" + file.getPath());
-                    }
+                if (file.getName().endsWith("_test_client.xml")) {
+                    configFiles.add("file:" + file.getPath());
+                }
+                if (file.getName().endsWith("_server.xml") || (file.getName().endsWith("_client.xml") && !file.getName().endsWith("_test_client.xml"))) {
+                    configFiles.add("file:" + file.getPath());
                 }
             }
-            if(configFiles.size()==0)return;
+            if (configFiles.size() == 0) return;
             String[] configFilesS = new String[configFiles.size()];
             configFiles.toArray(configFilesS);
             ctx = new FileSystemXmlApplicationContext(configFilesS);

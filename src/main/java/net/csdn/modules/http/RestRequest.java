@@ -3,6 +3,7 @@ package net.csdn.modules.http;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
@@ -30,6 +31,7 @@ public interface RestRequest {
 
 
     public String url();
+
     public String queryString();
 
     /**
@@ -92,4 +94,6 @@ public interface RestRequest {
 
 
     public void flash(String key, Object value);
+
+    public HttpServletRequest httpServletRequest();
 }

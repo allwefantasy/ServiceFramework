@@ -50,6 +50,8 @@ public class DefaultResponse implements RestResponse {
             content_type = "text/plain;charset=UTF-8";
         } else if (viewType == ViewType.html) {
             content_type = "text/html;charset=UTF-8";
+        } else if (viewType == ViewType.stream) {
+            content_type = "application/octet-stream";
         }
     }
 
@@ -151,7 +153,11 @@ public class DefaultResponse implements RestResponse {
     }
 
     public void send() throws IOException {
+
         httpServletResponse.setContentType(content_type);
+        if ("application/octet-stream".equals(content_type)) {
+            return;
+        }
         if (!isNull(redirectPath)) {
             httpServletResponse.sendRedirect(httpServletResponse.encodeRedirectURL(redirectPath));
             return;
@@ -202,6 +208,11 @@ public class DefaultResponse implements RestResponse {
 
     public HttpServletResponse httpServletResponse() throws IOException {
         return httpServletResponse;
+    }
+
+    @Override
+    public String contentType() {
+        return this.content_type;
     }
 
 
