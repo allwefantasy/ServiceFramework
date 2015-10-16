@@ -13,6 +13,7 @@ import net.csdn.common.reflect.ReflectHelper;
 import net.csdn.modules.http.support.FilterHelper2;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -144,20 +145,33 @@ public class RestController {
     public Tuple<Class<ApplicationController>, Method> getHandler(RestRequest request) {
         String path = getPath(request);
         RestRequest.Method method = request.method();
+        Map<String, String> params = new HashMap<String, String>();
+        Tuple<Class<ApplicationController>, Method> result = null;
         if (method == RestRequest.Method.GET) {
-            return getHandlers.retrieve(path, request.params());
+            result = getHandlers.retrieve(path, params);
         } else if (method == RestRequest.Method.POST) {
-            return postHandlers.retrieve(path, request.params());
+            result = postHandlers.retrieve(path, params);
         } else if (method == RestRequest.Method.PUT) {
-            return putHandlers.retrieve(path, request.params());
+            result = putHandlers.retrieve(path, params);
         } else if (method == RestRequest.Method.DELETE) {
-            return deleteHandlers.retrieve(path, request.params());
+            result = deleteHandlers.retrieve(path, params);
         } else if (method == RestRequest.Method.HEAD) {
-            return headHandlers.retrieve(path, request.params());
+            result = headHandlers.retrieve(path, params);
         } else if (method == RestRequest.Method.OPTIONS) {
-            return optionsHandlers.retrieve(path, request.params());
-        } else {
-            return null;
+            result = optionsHandlers.retrieve(path, params);
+        }
+        mergeParams(request, params);
+        return result;
+    }
+
+    /*
+      queryString里的参数比url里的优先，可覆盖
+     */
+    public void mergeParams(RestRequest restRequest, Map<String, String> params) {
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            if (!restRequest.params().containsKey(entry.getKey())) {
+                restRequest.params().put(entry.getKey(), entry.getValue());
+            }
         }
     }
 

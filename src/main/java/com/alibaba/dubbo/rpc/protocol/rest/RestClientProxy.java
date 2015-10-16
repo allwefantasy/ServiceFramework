@@ -138,7 +138,9 @@ public class RestClientProxy implements InvocationHandler {
             long responseLength = -1;
             if (response != null) responseStatus = response.getStatus();
             if (response != null) responseLength = response.getContent().length();
-            traceContext.finish(responseStatus, responseLength, message, logger);
+            if (traceContext != null) {
+                traceContext.finish(responseStatus, responseLength, message, logger);
+            }
         }
 
         if (response == null)
