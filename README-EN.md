@@ -17,6 +17,8 @@ add Dependency in your pom.xml:
             <version>1.0</version>
         </dependency>
 
+however,we realy recommend you clone source and using 'maven deploy -DskipTests' command to upload jar to your private maven repository.
+
 make sure config/application.yml,config/logging.yml are present in your project root.
 
 
@@ -74,6 +76,67 @@ make sure config/application.yml,config/logging.yml are present in your project 
 			        ), ViewType.html);
 			    }  
 
+
+7. Dubbo is suppored now. You can do everything dubbo can in Serviceframework. RestProtocol as a new feature is also been  added to make invoking HTTP API like RPC.
+
+			
+			@At(path = "/say/hello", types = {RestRequest.Method.GET})
+			    public void sayHello() {
+			        render(200, "hello" + param("kitty"));
+			}
+			
+			you can just type 'http://127.0.0.1/say/hello?kitty=wow' in Chrome ， 'hellokitty' will be retured.
+			
+		   However,maby you wanna invoke this HTTP API in your program. Just declare a interface like this:
+
+					public interface TagController {
+					    @At(path = "/say/hello", types = {RestRequest.Method.GET, RestRequest.Method.POST})
+					    public HttpTransportService.SResponse sayHello(RestRequest.Method method, Map<String, String> params);
+					
+					    @At(path = "/say/hello", types = {RestRequest.Method.GET})
+					    public HttpTransportService.SResponse sayHello3(@Param("kitty") String kitty);
+					
+					now,you can code like this:
+					
+					tagController.sayHello(RestRequest.Method.GET, WowCollections.map("kitty", "你好，太脑残")).getContent()
+					
+					or
+					
+					tagController.sayHello3("哇塞，天才呀").getContent()
+					
+
+8. Without Dubbo,you can also invoke HTTP API like RPC.
+
+    * Suppose we have a Searcher, the rest API is something like '/v2/~/~/_search'。Create a new Interface in your project(Scala Example):
+    
+			   trait SearcherClient {
+			  @At(path = Array("/v2/~/~/_search"), types = Array(GET, POST))
+			  @BasicInfo(
+			    desc = "索引服务",
+			    state = State.alpha,
+			    testParams = "",
+			    testResult = "",
+			    author = "WilliamZhu",
+			    email = "allwefantasy@gmail.com"
+			  )
+			  def search(params: Map[String, String], content: String, method: net.csdn.modules.http.RestRequest.Method): java.util.List[HttpTransportService.SResponse]
+			
+			}
+
+
+    *  Now you can create SearchClient instance like this (Please make sure you only create once.)(Scala Example):
+
+			       val _searchClient = AggregateRestClient.buildClient[SearcherClient](hostAndPorts, new SearchEngineStrategy(), httpRequest)
+			       
+			       //SearchEngineStrategy is the Strategy how you invoke multi backend.
+
+    * Now ,invoking like this(Scala Example)：			       			       
+    
+			
+			val res = _searchClient.search(
+			    url._2.toMap ++ Map("index" -> index, "type" -> ctype),
+			    query,
+			    RestRequest.Method.POST).searchResult
 
 
 
