@@ -86,30 +86,30 @@ ServiceFramework 特点：
 
         服务提供者可以针对一个http接口定义出任意个方法，每个方法都之定义一部分参数，这样可以有效方便调用者使用。
 
-7. 如果你不使用Dubbo，你可以可以非常容易的调用第三方的标准HTTP接口，达到类似RPC调用的效果。
+7. 如果你不使用Dubbo，你也可以非常容易的调用第三方的标准HTTP接口，达到类似RPC调用的效果。
 
    * 将第三方HTTP API 做个申明，例如有个搜索接口(Scala代码示例)
    
-		   trait SearcherClient {
-		  @At(path = Array("/v2/~/~/_search"), types = Array(GET, POST))
-		  @BasicInfo(
-		    desc = "索引服务",
-		    state = State.alpha,
-		    testParams = "",
-		    testResult = "",
-		    author = "WilliamZhu",
-		    email = "allwefantasy@gmail.com"
-		  )
-		  def search(params: Map[String, String], content: String, method: net.csdn.modules.http.RestRequest.Method): java.util.List[HttpTransportService.SResponse]
-		
-		}
+			   trait SearcherClient {
+			  @At(path = Array("/v2/~/~/_search"), types = Array(GET, POST))
+			  @BasicInfo(
+			    desc = "索引服务",
+			    state = State.alpha,
+			    testParams = "",
+			    testResult = "",
+			    author = "WilliamZhu",
+			    email = "allwefantasy@gmail.com"
+			  )
+			  def search(params: Map[String, String], content: String, method: net.csdn.modules.http.RestRequest.Method): java.util.List[HttpTransportService.SResponse]
+			
+			}
 
     * 接着在需要使用该接口的地方调用如下代码构建SearcherClient对象。记住，这个对象只能构建一次(Scala代码示例)
     
-		   val _searchClient = AggregateRestClient.buildClient[SearcherClient](hostAndPorts, new SearchEngineStrategy(), httpRequest)
-		   //其中，hostAndPorts 为域名和端口。
-		   //可以是多个。SearchEngineStrategy 是自定义实现如何调用后端服务，
-		   //是轮训的负载均衡还是有特别的逻辑
+				   val _searchClient = AggregateRestClient.buildClient[SearcherClient](hostAndPorts, new SearchEngineStrategy(), httpRequest)
+				   //其中，hostAndPorts 为域名和端口。
+				   //可以是多个。SearchEngineStrategy 是自定义实现如何调用后端服务，
+				   //是轮训的负载均衡还是有特别的逻辑
  
     
     * 现在可以使用了(Scala代码示例)
