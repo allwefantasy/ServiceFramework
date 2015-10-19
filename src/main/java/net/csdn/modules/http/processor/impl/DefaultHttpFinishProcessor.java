@@ -61,10 +61,9 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
             long endTime = System.currentTimeMillis();
             String url = httpServletRequest.getQueryString();
             String activeOrmTime = disableMysql ? "" : "(ActiveORM: " + CSDNStatFilterstat.SQLTIME().get() + "ms)";
-            logger.info("Completed " + processInfo.status + " in " + (endTime - startTime) + "ms " + activeOrmTime);
-            logger.info(httpServletRequest.getMethod() +
-                    " " + httpServletRequest.getRequestURI() + (isNull(url) ? "" : ("?" + url)));
-            logger.info("\n\n\n\n");
+            String completed = "Completed " + processInfo.status + " in " + (endTime - startTime) + "ms " + activeOrmTime;
+            logger.info(completed + " " + httpServletRequest.getMethod() +
+                    "\t" + httpServletRequest.getRequestURI() + (isNull(url) ? "" : ("?" + url))+"\n\n\n");
         }
     }
 }
