@@ -1,5 +1,6 @@
 package net.csdn.modules.http.processor.impl;
 
+import net.csdn.common.collections.WowCollections;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
@@ -20,10 +21,21 @@ public class TraceHttpFinishProcessor implements HttpFinishProcessor {
 
     @Override
     public void process(Settings settings, HttpServletRequest request, HttpServletResponse response, ProcessInfo processInfo) {
-        TraceContext traceContext = Trace.get();
-        if (traceContext != null) {
-            traceContext.log(logger, traceContext.newRemoteTraceElement(false, traceContext.rpcId(), VisitType.HTTP_SERVICE()));
+        try {
+            TraceContext traceContext = Trace.get();
+            if (traceContext != null) {
+                String hostName = request.getServerName();
+                int port = request.getServerPort();
+                String scheme = request.getScheme();
+                String queryStr = request.getQueryString();
+                String url = scheme + "://" + hostName + ":" + port + request.getRequestURI() + (WowCollections.isNull(queryStr) ? "" : ("?" + queryStr));
+                traceContext.log(logger, traceContext.
+                        newRemoteTraceElement(false, traceContext.rpcId(), url, VisitType.HTTP_SERVICE()));
+            }
+            Trace.clean();
+        } catch (Exception e) {
+            logger.info("trace clean error", e);
         }
-        Trace.clean();
+
     }
 }

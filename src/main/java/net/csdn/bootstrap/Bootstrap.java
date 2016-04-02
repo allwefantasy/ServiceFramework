@@ -58,7 +58,7 @@ public class Bootstrap {
     //配置整个系统模块
     private static void configureSystem() throws Exception {
         if (isSystemConfigured) return;
-        Tuple<Settings, Environment> tuple = InternalSettingsPreparer.prepareSettings(EMPTY_SETTINGS);
+        Tuple<Settings, Environment> tuple = InternalSettingsPreparer.prepareSettings(EMPTY_SETTINGS, ServiceFramwork.applicaionYamlName());
         if (ServiceFramwork.mode.equals(ServiceFramwork.Mode.development)) {
             ServiceFramwork.mode = ServiceFramwork.Mode.valueOf(tuple.v1().get("mode"));
         }
@@ -140,8 +140,8 @@ public class Bootstrap {
             }
         }
 
-        if (!ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)||
-                dubboServer!=null || httpServer!=null || thriftServer!=null
+        if (!ServiceFramwork.isNoThreadJoin() && (!ServiceFramwork.mode.equals(ServiceFramwork.Mode.test) ||
+                dubboServer != null || httpServer != null || thriftServer != null)
                 ) {
             Thread.currentThread().join();
         }

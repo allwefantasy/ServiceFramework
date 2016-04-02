@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
  */
 public class ProcessInfo {
     public final long startTime = System.currentTimeMillis();
-    public int status ;
+    public int status;
     public Method method;
+    public long responseLength = 0;
 }

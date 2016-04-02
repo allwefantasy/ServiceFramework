@@ -10,7 +10,6 @@ import net.csdn.jpa.JPA;
 import net.csdn.modules.controller.API;
 import net.csdn.modules.http.processor.HttpFinishProcessor;
 import net.csdn.modules.http.processor.ProcessInfo;
-import net.csdn.trace.Trace;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,7 +29,6 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
         systemLog(processInfo.startTime, request, settings, processInfo);
         endORM(disableMySql);
         closeTx(settings, processInfo);
-        Trace.clean();
         API api = ServiceFramwork.injector.getInstance(API.class);
         api.statusIncrement(processInfo.method, processInfo.status);
         api.averageTimeIncrement(processInfo.method, System.currentTimeMillis() - processInfo.startTime);
@@ -62,8 +60,8 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
             String url = httpServletRequest.getQueryString();
             String activeOrmTime = disableMysql ? "" : "(ActiveORM: " + CSDNStatFilterstat.SQLTIME().get() + "ms)";
             String completed = "Completed " + processInfo.status + " in " + (endTime - startTime) + "ms " + activeOrmTime;
-            logger.info(completed + " " + httpServletRequest.getMethod() +
-                    "\t" + httpServletRequest.getRequestURI() + (isNull(url) ? "" : ("?" + url))+"\n\n\n");
+            logger.info(completed + "\t" + httpServletRequest.getMethod() +
+                    " " + httpServletRequest.getRequestURI() + (isNull(url) ? "" : ("?" + url)) + "\n\n\n");
         }
     }
 }

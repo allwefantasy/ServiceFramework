@@ -8,6 +8,7 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.Url;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.transport.HttpTransportService;
+import net.csdn.trace.RemoteTraceElementKey;
 import net.csdn.trace.Trace;
 import net.csdn.trace.TraceContext;
 import net.csdn.trace.VisitType;
@@ -112,11 +113,32 @@ public class RestClientProxy implements InvocationHandler {
         if (!methodSupport) throw new RuntimeException(reqMethod + "not support in invoke " + url);
 
 
+
+
+
+
+        //支持rest接口
+        List<String> replaceKeys = new ArrayList<String>();
+        String remenberPath = path;
+        for (Map.Entry<String, String> entry : params.entrySet()) {
+            String newPath = path.replace("{" + entry.getKey() + "}", entry.getValue());
+            if (!newPath.equals(remenberPath)) {
+                remenberPath = newPath;
+                replaceKeys.add(entry.getKey());
+            }
+        }
+        for (String removeKey : replaceKeys) {
+            params.remove(removeKey);
+        }
+        Url finalUrl = new Url(url + "/" + remenberPath);
+
         TraceContext traceContext = Trace.get();
         if (traceContext != null) {
-            traceContext.start(VisitType.HTTP_SERVICE());
+            traceContext.start(finalUrl.toString(), VisitType.HTTP_SERVICE());
+            finalUrl.addParam(RemoteTraceElementKey.TRACEID(), traceContext.traceId());
+            finalUrl.addParam(RemoteTraceElementKey.RPCID(), traceContext.currentRpcId());
         }
-        Url finalUrl = new Url(url + "/" + path);
+
         HttpTransportService.SResponse response = null;
         String message = null;
         try {

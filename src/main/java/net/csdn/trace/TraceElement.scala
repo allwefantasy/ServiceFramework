@@ -8,7 +8,8 @@ import net.csdn.trace.VisitType.VisitType
 
 case class RemoteTraceElement(traceId: TraceId,
                               rpcId: String,
-                              starTime: Long,
+                              url:String,
+                              startTime: Long,
                               timeConsume: Long,
                               resultCode: Int,
                               length: Long,

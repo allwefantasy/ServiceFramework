@@ -29,6 +29,17 @@ public class ServiceFramwork {
     private static boolean DisableHTTP = false;
     private static boolean DisableThrift = false;
     private static boolean DisableDubbo = false;
+    private static boolean NoThreadJoin = false;
+
+    private static String applicaionYamlName = "application.yml";
+
+    public static void applicaionYamlName(String applicaionYamlName) {
+        ServiceFramwork.applicaionYamlName = applicaionYamlName;
+    }
+
+    public static String applicaionYamlName() {
+        return ServiceFramwork.applicaionYamlName;
+    }
 
     public static void disableHTTP() {
         DisableHTTP = true;
@@ -52,6 +63,14 @@ public class ServiceFramwork {
 
     public static boolean isDisabledDubbo() {
         return DisableDubbo;
+    }
+
+    public static boolean isNoThreadJoin() {
+        return NoThreadJoin;
+    }
+
+    public static void enableNoThreadJoin() {
+        NoThreadJoin = true;
     }
 
 

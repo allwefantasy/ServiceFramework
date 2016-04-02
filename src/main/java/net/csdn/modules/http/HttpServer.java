@@ -59,6 +59,7 @@ public class HttpServer {
     private Settings settings;
     private SystemLogger systemLogger;
     private API api;
+    private final int httpPort;
 
     private List<HttpStartProcessor> httpStartProcessorList = new ArrayList();
     private List<HttpFinishProcessor> httpFinishProcessorList = new ArrayList();
@@ -100,7 +101,8 @@ public class HttpServer {
         threadPool.setMinThreads(settings.getAsInt("http.threads.min", 100));
         threadPool.setMaxThreads(settings.getAsInt("http.threads.max", 1000));
         connector.setThreadPool(threadPool);
-        connector.setPort(settings.getAsInt("http.port", 8080));
+        httpPort = settings.getAsInt("http.port", generateHttpPort());
+        connector.setPort(httpPort);
         server.addConnector(connector);
 
         HandlerList handlers = new HandlerList();
@@ -134,6 +136,25 @@ public class HttpServer {
 
     public void registerHttpFinishProcessor(HttpFinishProcessor httpFinishProcessor) {
         httpFinishProcessorList.add(httpFinishProcessor);
+    }
+
+
+    private int generateHttpPort() {
+        String clzz = settings.get("http.class.port", "");
+        if (!clzz.isEmpty()) {
+            PortGenerator pg = null;
+            try {
+                pg = (PortGenerator) (Class.forName(clzz).newInstance());
+                return pg.getPort();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return 8080;
+    }
+
+    public int getHttpPort() {
+        return httpPort;
     }
 
     class DefaultHandler extends AbstractHandler {
@@ -205,6 +226,9 @@ public class HttpServer {
                 defaultErrorAction(channel, e);
             } finally {
                 processInfo.status = channel.status();
+                if (channel.content() != null) {
+                    processInfo.responseLength = channel.content().length();
+                }
                 for (HttpFinishProcessor httpFinishProcessor : httpFinishProcessorList) {
                     httpFinishProcessor.process(settings, httpServletRequest, httpServletResponse, processInfo);
                 }
