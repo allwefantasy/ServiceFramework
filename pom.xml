@@ -140,6 +140,7 @@
                     <target>1.6</target>
                     <compilerArgument>-g</compilerArgument>
                     <verbose>true</verbose>
+					<encoding>UTF-8</encoding>
                 </configuration>
 
             </plugin>
