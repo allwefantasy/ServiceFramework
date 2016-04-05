@@ -4,14 +4,28 @@
 
 ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高效性，其开发效率可以比肩Rails.
 
-ServcieFramework 目前更新频率较高,我现在一直疏于更新中央仓库的版本。所以Wiki中不再提供Maven版本。
+ServcieFramework 目前更新频率较高,我现在一直疏于更新中央仓库的版本。所以不再更新maven中央仓库。
 
 建议：
 
-1. 下载 https://github.com/allwefantasy/csdn_common，并且deploy自己的私有maven仓库.
-2. 下载ServiceFramework 通过maven deploy到自己的maven仓库。
 
-现在代码中的pom文件用的是自己公司的maven仓库。根目录下有个open-source.xml，修改成pom.xml即可正常编译。
+1. git clone https://github.com/allwefantasy/csdn_common，
+maven install 到自己本地或者 mvn deploy到自己的私有maven仓库.
+
+2. 如果需要使用MySQL支持，则git clone https://github.com/allwefantasy/active_orm,
+maven install 到自己本地或者 mvn deploy到自己的私有maven仓库.
+
+3. 如果需要使用MongoDB支持，则git clone https://github.com/allwefantasy/mongomongo,
+   maven install 到自己本地或者 mvn deploy到自己的私有maven仓库。
+
+2. git clone ServiceFramework, maven install 到自己本地或者 mvn deploy到自己的私有maven仓库.
+
+经过以上步骤即可使用
+
+### 项目示例
+
+[https://github.com/allwefantasy/godear](https://github.com/allwefantasy/godear) 该项目是一个RSS订阅系统。
+里面展示了ServiceFramework各种典型用法，包括如何构造非JSON Rest API的具有页面的接口。
 
 ### 在Maven中使用该项目
 
