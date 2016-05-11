@@ -110,7 +110,15 @@ public class HttpServer {
             ResourceHandler resource_handler = new ResourceHandler();
             resource_handler.setDirectoriesListed(false);
             try {
-                resource_handler.setBaseResource(Resource.newResource(environment.templateDirFile().getPath() + "/assets/"));
+                if (settings.getAsBoolean("serviceframework.static.loader.classpath.enable", false)) {
+                    String webDir = this.getClass().getClassLoader().getResource("assets").toExternalForm();
+                    resource_handler.setBaseResource(
+                            Resource.newResource(webDir));
+                } else {
+                    resource_handler.setBaseResource(
+                            Resource.newResource(environment.templateDirFile().getPath() + "/assets/"));
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -115,6 +115,11 @@
             <artifactId>zkclient</artifactId>
             <version>0.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>9.2.8.v20150217</version>
+        </dependency>
 
     </dependencies>
 
