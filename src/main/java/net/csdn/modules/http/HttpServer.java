@@ -106,17 +106,18 @@ public class HttpServer {
         server.addConnector(connector);
 
         HandlerList handlers = new HandlerList();
+        String staticDir = settings.get("serviceframework.static.loader.classpath.dir", "assets");
         if (settings.getAsBoolean("application.static.enable", false)) {
             ResourceHandler resource_handler = new ResourceHandler();
             resource_handler.setDirectoriesListed(false);
             try {
                 if (settings.getAsBoolean("serviceframework.static.loader.classpath.enable", false)) {
-                    String webDir = this.getClass().getClassLoader().getResource("assets").toExternalForm();
+                    String webDir = this.getClass().getClassLoader().getResource(staticDir).toExternalForm();
                     resource_handler.setBaseResource(
                             Resource.newResource(webDir));
                 } else {
                     resource_handler.setBaseResource(
-                            Resource.newResource(environment.templateDirFile().getPath() + "/assets/"));
+                            Resource.newResource(environment.templateDirFile().getPath() + "/"+staticDir+"/"));
                 }
 
             } catch (IOException e) {
