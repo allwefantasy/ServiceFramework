@@ -103,6 +103,11 @@ public class HttpServer {
         connector.setThreadPool(threadPool);
         httpPort = settings.getAsInt("http.port", generateHttpPort());
         connector.setPort(httpPort);
+
+        if (!settings.get("http.host", "").isEmpty()) {
+            connector.setHost(settings.get("http.host", ""));
+        }
+
         server.addConnector(connector);
 
         HandlerList handlers = new HandlerList();
@@ -117,7 +122,7 @@ public class HttpServer {
                             Resource.newResource(webDir));
                 } else {
                     resource_handler.setBaseResource(
-                            Resource.newResource(environment.templateDirFile().getPath() + "/"+staticDir+"/"));
+                            Resource.newResource(environment.templateDirFile().getPath() + "/" + staticDir + "/"));
                 }
 
             } catch (IOException e) {
