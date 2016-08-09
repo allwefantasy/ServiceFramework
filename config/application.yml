@@ -125,5 +125,5 @@ qps:
 qpslimit:
    enable: true
 dubbo:
-   disable: false
+   disable: true
    server: true

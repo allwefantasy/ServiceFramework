@@ -22,14 +22,10 @@ import net.csdn.modules.http.processor.impl.TraceHttpFinishProcessor;
 import net.csdn.modules.http.processor.impl.TraceHttpStartProcessor;
 import net.csdn.modules.http.support.HttpHolder;
 import net.csdn.modules.log.SystemLogger;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.SessionManager;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.resource.Resource;
@@ -95,12 +91,19 @@ public class HttpServer {
 
         Environment environment = new Environment(settings);
         disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
-        server = new Server();
-        SelectChannelConnector connector = new SelectChannelConnector();
+
         QueuedThreadPool threadPool = new QueuedThreadPool();
         threadPool.setMinThreads(settings.getAsInt("http.threads.min", 100));
         threadPool.setMaxThreads(settings.getAsInt("http.threads.max", 1000));
-        connector.setThreadPool(threadPool);
+
+        server = new Server(threadPool);
+
+        HttpConfiguration httpConfig = new HttpConfiguration();
+
+        ServerConnector connector = new ServerConnector(server,
+                new HttpConnectionFactory(httpConfig));
+
+
         httpPort = settings.getAsInt("http.port", generateHttpPort());
         connector.setPort(httpPort);
 
