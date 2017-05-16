@@ -9,13 +9,13 @@ ServcieFramework 目前更新频率较高,我现在一直疏于更新中央仓�
 建议：
 
 
-1. git clone https://github.com/allwefantasy/csdn_common，
+1. git clone https://github.com/allwefantasy/csdn_common ，
 maven install 到自己本地或者 mvn deploy到自己的私有maven仓库.
 
-2. 如果需要使用MySQL支持，则git clone https://github.com/allwefantasy/active_orm,
+2. 如果需要使用MySQL支持，则git clone https://github.com/allwefantasy/active_orm ,
 maven install 到自己本地或者 mvn deploy到自己的私有maven仓库.
 
-3. 如果需要使用MongoDB支持，则git clone https://github.com/allwefantasy/mongomongo,
+3. 如果需要使用MongoDB支持，则git clone https://github.com/allwefantasy/mongomongo ,
    maven install 到自己本地或者 mvn deploy到自己的私有maven仓库。
 
 2. git clone ServiceFramework, maven install 到自己本地或者 mvn deploy到自己的私有maven仓库.
