@@ -8,3 +8,6 @@
 release.properties
 /bin/build_dependecy.sh
 /config/application.yml
+/framework-common/target
+/framework-jetty-8/target
+/framework-server/target

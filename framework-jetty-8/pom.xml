@@ -6,7 +6,7 @@
     <parent>
         <artifactId>ServiceFramework</artifactId>
         <groupId>net.csdn</groupId>
-        <version>1.3.2-SNAPSHOT-2.10</version>
+        <version>1.3.2-SNAPSHOT-2.11</version>
     </parent>
 
     <artifactId>framework-jetty-8</artifactId>
@@ -20,7 +20,7 @@
         <dependency>
             <groupId>net.csdn</groupId>
             <artifactId>framework-common</artifactId>
-            <version>1.3.2-SNAPSHOT-2.10</version>
+            <version>1.3.2-SNAPSHOT-${scala.binary.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
