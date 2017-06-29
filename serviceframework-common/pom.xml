@@ -7,6 +7,7 @@
         <artifactId>ServiceFramework_2.10</artifactId>
         <groupId>net.csdn</groupId>
         <version>1.3.2-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>net.csdn</groupId>
