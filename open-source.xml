@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-    </parent>
-
     <groupId>net.csdn</groupId>
-    <artifactId>ServiceFramework</artifactId>
-    <version>1.1-SNAPSHOT</version>
+    <artifactId>ServiceFramework_2.11</artifactId>
+    <packaging>pom</packaging>
+    <version>1.3.2-SNAPSHOT</version>
 
     <licenses>
         <license>
@@ -18,46 +14,60 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <modules>
+        <module>serviceframework-orm</module>
+        <module>serviceframework-common</module>
+        <module>serviceframework-mongo</module>
+        <module>serviceframework-web</module>
+    </modules>
 
-    <developers>
-        <developer>
-            <id>allwefantasy</id>
-            <name>WilliamZhu</name>
-            <email>allwefantasy@gmail.com</email>
-        </developer>
-    </developers>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <scala.version>2.10.3</scala.version>
+        <scala.binary.version>2.10</scala.binary.version>
+        <scala.jline.version>2.10.3</scala.jline.version>
+        <jetty.version>9.2.16.v20160414</jetty.version>
+        <project.version>1.3.2-SNAPSHOT</project.version>
+    </properties>
 
-    <scm>
-        <connection>scm:git:git@github.com:allwefantasy/ServiceFramework.git</connection>
-        <developerConnection>scm:git:git@github.com:allwefantasy/ServiceFramework.git</developerConnection>
-        <url>https://github.com/allwefantasy/ServiceFramework</url>
-    </scm>
+    <profiles>
 
-    <issueManagement>
-        <system>github</system>
-        <url>https://github.com/allwefantasy/ServiceFramework/issues</url>
-    </issueManagement>
+        <profile>
+            <id>scala-2.11</id>
+            <activation>true</activation>
+            <properties>
+                <scala.version>2.11.8</scala.version>
+                <scala.binary.version>2.11</scala.binary.version>
+                <scala.jline.version>2.11.0-M3</scala.jline.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>scala-2.10</id>
+            <properties>
+                <scala.version>2.10.3</scala.version>
+                <scala.binary.version>2.10</scala.binary.version>
+                <scala.jline.version>2.10.3</scala.jline.version>
+            </properties>
+
+        </profile>
+
+        <profile>
+            <id>jetty-9</id>
+            <properties>
+                <jetty.version>9.2.16.v20160414</jetty.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>jetty-8</id>
+            <properties>
+                <jetty.version>9.2.16.v20160414</jetty.version>
+            </properties>
+
+        </profile>
+
+    </profiles>
 
     <dependencies>
-        <dependency>
-            <groupId>net.csdn</groupId>
-            <artifactId>csdn-common</artifactId>
-            <version>1.5</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.csdn</groupId>
-            <artifactId>MongoMongo</artifactId>
-            <version>1.0</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>net.csdn</groupId>
-            <artifactId>ActiveORM</artifactId>
-            <version>1.0</version>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
@@ -68,29 +78,37 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>7.2.2.v20101205</version>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-continuation</artifactId>
-            <version>7.2.2.v20101205</version>
+            <version>${jetty.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-io</artifactId>
-            <version>7.2.2.v20101205</version>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-http</artifactId>
-            <version>7.2.2.v20101205</version>
+            <version>${jetty.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util</artifactId>
-            <version>7.2.2.v20101205</version>
+            <version>${jetty.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+
+
         <dependency>
             <groupId>org.apache.velocity</groupId>
             <artifactId>velocity</artifactId>
@@ -118,66 +136,96 @@
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>scala-library</artifactId>
-            <version>2.10.3</version>
+            <version>${scala.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.scala-lang</groupId>
             <artifactId>jline</artifactId>
-            <version>2.10.3</version>
+            <version>${scala.jline.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>dubbo</artifactId>
+            <version>2.5.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.101tec</groupId>
+            <artifactId>zkclient</artifactId>
+            <version>0.5</version>
+            <scope>provided</scope>
+        </dependency>
+
 
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>performRelease</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.1</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.8.1</version>
+                <configuration>
+                    <includes>
+                        <include>**/*.java</include>
+                        <include>**/*.scala</include>
+                    </includes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.6</source>
+                    <target>1.6</target>
+                    <compilerArgument>-g</compilerArgument>
+                    <verbose>true</verbose>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+
+            </plugin>
+            <plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <version>2.15.2</version>
+                <configuration>
+                    <args>
+                        <arg>
+                            -g:vars
+                        </arg>
+                    </args>
+                    <verbose>true</verbose>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>attach-sources</id>
+                        <id>scala-compile-first</id>
+                        <phase>process-resources</phase>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>scala-test-compile</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                            <goal>testCompile</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
+            <!--   要将源码放上去，需要加入这个插件    -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>attach-javadocs</id>
+                        <phFase>compile</phFase>
                         <goals>
                             <goal>jar</goal>
                         </goals>
@@ -186,7 +234,6 @@
             </plugin>
         </plugins>
     </build>
-
     <distributionManagement>
         <snapshotRepository>
             <id>sonatype-nexus-snapshots</id>
