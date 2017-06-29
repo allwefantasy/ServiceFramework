@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>ServiceFramework_2.11</artifactId>
+        <groupId>net.csdn</groupId>
+        <version>1.3.2-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <profiles>
+        <profile>
+            <id>web-include-jetty-9</id>
+            <dependencies>
+                <dependency>
+                    <groupId>net.csdn</groupId>
+                    <artifactId>serviceframework-jetty-9-server</artifactId>
+                    <version>${parent.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>web-include-jetty-8</id>
+            <!--<properties>-->
+                <!--<jetty.version>8.1.16.v20140903</jetty.version>-->
+            <!--</properties>-->
+            <dependencies>
+                <dependency>
+                    <groupId>net.csdn</groupId>
+                    <artifactId>serviceframework-jetty-8-server</artifactId>
+                    <version>${parent.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
+    <artifactId>serviceframework-web_2.11</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>net.csdn</groupId>
+            <artifactId>serviceframework-common_${scala.binary.version}</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>net.csdn</groupId>
+            <artifactId>serviceframework-mongo_${scala.binary.version}</artifactId>
+            <version>${parent.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.csdn</groupId>
+            <artifactId>serviceframework-orm_${scala.binary.version}</artifactId>
+            <version>${parent.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+</project>

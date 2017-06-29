@@ -8,3 +8,8 @@
 release.properties
 /bin/build_dependecy.sh
 /config/application.yml
+/serviceframework-jetty-8-server/target
+/serviceframework-jetty-9-server/target
+/serviceframework-mongo/target
+/serviceframework-orm/target
+/serviceframework-web/target

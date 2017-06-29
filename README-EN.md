@@ -9,13 +9,12 @@ written by  java language according to the Model-View-Controller(MVC) pattern.
 
 ### How to use ServiceFramework in Maven
 
-add Dependency in your pom.xml:
+clone and build:
 
-        <dependency>
-            <groupId>net.csdn</groupId>
-            <artifactId>ServiceFramework</artifactId>
-            <version>1.0</version>
-        </dependency>
+    git clone git@github.com:allwefantasy/ServiceFramework.git
+    mvn install -Pscala-2.11 -Pjetty-8 -Pweb-include-jetty-8
+
+
 
 however,we realy recommend you clone source and using 'maven deploy -DskipTests' command to upload jar to your private maven repository.
 
