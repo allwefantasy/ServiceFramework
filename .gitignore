@@ -14,3 +14,4 @@ release.properties
 /serviceframework-orm/target
 /serviceframework-web/target
 /serviceframework-common/target
+/serviceframework-dispatcher/target

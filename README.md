@@ -10,7 +10,7 @@ ServcieFramework 目前更新频率较高,我现在一直疏于更新中央仓�
 现在编译步骤：
 
     git clone git@github.com:allwefantasy/ServiceFramework.git
-    mvn install -Pscala-2.11 -Pjetty-8 -Pweb-include-jetty-8
+    mvn install -Pscala-2.11 -Pjetty-9 -Pweb-include-jetty-9
 
 如果你想切换scala版本，则使用：
 
