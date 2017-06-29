@@ -8,15 +8,9 @@
 release.properties
 /bin/build_dependecy.sh
 /config/application.yml
-<<<<<<< HEAD
-/framework-common/target
-/framework-jetty-8/target
-/framework-server/target
-=======
 /serviceframework-jetty-8-server/target
 /serviceframework-jetty-9-server/target
 /serviceframework-mongo/target
 /serviceframework-orm/target
 /serviceframework-web/target
 /serviceframework-common/target
->>>>>>> abc

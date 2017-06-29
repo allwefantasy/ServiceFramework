@@ -1,0 +1,16 @@
+package net.csdn.modules.cache;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
+
+/**
+ * BlogInfo: WilliamZhu
+ * Date: 12-6-28
+ * Time: 上午7:42
+ */
+public class AppCacheModule extends AbstractModule {
+    @Override
+    protected void configure() {
+        bind(AppCache.class).in(Singleton.class);
+    }
+}
