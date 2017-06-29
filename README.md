@@ -12,6 +12,9 @@ ServcieFramework 目前更新频率较高,我现在一直疏于更新中央仓�
     git clone git@github.com:allwefantasy/ServiceFramework.git
     mvn install -Pscala-2.11 -Pjetty-8 -Pweb-include-jetty-8
 
+如果你想切换scala版本，则使用：
+
+    ./dev/change-version-to-2.10.sh
 
 经过以上步骤即可使用
 

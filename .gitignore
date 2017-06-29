@@ -13,3 +13,4 @@ release.properties
 /serviceframework-mongo/target
 /serviceframework-orm/target
 /serviceframework-web/target
+/serviceframework-common/target

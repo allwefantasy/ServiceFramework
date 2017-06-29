@@ -14,7 +14,9 @@ clone and build:
     git clone git@github.com:allwefantasy/ServiceFramework.git
     mvn install -Pscala-2.11 -Pjetty-8 -Pweb-include-jetty-8
 
+If you wanna switch scala version,use follow command:
 
+    ./dev/change-version-to-2.10.sh
 
 however,we realy recommend you clone source and using 'maven deploy -DskipTests' command to upload jar to your private maven repository.
 
