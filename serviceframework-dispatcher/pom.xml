@@ -13,7 +13,7 @@
     <dependencies>
         <dependency>
             <groupId>net.csdn</groupId>
-            <artifactId>serviceframework-common_${scala.binary.version}</artifactId>
+            <artifactId>serviceframework-web_${scala.binary.version}</artifactId>
             <version>${parent.version}</version>
             <scope>provided</scope>
         </dependency>
