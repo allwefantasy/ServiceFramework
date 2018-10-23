@@ -56,7 +56,7 @@ public class ModelLoader implements Loader {
 
     private void loadClass(CtClass ctClass) {
         try {
-            Class<Model> clzz = ctClass.toClass();
+            Class<Model> clzz = (Class<Model>)ctClass.toClass();
             JPA.models.put(clzz.getSimpleName(), clzz);
         } catch (CannotCompileException e) {
             e.printStackTrace();

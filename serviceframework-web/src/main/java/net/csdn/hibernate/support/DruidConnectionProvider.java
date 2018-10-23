@@ -19,7 +19,8 @@ import com.alibaba.druid.filter.logging.Log4jFilter;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.pool.DruidDataSourceFactory;
 import net.csdn.hibernate.support.filter.CSDNStatFilterstat;
-import org.hibernate.service.jdbc.connections.spi.ConnectionProvider;
+
+import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Stoppable;
 

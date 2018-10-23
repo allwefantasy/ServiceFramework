@@ -23,7 +23,7 @@
         <profile>
             <id>web-include-jetty-8</id>
             <!--<properties>-->
-                <!--<jetty.version>8.1.16.v20140903</jetty.version>-->
+            <!--<jetty.version>8.1.16.v20140903</jetty.version>-->
             <!--</properties>-->
             <dependencies>
                 <dependency>
@@ -36,6 +36,7 @@
     </profiles>
     <artifactId>serviceframework-web_2.11</artifactId>
     <dependencies>
+
         <dependency>
             <groupId>net.csdn</groupId>
             <artifactId>serviceframework-common_${scala.binary.version}</artifactId>

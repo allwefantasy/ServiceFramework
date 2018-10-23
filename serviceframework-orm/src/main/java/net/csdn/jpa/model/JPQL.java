@@ -12,10 +12,10 @@ import net.csdn.jpa.hql.WowSelectParser;
 import net.csdn.jpa.hql.WowWhereParser;
 import net.csdn.jpa.model.Model.JPAQuery;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.ejb.metamodel.AbstractAttribute;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.metamodel.Attribute;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 import java.util.*;
@@ -181,8 +181,8 @@ public class JPQL {
 
             if (entity.equals(entityType.getName())) {
                 try {
-                    Set<AbstractAttribute> attributes = entityType.getAttributes();
-                    for (AbstractAttribute attribute : attributes) {
+                    Set<Attribute> attributes = entityType.getAttributes();
+                    for (Attribute attribute : attributes) {
                         columns.add(attribute.getName());
                     }
                 } catch (Exception e) {

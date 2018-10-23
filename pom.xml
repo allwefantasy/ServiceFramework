@@ -26,33 +26,13 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <scala.version>2.10.3</scala.version>
+        <scala.version>2.11.8</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
-        <scala.jline.version>2.10.3</scala.jline.version>
+        <scala.jline.version>2.11.0-M3</scala.jline.version>
         <jetty.version>9.2.16.v20160414</jetty.version>
     </properties>
 
     <profiles>
-
-        <profile>
-            <id>scala-2.11</id>
-            <properties>
-                <scala.version>2.11.8</scala.version>
-                <scala.binary.version>2.11</scala.binary.version>
-                <scala.jline.version>2.11.0-M3</scala.jline.version>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>scala-2.10</id>
-            <properties>
-                <scala.version>2.10.3</scala.version>
-                <scala.binary.version>2.10</scala.binary.version>
-                <scala.jline.version>2.10.3</scala.jline.version>
-            </properties>
-
-        </profile>
-
         <profile>
             <id>jetty-9</id>
             <properties>
@@ -124,6 +104,7 @@
             <groupId>com.alibaba</groupId>
             <artifactId>dubbo</artifactId>
             <version>2.5.3</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
