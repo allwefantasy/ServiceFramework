@@ -356,7 +356,7 @@ public class DefaultHttpTransportService implements HttpTransportService {
     private StringEntity stringEntity(String jsonData) {
         try {
             return new StringEntity(jsonData, charset);
-        } catch (UnsupportedEncodingException e) {
+        } catch (Exception e) {
             logger.error(getClass().getName() + "UnsupportedEncodingException e=>" + e.getMessage());
             return null;
         }

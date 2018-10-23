@@ -12,7 +12,7 @@ import java.util.List;
  * Time: 下午3:11
  */
 public interface ScanService {
-    URL packagePath(String packageName);
+
 
     List<InputStream> scanArchives(URL... urls) throws IOException;
 
@@ -23,10 +23,7 @@ public interface ScanService {
     List<Class> scanArchives(String packageName, LoadClassEnhanceCallBack loadClassEnhanceCallBack) throws IOException;
 
     List<Class> scanClass(List<InputStream> inputStreams, LoadClassEnhanceCallBack loadClassEnhanceCallBack) throws IOException;
-
-    public List<String> classNames(String packageName);
-
-    public List<String> classNames(String packageName, Class baseClass);
+    
 
     public Class getLoader();
 
