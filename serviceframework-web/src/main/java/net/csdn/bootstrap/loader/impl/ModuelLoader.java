@@ -37,7 +37,7 @@ public class ModuelLoader implements Loader {
         moduleList.add(new ScanModule());
         moduleList.add(new SystemLoggerModule());
         moduleList.add(new ControllerModule());
-        boolean disableRedis = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.redis.disable", false);
+        boolean disableRedis = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.redis.disable", true);
         if (!disableRedis) {
             moduleList.add(new CacheModule());
         }

@@ -194,7 +194,10 @@ public class EntityEnhancer implements BitEnhancer {
                     if (ctField.getName().equals("discriminator")) continue;
                     if (ctField.getName().equals("id")) {
                         createAnnotation(ctField, Id.class, map());
-                        createAnnotation(ctField, GeneratedValue.class, map());
+                        EnumMemberValue emv = new EnumMemberValue(constPool);
+                        emv.setType(GenerationType.class.getName());
+                        emv.setValue(GenerationType.IDENTITY.name());
+                        EnhancerHelper.createAnnotation(ctField, GeneratedValue.class, map("strategy", emv));
                     } else {
                         createAnnotation(ctField, Column.class, map("name", new StringMemberValue(Strings.toUnderscoreCase(ctField.getName()), constPool), "nullable", new BooleanMemberValue(true, constPool)));
                     }
@@ -270,8 +273,12 @@ public class EntityEnhancer implements BitEnhancer {
         }
         String fieldName = ctField.getName();
         if (fieldName.equals("id")) {
+            EnumMemberValue emv = new EnumMemberValue(constPool);
+            emv.setType(GenerationType.class.getName());
+            emv.setValue(GenerationType.IDENTITY.name());
+
             EnhancerHelper.createAnnotation(ctField, Id.class, map());
-            EnhancerHelper.createAnnotation(ctField, GeneratedValue.class, map());
+            EnhancerHelper.createAnnotation(ctField, GeneratedValue.class, map("strategy", emv));
         } else {
             EnhancerHelper.createAnnotation(ctField, Column.class, map("name", new StringMemberValue(Strings.toUnderscoreCase(fieldName), constPool), "nullable", new BooleanMemberValue(true, constPool)));
         }

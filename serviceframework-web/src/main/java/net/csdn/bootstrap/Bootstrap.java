@@ -65,7 +65,7 @@ public class Bootstrap {
 
         Settings settings = tuple.v1();
         boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
-        boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", false);
+        boolean disableMongo = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mongodb.disable", true);
         boolean disableHttp = settings.getAsBoolean("http.disable", false);
         boolean disableThrift = settings.getAsBoolean("thrift.disable", true);
         boolean disableDubbo = settings.getAsBoolean("dubbo.disable", true);
