@@ -19,7 +19,7 @@ public class InternalSettingsPreparer {
         ImmutableSettings.Builder settingsBuilder = settingsBuilder().put(pSettings);
 
         if (settingsBuilder.get("cluster.name") == null) {
-            settingsBuilder.put("cluster.name", "csdn_search");
+            settingsBuilder.put("cluster.name", "serviceframework-0");
         }
 
         Environment environment = new Environment(settingsBuilder.build());
