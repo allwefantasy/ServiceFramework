@@ -11,23 +11,23 @@ import java.lang.annotation.Target;
  * Time: 下午4:15
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 public @interface BasicInfo {
 
     //描述
     String desc();
 
     //url类型参数
-    String testParams();
+    String testParams() default "";
 
     //支持正则
-    String testResult();
+    String testResult() default "";
 
     //参考State
-    State state();
+    State state() default State.production;
 
-    String author();
+    Contact contact();
 
-    String email();
+    License license();
 }
 
