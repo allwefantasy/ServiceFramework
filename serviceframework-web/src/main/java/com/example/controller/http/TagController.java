@@ -1,7 +1,7 @@
 package com.example.controller.http;
 
 import com.example.model.Tag;
-import net.csdn.annotation.rest.At;
+import net.csdn.annotation.rest.*;
 import net.csdn.modules.http.ApplicationController;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.http.ViewType;
@@ -9,9 +9,31 @@ import net.csdn.modules.http.ViewType;
 /**
  * 12/25/13 WilliamZhu(allwefantasy@gmail.com)
  */
+@OpenAPIDefinition(
+        info = @BasicInfo(desc = "标签管理接口集合",
+                contact = @Contact(url = "", name = "allwefantasy", email = "allwefantasy@gmail.com"),
+                license = @License(name = "Apache", url = "...")
+        ), externalDocs = @ExternalDocumentation(description = ""), servers = {
+        @Server(url = "http://127.0.0.1", description = "测试服务器")
+}
+)
 public class TagController extends ApplicationController {
 
     @At(path = "/tag", types = {RestRequest.Method.POST})
+    @Parameters(
+            @Parameter(name = "name", required = true, description = "标签的名字")
+    )
+    @Responses(
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "返回值为json",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(type = "string", format = "json", description = "")
+
+                    )
+            )
+    )
     public void save() {
         Tag tag = Tag.create(params());
         if (tag.save()) {
