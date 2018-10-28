@@ -67,11 +67,6 @@
             <version>3.2.11</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.scala-lang</groupId>
-            <artifactId>scala-reflect</artifactId>
-            <version>${scala.version}</version>
-        </dependency>
     </dependencies>
 
 </project>

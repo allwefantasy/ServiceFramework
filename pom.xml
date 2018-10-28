@@ -93,6 +93,17 @@
             <artifactId>scala-library</artifactId>
             <version>${scala.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-reflect</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -114,9 +125,17 @@
             <scope>provided</scope>
         </dependency>
 
+
     </dependencies>
 
     <build>
+
+        <sourceDirectory>src/main/java/</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -127,21 +146,12 @@
                         <include>**/*.java</include>
                         <include>**/*.scala</include>
                     </includes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                    <compilerArgument>-g</compilerArgument>
-                    <verbose>true</verbose>
-                    <encoding>UTF-8</encoding>
+                    <skipTests>true</skipTests>
                 </configuration>
 
             </plugin>
+
+
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
@@ -171,6 +181,22 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <!--<compilerArgument>-parameters</compilerArgument>-->
+                    <compilerArgument>-g</compilerArgument>
+                    <verbose>true</verbose>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+
+            </plugin>
+
+
             <!--   要将源码放上去，需要加入这个插件    -->
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
@@ -183,6 +209,24 @@
                         <phase>compile</phase>
                         <goals>
                             <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
+                <version>1.0</version>
+                <!-- Note config is repeated in surefire config -->
+                <configuration>
+                    <tagsToExclude>streaming.core.NotToRunTag</tagsToExclude>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <goals>
+                            <goal>test</goal>
                         </goals>
                     </execution>
                 </executions>
