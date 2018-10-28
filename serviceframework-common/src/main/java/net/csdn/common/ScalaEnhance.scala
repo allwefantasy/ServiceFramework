@@ -1,4 +1,4 @@
-package net.csdn
+package net.csdn.common
 
 import scala.annotation.tailrec
 import scala.language.experimental.macros
@@ -26,3 +26,4 @@ object ScalaMethodMacros {
 
   def str[T](f: T => Any): String = macro nameOfMemberImpl
 }
+

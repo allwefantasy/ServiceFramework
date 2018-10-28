@@ -11,7 +11,7 @@ import net.csdn.common.settings.Settings
 import org.json4s._
 import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.{read, write}
-import net.csdn.ScalaMethodMacros._
+import net.csdn.common.ScalaMethodMacros.str
 import org.json4s.JsonDSL._
 
 import scala.collection.JavaConversions._
