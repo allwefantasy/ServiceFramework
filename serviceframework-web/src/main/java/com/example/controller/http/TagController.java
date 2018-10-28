@@ -29,7 +29,7 @@ public class TagController extends ApplicationController {
                     description = "返回值为json",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(type = "string", format = "json", description = "")
+                            schema = @Schema(type = "string", format = "json", description = "", implementation = Jack.class)
 
                     )
             )
@@ -61,4 +61,8 @@ public class TagController extends ApplicationController {
         render(200, "hello" + param("kitty") + "  " + request.contentAsString());
     }
 
+}
+
+class Jack {
+    String name;
 }

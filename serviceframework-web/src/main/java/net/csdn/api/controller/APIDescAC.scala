@@ -16,10 +16,13 @@ import org.json4s.JsonDSL._
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.runtime.universe._
 
 object APIDescAC {
   implicit val formats = org.json4s.DefaultFormats +
-    new OpenAPIDefinitionSer()
+    new OpenAPIDefinitionSer() +
+    new ParametersSer() +
+    new ResponsesSer()
 
   def openAPIs(settings: Settings) = {
 
@@ -36,8 +39,8 @@ object APIDescAC {
             clzz.getMethods.filter { m =>
               m.getAnnotation(classOf[Parameters]) != null
             }.map { m =>
-
-              actions += OpenAction(m.getName, m.getAnnotation(classOf[Parameters]), m.getAnnotation(classOf[Responses]))
+              val atAnno = m.getAnnotation(classOf[At])
+              actions += OpenAction(atAnno.types().mkString(","), atAnno.path().mkString(","), m.getAnnotation(classOf[Parameters]), m.getAnnotation(classOf[Responses]))
 
             }
             openAPIs += OpenAPI(ci.getName, a.asInstanceOf[OpenAPIDefinition], actions)
@@ -49,11 +52,73 @@ object APIDescAC {
     val ser = write(openAPIs)
     ser
   }
+
+  def classAccessors[T: TypeTag]: List[MethodSymbol] = typeOf[T].members.collect {
+    case m: MethodSymbol if m.isCaseAccessor => m
+  }.toList
 }
 
 case class OpenAPI(name: String, o: OpenAPIDefinition, actions: List[OpenAction])
 
-case class OpenAction(name: String, parameters: Parameters, responses: Responses)
+case class OpenAction(methods: String, path: String, parameters: Parameters, responses: Responses)
+
+
+class ParametersSer extends CustomSerializer[Parameters](format => ( {
+  null
+}, {
+  case o: Parameters => {
+    JArray(o.value().map { p =>
+      (str[Parameter](_.name()) -> p.name()) ~
+        (str[Parameter](_.`type`()) -> p.`type`()) ~
+        (str[Parameter](_.description()) -> p.description()) ~
+        (str[Parameter](_.required()) -> p.required()) ~
+        (str[Parameter](_.allowEmptyValue()) -> p.allowEmptyValue()) ~
+        (str[Parameter](_.allowReserved()) -> p.allowReserved())
+    }.toList)
+  }
+}))
+
+
+class ResponsesSer extends CustomSerializer[Responses](format => ( {
+  null
+}, {
+  case o: Responses => {
+    JArray(o.value().map { p =>
+
+      val content = Extraction.decompose(p.content())(DefaultFormats + new ContentSer())
+      (str[ApiResponse](_.responseCode()) -> p.responseCode()) ~
+        (str[ApiResponse](_.description()) -> p.description()) ~
+        (str[ApiResponse](_.content()) -> content)
+
+    }.toList)
+  }
+}))
+
+
+class ContentSer extends CustomSerializer[Content](format => ( {
+  null
+}, {
+  case o: Content => {
+    val schema = Extraction.decompose(o.schema())(DefaultFormats + new SchemaSer())
+    (str[Content](_.mediaType()) -> JString(o.mediaType())) ~
+      (str[Content](_.schema()) -> schema)
+  }
+}))
+
+class SchemaSer extends CustomSerializer[Schema](format => ( {
+  null
+}, {
+  case o: Schema => {
+    val clzz = o.implementation()
+    val params = clzz.getDeclaredFields.map(f => (f.getName, f.getType.getSimpleName.toLowerCase()))
+    val newParams = Extraction.decompose(params)(DefaultFormats)
+
+    (str[Schema](_.`type`()) -> JString(o.`type`())) ~
+      (str[Schema](_.description()) -> JString(o.description())) ~
+      (str[Schema](_.implementation()) -> newParams)
+  }
+}))
+
 
 class OpenAPIDefinitionSer extends CustomSerializer[OpenAPIDefinition](format => ( {
   null
