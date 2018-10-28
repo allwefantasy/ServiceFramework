@@ -12,6 +12,8 @@ public @interface Parameter {
 
     boolean required() default false;
 
+    String type() default "string";
+
     String description() default "";
 
     boolean allowEmptyValue() default true;
