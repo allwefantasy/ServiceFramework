@@ -2,7 +2,6 @@ package net.csdn.api.controller
 
 import java.util.List
 
-import com.alibaba.druid.sql.visitor.functions.Concat
 import com.google.common.reflect.ClassPath
 import net.csdn.ServiceFramwork
 import net.csdn.annotation.rest._
@@ -40,7 +39,8 @@ object APIDescAC {
               m.getAnnotation(classOf[Parameters]) != null
             }.map { m =>
               val atAnno = m.getAnnotation(classOf[At])
-              actions += OpenAction(atAnno.types().mkString(","), atAnno.path().mkString(","), m.getAnnotation(classOf[Parameters]), m.getAnnotation(classOf[Responses]))
+              val actionAnno = m.getAnnotation(classOf[Action])
+              actions += OpenAction(atAnno.types().mkString(","), atAnno.path().mkString(","), actionAnno, m.getAnnotation(classOf[Parameters]), m.getAnnotation(classOf[Responses]))
 
             }
             openAPIs += OpenAPI(ci.getName, a.asInstanceOf[OpenAPIDefinition], actions)
@@ -60,7 +60,7 @@ object APIDescAC {
 
 case class OpenAPI(name: String, o: OpenAPIDefinition, actions: List[OpenAction])
 
-case class OpenAction(methods: String, path: String, parameters: Parameters, responses: Responses)
+case class OpenAction(methods: String, path: String, action: Action, parameters: Parameters, responses: Responses)
 
 
 class ParametersSer extends CustomSerializer[Parameters](format => ( {
@@ -75,6 +75,15 @@ class ParametersSer extends CustomSerializer[Parameters](format => ( {
         (str[Parameter](_.allowEmptyValue()) -> p.allowEmptyValue()) ~
         (str[Parameter](_.allowReserved()) -> p.allowReserved())
     }.toList)
+  }
+}))
+
+
+class ActionSer extends CustomSerializer[Action](format => ( {
+  null
+}, {
+  case o: Action => {
+    (str[Action](_.summary()) -> o.summary()) ~ (str[Action](_.description()) -> o.description())
   }
 }))
 
