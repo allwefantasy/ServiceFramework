@@ -21,7 +21,7 @@ object APIDescAC {
   implicit val formats = org.json4s.DefaultFormats +
     new OpenAPIDefinitionSer() +
     new ParametersSer() +
-    new ResponsesSer()
+    new ResponsesSer() + new ActionSer()
 
   def openAPIs(settings: Settings) = {
 
