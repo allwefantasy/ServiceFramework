@@ -214,7 +214,7 @@ trait ShortNameMapping {
 object StrategyDispatcher {
 
   private val INSTANTIATION_LOCK = new Object()
-  private var throwsException = true
+  var throwsException = true
 
 
   @transient private val lastInstantiatedContext = new AtomicReference[StrategyDispatcher[Any]]()
