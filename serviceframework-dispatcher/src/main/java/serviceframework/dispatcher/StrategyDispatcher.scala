@@ -16,9 +16,9 @@ import scala.collection.JavaConversions._
 
 
 /**
- * 4/10/14 WilliamZhu(allwefantasy@gmail.com)
- * 第一期没有校验配置文件的正确性
- */
+  * 4/10/14 WilliamZhu(allwefantasy@gmail.com)
+  * 第一期没有校验配置文件的正确性
+  */
 @Singleton
 class StrategyDispatcher[T] @Inject()(settings: Settings) {
 
@@ -54,7 +54,11 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
               logger.info( s"""${params.get("_token_")} ${strategies(i).name} ${System.currentTimeMillis() - time}""")
             }
           } catch {
-            case e: Exception => logger.error("调用链路异常", e)
+            case e: Exception =>
+              logger.error("调用链路异常", e)
+              if (StrategyDispatcher.throwsException) {
+                throw e
+              }
           }
           result
         } else {
@@ -67,7 +71,11 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
                 res
             })
           } catch {
-            case e: Exception => logger.error("调用链路异常", e)
+            case e: Exception =>
+              logger.error("调用链路异常", e)
+              if (StrategyDispatcher.throwsException) {
+                throw e
+              }
           }
           result
         }
@@ -206,16 +214,17 @@ trait ShortNameMapping {
 object StrategyDispatcher {
 
   private val INSTANTIATION_LOCK = new Object()
+  private var throwsException = true
 
 
   @transient private val lastInstantiatedContext = new AtomicReference[StrategyDispatcher[Any]]()
 
 
-  def getOrCreate(configFile: String, settings: Settings,shortNameMapping: ShortNameMapping): StrategyDispatcher[Any] = {
+  def getOrCreate(configFile: String, settings: Settings, shortNameMapping: ShortNameMapping): StrategyDispatcher[Any] = {
     INSTANTIATION_LOCK.synchronized {
       if (lastInstantiatedContext.get() == null) {
         val temp = new StrategyDispatcher[Any](settings)
-        if(shortNameMapping!=null){
+        if (shortNameMapping != null) {
           temp.configShortNameMapping(shortNameMapping)
         }
         temp.loadConfig(configFile)
@@ -236,12 +245,12 @@ object StrategyDispatcher {
     lastInstantiatedContext.get()
   }
 
-  def getOrCreate(configFile: String,shortNameMapping: ShortNameMapping): StrategyDispatcher[Any] = {
+  def getOrCreate(configFile: String, shortNameMapping: ShortNameMapping): StrategyDispatcher[Any] = {
     INSTANTIATION_LOCK.synchronized {
       if (lastInstantiatedContext.get() == null) {
         val settings: Settings = settingsBuilder.build()
         val temp = new StrategyDispatcher[Any](settings)
-        if(shortNameMapping!=null){
+        if (shortNameMapping != null) {
           temp.configShortNameMapping(shortNameMapping)
         }
         temp.loadConfig(configFile)
