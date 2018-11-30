@@ -38,10 +38,10 @@ public class FilterEnhancer extends ControllerEnhancer {
     public CtClass enhanceThisClass(DataInputStream dataInputStream) throws Exception {
         CtClass ctClass = classPool.makeClassIfNew(dataInputStream);
         if (!ctClass.subtypeOf(classPool.get("net.csdn.modules.http.ApplicationController"))) {
-            return ctClass;
+            return null;
         }
 
-        if (Modifier.isAbstract(ctClass.getModifiers())) return ctClass;
+        if (Modifier.isAbstract(ctClass.getModifiers())) return null;
 
 
         CtClass controller = classPool.get("net.csdn.modules.http.ApplicationController");
@@ -83,7 +83,12 @@ public class FilterEnhancer extends ControllerEnhancer {
     public void enhanceThisClass2(List<CtClass> ctClasses) throws Exception {
         for (CtClass ctClass : ctClasses) {
             if (Modifier.isAbstract(ctClass.getModifiers())) continue;
-            ctClass.toClass(ServiceFramwork.scanService.getLoader().getClassLoader(), ServiceFramwork.scanService.getLoader().getProtectionDomain());
+            try {
+                ctClass.toClass(ServiceFramwork.scanService.getLoader().getClassLoader(), ServiceFramwork.scanService.getLoader().getProtectionDomain());
+            } catch (Exception e) {
+                logger.error("Fail to load ctClass " + ctClass.getName(), e);
+            }
+
         }
     }
 }
