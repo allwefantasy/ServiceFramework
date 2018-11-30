@@ -54,8 +54,11 @@ public class ControllerLoader implements Loader {
                 public Class loaded(DataInputStream classFile) {
                     try {
                         CtClass ctClass = enhancer.enhanceThisClass(classFile);
-                        logger.info("controller load :    " + ctClass.getName());
-                        controllers.add(ctClass);
+                        // if ctClass is null means this class is not controller
+                        if (ctClass != null) {
+                            logger.info("controller load :    " + ctClass.getName());
+                            controllers.add(ctClass);
+                        }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
