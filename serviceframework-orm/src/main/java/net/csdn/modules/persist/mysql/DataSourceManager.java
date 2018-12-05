@@ -43,13 +43,10 @@ public class DataSourceManager {
         Map<String, Settings> groups = settings.getGroups(JPA.mode() + ".datasources");
         for (Map.Entry<String, Settings> group : groups.entrySet()) {
             if (group.getKey().equals("mysql")) {
-
-                logger.info("初始化连接池:" + group.getValue().getAsMap());
                 tempDataSourceMap.put(group.getKey(), buildPool(group.getValue()));
             } else if (group.getKey().equals("multi-mysql")) {
                 Map<String, Settings> mysqlGroups = settings.getGroups(JPA.mode() + ".datasources.multi-mysql");
                 for (Map.Entry<String, Settings> temp : mysqlGroups.entrySet()) {
-                    logger.info("初始化连接池:" + temp.getValue().getAsMap());
                     tempDataSourceMap.put(temp.getKey(), buildPool(temp.getValue()));
                 }
             }
