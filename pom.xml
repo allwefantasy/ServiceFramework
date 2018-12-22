@@ -6,6 +6,11 @@
     <artifactId>ServiceFramework_2.11</artifactId>
     <packaging>pom</packaging>
     <version>2.0.0</version>
+    <name>ServiceFramework</name>
+    <description>Java MVC framework, agile, fast, rich domain model, made especially for server side of mobile
+        application
+    </description>
+    <url>https://github.com/allwefantasy/ServiceFramework</url>
 
     <licenses>
         <license>
@@ -45,6 +50,7 @@
         <module>serviceframework-mongo</module>
         <module>serviceframework-web</module>
         <module>serviceframework-dispatcher</module>
+        <module>serviceframework-jetty-9-server</module>
 
 
     </modules>
@@ -101,23 +107,14 @@
         </profile>
 
         <profile>
-            <id>jetty-9</id>
+            <id>disable-java8-doclint</id>
+            <activation>
+                <jdk>[1.8,)</jdk>
+            </activation>
             <properties>
-                <jetty.version>9.2.16.v20160414</jetty.version>
+                <additionalparam>-Xdoclint:none</additionalparam>
+                <doclint>none</doclint>
             </properties>
-            <modules>
-                <module>serviceframework-jetty-9-server</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>jetty-8</id>
-            <properties>
-                <jetty.version>8.1.16.v20140903</jetty.version>
-            </properties>
-            <modules>
-                <module>serviceframework-jetty-8-server</module>
-            </modules>
-
         </profile>
 
     </profiles>
