@@ -16,3 +16,4 @@ release.properties
 /serviceframework-common/target
 /serviceframework-dispatcher/target
 /serviceframework-common/target
+.DS_Store
