@@ -4,19 +4,28 @@
 
 ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高效性，其开发效率可以比肩Rails.
 
-ServcieFramework 目前更新频率较高,我现在一直疏于更新中央仓库的版本。所以不再更新maven中央仓库。
 
-
+## 编译
 现在编译步骤：
 
     git clone git@github.com:allwefantasy/ServiceFramework.git
-    mvn install -Pscala-2.11 -Pjetty-9 -Pweb-include-jetty-9
+    mvn install -Pscala-2.11
 
 如果你想切换scala版本，则使用：
 
-    ./dev/change-version-to-2.10.sh
+    ./dev/change-version-to-2.12.sh
 
 经过以上步骤即可使用
+
+## maven 仓库
+
+```
+<dependency>
+  <groupId>net.csdn</groupId>
+  <artifactId>serviceframework-web_2.11</artifactId>
+  <version>2.0.0</version>
+</dependency>
+```
 
 ### 项目示例
 
@@ -326,7 +335,7 @@ Step-by-Step-tutorial-for-ServiceFramework(continue...)
 
 ##  Some projects based on ServiceFramework
 
-* [QuickSand](https://github.com/allwefantasy/QuickSand)
+* [MLSQL](https://github.com/allwefantasy/streamingpro)
 
 
 
