@@ -38,7 +38,7 @@
             https://github.com/allwefantasy/ServiceFramework/issues
         </url>
     </issueManagement>
-    
+
     <modules>
         <module>serviceframework-orm</module>
         <module>serviceframework-common</module>
@@ -56,7 +56,7 @@
         <scala.jline.version>2.11.0-M3</scala.jline.version>
         <jetty.version>9.2.16.v20160414</jetty.version>
     </properties>
-         
+
     <repositories>
         <repository>
             <id>aliyun</id>
@@ -99,7 +99,7 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
             <id>jetty-9</id>
             <properties>
@@ -235,18 +235,28 @@
             </plugin>
 
             <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-javadoc-plugin</artifactId>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>attach-javadocs</id>-->
-                        <!--<goals>-->
-                            <!--<goal>jar</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
+            <!--<groupId>org.apache.maven.plugins</groupId>-->
+            <!--<artifactId>maven-javadoc-plugin</artifactId>-->
+            <!--<executions>-->
+            <!--<execution>-->
+            <!--<id>attach-javadocs</id>-->
+            <!--<goals>-->
+            <!--<goal>jar</goal>-->
+            <!--</goals>-->
+            <!--</execution>-->
+            <!--</executions>-->
             <!--</plugin>-->
-
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>sonatype-nexus-staging</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
 
             <plugin>
                 <groupId>org.scala-tools</groupId>
