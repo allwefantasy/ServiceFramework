@@ -20,4 +20,4 @@
 # This script exists for backwards compability. Use change-scala-version.sh instead.
 echo "This script is deprecated. Please instead run: change-scala-version.sh 2.10"
 
-$(dirname $0)/change-scala-version.sh 2.10
+$(dirname $0)/change-scala-version.sh 2.12
