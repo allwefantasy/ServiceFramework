@@ -9,33 +9,13 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <profiles>
-        <profile>
-            <id>web-include-jetty-9</id>
-            <dependencies>
-                <dependency>
-                    <groupId>net.csdn</groupId>
-                    <artifactId>serviceframework-jetty-9-server</artifactId>
-                    <version>${parent.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>web-include-jetty-8</id>
-            <!--<properties>-->
-            <!--<jetty.version>8.1.16.v20140903</jetty.version>-->
-            <!--</properties>-->
-            <dependencies>
-                <dependency>
-                    <groupId>net.csdn</groupId>
-                    <artifactId>serviceframework-jetty-8-server</artifactId>
-                    <version>${parent.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
     <artifactId>serviceframework-web_2.11</artifactId>
     <dependencies>
+        <dependency>
+            <groupId>net.csdn</groupId>
+            <artifactId>serviceframework-jetty-9-server</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>net.csdn</groupId>
