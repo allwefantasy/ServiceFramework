@@ -14,6 +14,31 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <developers>
+        <developer>
+            <id>allwefantasy</id>
+            <name>WilliamZhu</name>
+            <email>allwefantasy@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>
+            scm:git:git@github.com:allwefantasy/ServiceFramework.git
+        </connection>
+        <developerConnection>
+            scm:git:git@github.com:allwefantasy/ServiceFramework.git
+        </developerConnection>
+        <url>https://github.com/allwefantasy/ServiceFramework</url>
+    </scm>
+
+    <issueManagement>
+        <system>github</system>
+        <url>
+            https://github.com/allwefantasy/ServiceFramework/issues
+        </url>
+    </issueManagement>
+    
     <modules>
         <module>serviceframework-orm</module>
         <module>serviceframework-common</module>
@@ -47,6 +72,34 @@
     </repositories>
 
     <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.1</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
         <profile>
             <id>jetty-9</id>
             <properties>
@@ -151,6 +204,22 @@
             </resource>
         </resources>
         <plugins>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -163,6 +232,19 @@
                     <skipTests>true</skipTests>
                 </configuration>
 
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
 
@@ -247,16 +329,16 @@
             </plugin>
         </plugins>
     </build>
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/
-            </url>
-        </repository>
-    </distributionManagement>
+    <!--<distributionManagement>-->
+        <!--<snapshotRepository>-->
+            <!--<id>ossrh</id>-->
+            <!--<url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
+        <!--</snapshotRepository>-->
+        <!--<repository>-->
+            <!--<id>ossrh</id>-->
+            <!--<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/-->
+            <!--</url>-->
+        <!--</repository>-->
+    <!--</distributionManagement>-->
 
 </project>
