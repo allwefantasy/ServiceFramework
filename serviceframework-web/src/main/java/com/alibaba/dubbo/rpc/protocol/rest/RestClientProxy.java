@@ -8,11 +8,6 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.Url;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.transport.HttpTransportService;
-import net.csdn.trace.RemoteTraceElementKey;
-import net.csdn.trace.Trace;
-import net.csdn.trace.TraceContext;
-import net.csdn.trace.VisitType;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import scala.collection.JavaConversions;
 
 import java.io.UnsupportedEncodingException;
@@ -113,10 +108,6 @@ public class RestClientProxy implements InvocationHandler {
         if (!methodSupport) throw new RuntimeException(reqMethod + "not support in invoke " + url);
 
 
-
-
-
-
         //支持rest接口
         List<String> replaceKeys = new ArrayList<String>();
         String remenberPath = path;
@@ -132,15 +123,8 @@ public class RestClientProxy implements InvocationHandler {
         }
         Url finalUrl = new Url(url + "/" + remenberPath);
 
-        TraceContext traceContext = Trace.get();
-        if (traceContext != null) {
-            traceContext.start(finalUrl.toString(), VisitType.HTTP_SERVICE());
-            finalUrl.addParam(RemoteTraceElementKey.TRACEID(), traceContext.traceId());
-            finalUrl.addParam(RemoteTraceElementKey.RPCID(), traceContext.currentRpcId());
-        }
 
         HttpTransportService.SResponse response = null;
-        String message = null;
         try {
             if (reqMethod.equals(RestRequest.Method.GET)) {
                 response = httpTransportService.get(finalUrl, params);
@@ -154,15 +138,7 @@ public class RestClientProxy implements InvocationHandler {
 
             }
         } catch (Exception e) {
-            message = ExceptionUtils.getStackTrace(e).replaceAll("\n", "\\n");
-        } finally {
-            int responseStatus = -1;
-            long responseLength = -1;
-            if (response != null) responseStatus = response.getStatus();
-            if (response != null) responseLength = response.getContent().length();
-            if (traceContext != null) {
-                traceContext.finish(responseStatus, responseLength, message, logger);
-            }
+            logger.info("call remote fail", e);
         }
 
         if (response == null)

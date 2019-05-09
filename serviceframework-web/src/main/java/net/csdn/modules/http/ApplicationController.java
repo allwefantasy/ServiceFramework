@@ -14,7 +14,6 @@ import net.csdn.common.time.NumberExtendedForTime;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.TimeValue;
 import net.csdn.modules.dubbo.DubboServer;
-import net.csdn.modules.log.SystemLogger;
 import net.csdn.modules.mock.MockRestRequest;
 import net.csdn.modules.mock.MockRestResponse;
 import net.sf.json.JSON;
@@ -49,7 +48,6 @@ public abstract class ApplicationController {
     protected RestRequest request;
     protected RestResponse restResponse;
     protected Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
-    protected SystemLogger systemLogger = ServiceFramwork.injector.getInstance(SystemLogger.class);
 
     public Class const_document_get(String name) {
         return inner_const_get("document", name);

@@ -1,6 +1,7 @@
 package net.csdn.jpa.model;
 
 import net.csdn.common.exception.AutoGeneration;
+import net.csdn.jpa.JPA;
 import net.csdn.jpa.exception.JPAQueryException;
 import net.csdn.modules.persist.mysql.MysqlClient;
 
@@ -173,6 +174,10 @@ public class Model extends JPABase {
      */
     public static int delete(String query, Object... params) {
         throw new AutoGeneration();
+    }
+
+    public static void commit() {
+        JPA.getJPAConfig().getJPAContext().closeTx(false);
     }
 
     /**

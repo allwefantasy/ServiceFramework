@@ -13,7 +13,6 @@ import net.csdn.modules.cache.AppCacheModule;
 import net.csdn.modules.cache.CacheModule;
 import net.csdn.modules.controller.ControllerModule;
 import net.csdn.modules.http.HttpModule;
-import net.csdn.modules.log.SystemLoggerModule;
 import net.csdn.modules.settings.SettingsModule;
 import net.csdn.modules.threadpool.ThreadPoolModule;
 import net.csdn.modules.transport.TransportModule;
@@ -35,7 +34,6 @@ public class ModuelLoader implements Loader {
         moduleList.add(new TransportModule());
         moduleList.add(new HttpModule());
         moduleList.add(new ScanModule());
-        moduleList.add(new SystemLoggerModule());
         moduleList.add(new ControllerModule());
         boolean disableRedis = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.redis.disable", true);
         if (!disableRedis) {
