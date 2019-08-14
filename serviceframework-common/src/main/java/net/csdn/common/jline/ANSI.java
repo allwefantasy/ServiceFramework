@@ -41,7 +41,7 @@ public class ANSI {
     /**
      * Tries to detect if the current system supports ANSI.
      */
-    private static boolean detect() {
+    private static boolean isANSIEnabled() {
         if (System.getProperty("jline.enabled", "false").equalsIgnoreCase("false")) {
             return false;
         }
@@ -56,7 +56,7 @@ public class ANSI {
     }
 
     public static boolean isDetected() {
-        return detect();
+        return isANSIEnabled();
     }
 
     private static Boolean enabled;
