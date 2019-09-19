@@ -22,6 +22,7 @@ import net.csdn.modules.http.processor.impl.DefaultHttpStartProcessor;
 import net.csdn.modules.http.support.HttpHolder;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import javax.servlet.ServletException;
@@ -79,10 +80,16 @@ public class HttpServer {
         disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
         JettyServer jettyServer = new JettyServer();
         httpPort = settings.getAsInt("http.port", generateHttpPort());
-        server = jettyServer.createServer(settings.get("http.host", ""),
-                httpPort,
-                settings.getAsInt("http.threads.min", 100),
-                settings.getAsInt("http.threads.max", 1000),
+
+        server = jettyServer.createServer(settings.getAsInt("http.threads.min", 100),
+                settings.getAsInt("http.threads.max", 1000));
+        ServerConnector connector = jettyServer.createConnector(server, settings.get("http.host", ""), httpPort);
+        connector.setIdleTimeout(settings.getAsInt("http.server.idleTimeout", 30000));
+
+        server.addConnector(connector);
+
+
+        jettyServer.connfigureServer(server,
                 settings.get("serviceframework.static.loader.classpath.dir", "assets"),
                 environment.templateDirFile().getPath(),
                 settings.getAsBoolean("application.static.enable", false), settings.getAsBoolean("serviceframework.static.loader.classpath.enable", false),

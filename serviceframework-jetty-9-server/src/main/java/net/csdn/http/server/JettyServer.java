@@ -15,28 +15,24 @@ import java.io.IOException;
  * Created by allwefantasy on 29/6/2017.
  */
 public class JettyServer {
-    public Server createServer(String host, int port,
-                               int minThreads, int maxThreads,
-                               String staticDir,
-                               String templateDir,
-                               boolean staticEnable,
-                               boolean classPathEnable, boolean sessionEanble, AbstractHandler abstractHandler) {
-        QueuedThreadPool threadPool = new QueuedThreadPool();
-        threadPool.setMinThreads(minThreads);
-        threadPool.setMaxThreads(maxThreads);
 
-        Server server = new Server(threadPool);
-
+    public ServerConnector createConnector(Server server, String host, int port) {
         HttpConfiguration httpConfig = new HttpConfiguration();
 
         ServerConnector connector = new ServerConnector(server,
                 new HttpConnectionFactory(httpConfig));
 
-
         connector.setPort(port);
         connector.setHost(host);
+        return connector;
+    }
 
-        server.addConnector(connector);
+    public Server connfigureServer(Server server, String staticDir,
+                                   String templateDir,
+                                   boolean staticEnable,
+                                   boolean classPathEnable,
+                                   boolean sessionEanble,
+                                   AbstractHandler abstractHandler) {
 
         HandlerList handlers = new HandlerList();
 
@@ -71,5 +67,15 @@ public class JettyServer {
 
         server.setHandler(handlers);
         return server;
+    }
+
+    public Server createServer(int minThreads, int maxThreads) {
+        QueuedThreadPool threadPool = new QueuedThreadPool();
+        threadPool.setMinThreads(minThreads);
+        threadPool.setMaxThreads(maxThreads);
+        Server server = new Server(threadPool);
+        return server;
+
+
     }
 }

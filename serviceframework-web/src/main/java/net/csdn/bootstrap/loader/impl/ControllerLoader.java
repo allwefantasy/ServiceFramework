@@ -70,7 +70,7 @@ public class ControllerLoader implements Loader {
 
         enhancer.enhanceThisClass2(controllers);
         for (String item : WowCollections.split2(settings.get("application.controller.default",
-                "net.csdn.api.controller.SystemInfoController,net.csdn.api.controller.APIDescController,"
+                "net.csdn.api.controller.SystemInfoController,net.csdn.api.controller.APIDescController"
         ), ",")) {
             try {
                 moduleList.add(bindAction(Class.forName(item)));
