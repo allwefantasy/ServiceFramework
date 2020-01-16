@@ -117,11 +117,17 @@ public class ControllerLoader implements Loader {
                         API api = ServiceFramwork.injector.getInstance(API.class);
                         NoAction noAction = method.getAnnotation(NoAction.class);
                         if (noAction != null) {
+                            if (restController.defaultHandlerKey() != null) {
+                                throw new RuntimeException("Only one default action can be defined. current is " + method.getName());
+                            }
                             restController.setDefaultHandlerKey(new Tuple<Class<ApplicationController>, Method>(clzz, method));
                         }
 
                         ErrorAction errorAction = method.getAnnotation(ErrorAction.class);
                         if (errorAction != null) {
+                            if (restController.errorHandlerKey() != null) {
+                                throw new RuntimeException("Only one error action can be defined. current is " + method.getName());
+                            }
                             restController.setErrorHandlerKey(new Tuple<Class<ApplicationController>, Method>(clzz, method));
                         }
 

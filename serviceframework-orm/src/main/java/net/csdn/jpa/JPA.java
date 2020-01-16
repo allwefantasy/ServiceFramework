@@ -72,13 +72,18 @@ public class JPA {
 
     public static void configure(CSDNORMConfiguration csdnormConfiguration) {
         ormConfiguration = csdnormConfiguration;
-        ormConfiguration.buildDefaultDBInfo();
-        loadModels();
-        try {
-            new ValidatorLoader().load();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (!ormConfiguration.settings.getAsBoolean(JPA.mode() + ".datasources.mysql.quill", false)) {
+            ormConfiguration.buildDefaultDBInfo();
+            loadModels();
+            try {
+                new ValidatorLoader().load();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+
         }
+
     }
 
     public static synchronized JPAConfig getJPAConfig() {
