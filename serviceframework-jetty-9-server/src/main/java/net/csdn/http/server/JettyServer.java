@@ -34,7 +34,7 @@ public class JettyServer {
                                    boolean sessionEanble,
                                    AbstractHandler abstractHandler) {
 
-        HandlerList handlers = new HandlerList(true);
+        HandlerList handlers = new HandlerList();
 
         if (staticEnable) {
             ResourceHandler resource_handler = new ResourceHandler();
