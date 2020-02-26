@@ -72,7 +72,7 @@ public class JPA {
 
     public static void configure(CSDNORMConfiguration csdnormConfiguration) {
         ormConfiguration = csdnormConfiguration;
-        if (!ormConfiguration.settings.getAsBoolean(JPA.mode() + ".datasources.mysql.quill", false)) {
+        if (!ormConfiguration.settings.getAsBoolean(JPA.mode() + ".datasources.mysql.disable", false)) {
             ormConfiguration.buildDefaultDBInfo();
             loadModels();
             try {

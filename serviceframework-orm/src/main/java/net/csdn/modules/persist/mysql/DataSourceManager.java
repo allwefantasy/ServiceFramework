@@ -54,7 +54,7 @@ public class DataSourceManager {
         return tempDataSourceMap;
     }
 
-    private DataSource buildPool(Settings mysqlSetting) {
+    public DataSource buildPool(Settings mysqlSetting) {
         try {
             DruidDataSource dataSource = (DruidDataSource) DruidDataSourceFactory.createDataSource(JPA.properties(mysqlSetting));
             return dataSource;

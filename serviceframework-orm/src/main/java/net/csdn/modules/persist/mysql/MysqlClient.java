@@ -60,6 +60,12 @@ public class MysqlClient {
         return mysqlManagers.get(dataSourceName);
     }
 
+    public void addNewMySQL(String name, Settings properites) {
+        DataSource ds = dataSourceManager.buildPool(properites);
+        dataSourceManager.dataSourceMap().put(name, ds);
+        mysqlManagers.put(name, new MysqlClient(dataSourceManager, null, ds));
+    }
+
     public MysqlClient defaultMysqlService() {
         return mysqlManagers.get("mysql");
     }
@@ -97,7 +103,7 @@ public class MysqlClient {
 
     }
 
-      private PreparedStatement preparedStatement(Connection conn, String sql, boolean streaming) throws Exception {
+    private PreparedStatement preparedStatement(Connection conn, String sql, boolean streaming) throws Exception {
         if (streaming) {
             PreparedStatement preparedStatement = conn.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             preparedStatement.setFetchSize(1000);
