@@ -40,6 +40,9 @@ public class DataSourceManager {
 
     private Map<String, DataSource> buildDataSourceMap() {
         Map<String, DataSource> tempDataSourceMap = new HashMap<String, DataSource>();
+        if (!JPA.isConfigured()) {
+            return tempDataSourceMap;
+        }
         Map<String, Settings> groups = settings.getGroups(JPA.mode() + ".datasources");
         for (Map.Entry<String, Settings> group : groups.entrySet()) {
             if (group.getKey().equals("mysql")) {

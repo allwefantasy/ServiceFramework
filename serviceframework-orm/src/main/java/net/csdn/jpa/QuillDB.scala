@@ -17,8 +17,12 @@ object QuillDB {
   val cache = new java.util.concurrent.ConcurrentHashMap[String, MysqlJdbcContext[SnakeCase.type]]()
   val cacheDataSource = new java.util.concurrent.ConcurrentHashMap[String, javax.sql.DataSource with java.io.Closeable]()
 
+  def defaultDBEnable = {
+    JPA.isConfigured
+  }
+
   def createDataSource: javax.sql.DataSource with java.io.Closeable = {
-    if (JPABase.mysqlClient.defaultMysqlService() != null) {
+    if (defaultDBEnable) {
       JPABase.mysqlClient.defaultMysqlService().dataSource().
         asInstanceOf[javax.sql.DataSource with java.io.Closeable]
     } else {
@@ -35,7 +39,7 @@ object QuillDB {
     }
     synchronized {
       def createDataSource: javax.sql.DataSource with java.io.Closeable = {
-        if (JPABase.mysqlClient.defaultMysqlService() != null) {
+        if (defaultDBEnable) {
           JPABase.mysqlClient.mysqlService(name).dataSource().
             asInstanceOf[javax.sql.DataSource with java.io.Closeable]
         } else {
@@ -58,7 +62,7 @@ object QuillDB {
     if (QuillDB.cache.containsKey(name)) {
       return QuillDB.cache.get(name)
     }
-    if (JPABase.mysqlClient.defaultMysqlService() != null) {
+    if (defaultDBEnable) {
       JPABase.mysqlClient.defaultMysqlService().addNewMySQL(name, dbSettings.getByPrefix(name + "."))
     } else {
       val dataSourceManager = new DataSourceManager(ImmutableSettings.settingsBuilder().build())
