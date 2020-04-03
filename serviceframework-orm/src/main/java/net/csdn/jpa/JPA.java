@@ -87,7 +87,7 @@ public class JPA {
     }
 
     public static boolean isConfigured() {
-        return ormConfiguration != null && ormConfiguration.settings.getAsBoolean(JPA.mode() + ".datasources.mysql.disable", false);
+        return ormConfiguration != null && !ormConfiguration.settings.getAsBoolean(JPA.mode() + ".datasources.mysql.disable", false);
     }
 
     public static synchronized JPAConfig getJPAConfig() {
