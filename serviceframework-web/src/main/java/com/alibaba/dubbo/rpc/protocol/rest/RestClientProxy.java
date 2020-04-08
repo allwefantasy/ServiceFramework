@@ -112,10 +112,12 @@ public class RestClientProxy implements InvocationHandler {
         List<String> replaceKeys = new ArrayList<String>();
         String remenberPath = path;
         for (Map.Entry<String, String> entry : params.entrySet()) {
-            String newPath = path.replace("{" + entry.getKey() + "}", entry.getValue());
-            if (!newPath.equals(remenberPath)) {
-                remenberPath = newPath;
-                replaceKeys.add(entry.getKey());
+            if (entry.getValue() != null) {
+                String newPath = path.replace("{" + entry.getKey() + "}", entry.getValue());
+                if (!newPath.equals(remenberPath)) {
+                    remenberPath = newPath;
+                    replaceKeys.add(entry.getKey());
+                }
             }
         }
         for (String removeKey : replaceKeys) {
