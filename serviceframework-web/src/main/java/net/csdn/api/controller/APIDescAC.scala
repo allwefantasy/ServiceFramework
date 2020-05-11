@@ -2,7 +2,6 @@ package net.csdn.api.controller
 
 import java.util.List
 
-import com.google.common.reflect.ClassPath
 import net.csdn.ServiceFramwork
 import net.csdn.annotation.rest._
 import net.csdn.common.collections.WowCollections
@@ -12,6 +11,7 @@ import org.json4s.jackson.Serialization
 import org.json4s.jackson.Serialization.{read, write}
 import net.csdn.common.ScalaMethodMacros.str
 import org.json4s.JsonDSL._
+import tech.mlsql.common.utils.reflect.ClassPath
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.ArrayBuffer

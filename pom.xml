@@ -137,6 +137,22 @@
     <dependencies>
 
         <dependency>
+            <groupId>tech.mlsql</groupId>
+            <artifactId>common-utils_${scala.binary.version}</artifactId>
+            <version>0.3.4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.python</groupId>
+                    <artifactId>jython-standalone</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.fusesource.leveldbjni</groupId>
+                    <artifactId>leveldbjni-all</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.2.5</version>
