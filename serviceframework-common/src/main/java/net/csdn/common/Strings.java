@@ -1,8 +1,8 @@
 package net.csdn.common;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import net.csdn.common.collect.MapBuilder;
+import tech.mlsql.common.utils.collect.ImmutableSet;
+import tech.mlsql.common.utils.collect.Iterables;
 
 import java.util.*;
 import java.util.regex.Matcher;

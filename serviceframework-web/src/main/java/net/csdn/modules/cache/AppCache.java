@@ -1,9 +1,9 @@
 package net.csdn.modules.cache;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
+import tech.mlsql.common.utils.cache.Cache;
+import tech.mlsql.common.utils.cache.CacheBuilder;
+import tech.mlsql.common.utils.cache.CacheLoader;
+import tech.mlsql.common.utils.cache.LoadingCache;
 import com.google.inject.Inject;
 import net.csdn.common.settings.Settings;
 

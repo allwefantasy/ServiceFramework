@@ -1,7 +1,7 @@
 package net.csdn.common.settings;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import tech.mlsql.common.utils.collect.ImmutableMap;
+import tech.mlsql.common.utils.collect.Lists;
 import net.csdn.common.Booleans;
 import net.csdn.common.Classes;
 import net.csdn.common.Strings;
@@ -21,8 +21,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Maps.newHashMap;
+import static tech.mlsql.common.utils.collect.Lists.newArrayList;
+import static tech.mlsql.common.utils.collect.Maps.newHashMap;
 import static net.csdn.common.Strings.toCamelCase;
 import static net.csdn.common.unit.ByteSizeValue.parseBytesSizeValue;
 import static net.csdn.common.unit.SizeValue.parseSizeValue;

@@ -1,6 +1,6 @@
 package net.csdn.modules.controller;
 
-import com.google.common.collect.ImmutableMap;
+import tech.mlsql.common.utils.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import net.csdn.common.logging.CSLogger;

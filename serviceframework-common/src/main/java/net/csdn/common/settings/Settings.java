@@ -1,6 +1,6 @@
 package net.csdn.common.settings;
 
-import com.google.common.collect.ImmutableMap;
+import tech.mlsql.common.utils.collect.ImmutableMap;
 import net.csdn.common.exception.SettingsException;
 import net.csdn.common.unit.ByteSizeValue;
 import net.csdn.common.unit.SizeValue;

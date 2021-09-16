@@ -1,7 +1,7 @@
 package net.csdn.modules.http;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
+import tech.mlsql.common.utils.base.Joiner;
+import tech.mlsql.common.utils.collect.Maps;
 import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.common.exception.RecordExistedException;
 import net.csdn.common.exception.RecordNotFoundException;

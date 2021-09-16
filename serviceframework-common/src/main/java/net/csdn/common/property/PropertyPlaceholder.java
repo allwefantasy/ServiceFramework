@@ -1,6 +1,6 @@
 package net.csdn.common.property;
 
-import com.google.common.base.Preconditions;
+import tech.mlsql.common.utils.base.Preconditions;
 import net.csdn.common.Strings;
 
 import java.util.HashSet;

@@ -1,6 +1,6 @@
 package net.csdn.common.network;
 
-import com.google.common.collect.Lists;
+import tech.mlsql.common.utils.collect.Lists;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 

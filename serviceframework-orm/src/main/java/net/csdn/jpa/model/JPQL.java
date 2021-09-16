@@ -1,6 +1,6 @@
 package net.csdn.jpa.model;
 
-import com.google.common.collect.Maps;
+import tech.mlsql.common.utils.collect.Maps;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.param.ParamBinding;

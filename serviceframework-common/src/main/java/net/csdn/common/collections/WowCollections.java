@@ -1,7 +1,7 @@
 package net.csdn.common.collections;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
+import tech.mlsql.common.utils.base.Splitter;
+import tech.mlsql.common.utils.collect.Lists;
 import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.common.reflect.ReflectHelper;
 

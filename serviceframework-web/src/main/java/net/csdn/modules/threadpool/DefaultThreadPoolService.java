@@ -1,7 +1,7 @@
 package net.csdn.modules.threadpool;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import tech.mlsql.common.utils.collect.ImmutableMap;
+import tech.mlsql.common.utils.collect.Maps;
 import com.google.inject.Inject;
 import net.csdn.common.settings.Settings;
 import net.csdn.common.unit.TimeValue;

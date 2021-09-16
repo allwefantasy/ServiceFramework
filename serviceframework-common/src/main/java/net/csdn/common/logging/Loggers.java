@@ -7,7 +7,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
-import static com.google.common.collect.Lists.newArrayList;
+import static tech.mlsql.common.utils.collect.Lists.newArrayList;
 import static java.util.Arrays.asList;
 
 /**

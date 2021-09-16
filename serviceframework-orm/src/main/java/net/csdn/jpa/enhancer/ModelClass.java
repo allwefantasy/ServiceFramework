@@ -1,8 +1,8 @@
 package net.csdn.jpa.enhancer;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import tech.mlsql.common.utils.collect.Lists;
+import tech.mlsql.common.utils.collect.Maps;
+import tech.mlsql.common.utils.collect.Sets;
 import javassist.*;
 import net.csdn.annotation.association.NotMapping;
 import net.csdn.common.Strings;

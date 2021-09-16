@@ -1,6 +1,6 @@
 package net.csdn.common.path;
 
-import com.google.common.collect.Lists;
+import tech.mlsql.common.utils.collect.Lists;
 import net.csdn.common.collect.Tuple;
 
 import java.net.URI;

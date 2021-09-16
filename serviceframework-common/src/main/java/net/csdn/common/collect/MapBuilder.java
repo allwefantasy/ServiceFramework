@@ -1,11 +1,11 @@
 package net.csdn.common.collect;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import tech.mlsql.common.utils.collect.ImmutableMap;
+import tech.mlsql.common.utils.collect.Maps;
 
 import java.util.Map;
 
-import static com.google.common.collect.Maps.newHashMap;
+import static tech.mlsql.common.utils.collect.Maps.newHashMap;
 
 /**
  * BlogInfo: william

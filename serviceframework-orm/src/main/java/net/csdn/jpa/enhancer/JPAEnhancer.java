@@ -1,6 +1,6 @@
 package net.csdn.jpa.enhancer;
 
-import com.google.common.collect.Lists;
+import tech.mlsql.common.utils.collect.Lists;
 import javassist.CtClass;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.ActiveORMEnhancer;

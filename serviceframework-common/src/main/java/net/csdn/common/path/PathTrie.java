@@ -1,6 +1,6 @@
 package net.csdn.common.path;
 
-import com.google.common.collect.ImmutableMap;
+import tech.mlsql.common.utils.collect.ImmutableMap;
 
 import java.util.Map;
 import java.util.regex.Pattern;

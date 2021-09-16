@@ -1,6 +1,6 @@
 package net.csdn.common.logging.log4j;
 
-import com.google.common.collect.ImmutableMap;
+import tech.mlsql.common.utils.collect.ImmutableMap;
 import net.csdn.common.collect.MapBuilder;
 import net.csdn.common.env.Environment;
 import net.csdn.common.settings.ImmutableSettings;
