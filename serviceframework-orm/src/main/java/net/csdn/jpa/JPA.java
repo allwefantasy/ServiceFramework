@@ -208,7 +208,7 @@ public class JPA {
         }
 
         properties.put("url", "jdbc:mysql://" + mysqlSetting.get("host") + ":" + mysqlSetting.get("port") + "/" + mysqlSetting.get("database") + jdbcOptBuf.toString());
-
+        logger.info("connect url:" + properties.get("url"));
         properties.put("username", mysqlSetting.get("username"));
         properties.put("password", mysqlSetting.get("password"));
         properties.put("maxActive", mysqlSetting.get("maxActive", "50"));

@@ -11,8 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static net.csdn.common.logging.support.MessageFormat.format;
-
 /**
  * User: WilliamZhu
  * Date: 12-7-25
@@ -43,11 +41,13 @@ public class DBInfo {
         Class.forName("com.mysql.jdbc.Driver").newInstance();
         Map<String, Settings> groups = settings.getGroups(JPA.mode() + ".datasources");
         Settings mysqlSetting = groups.get("mysql");
-        if(mysqlSetting == null){return;}
+        if (mysqlSetting == null) {
+            return;
+        }
 
-        String url = "jdbc:mysql://{}:{}/{}?useUnicode=true&characterEncoding=utf8";
-        url = format(url, mysqlSetting.get("host", "127.0.0.1"), mysqlSetting.get("port", "3306"), mysqlSetting.get("database", "csdn_search_client"));
-        conn = DriverManager.getConnection(url, mysqlSetting.get("username"), mysqlSetting.get("password"));
+        Map<String, String>  properties = JPA.properties(mysqlSetting);
+
+        conn = DriverManager.getConnection(properties.get("url"), properties.get("username"), properties.get("password"));
 
         DatabaseMetaData databaseMetaData = conn.getMetaData();
         ResultSet resultSet = databaseMetaData.getTables(null, null, "%", null);
