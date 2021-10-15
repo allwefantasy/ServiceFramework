@@ -27,6 +27,9 @@ import net.csdn.validate.ValidatorLoader;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -192,7 +195,20 @@ public class JPA {
         properties.put("driver_class", mysqlSetting.get("driver", "com.mysql.jdbc.Driver"));
         properties.put("dialect", "org.hibernate.dialect.MySQLDialect");
         properties.put("format_sql", mysqlSetting.get("format_sql", "false"));
-        properties.put("url", "jdbc:mysql://" + mysqlSetting.get("host") + ":" + mysqlSetting.get("port") + "/" + mysqlSetting.get("database") + "?useUnicode=true&characterEncoding=utf8");
+
+        Map<String, String> jdbcOpts = mysqlSetting.getByPrefix("jdbc.").getAsMap();
+        StringBuilder jdbcOptBuf = new StringBuilder();
+        jdbcOptBuf.append("?useUnicode=true&characterEncoding=utf8");
+        for (Map.Entry<String, String> entry : jdbcOpts.entrySet()) {
+            try {
+                jdbcOptBuf.append("&" + entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+
+        properties.put("url", "jdbc:mysql://" + mysqlSetting.get("host") + ":" + mysqlSetting.get("port") + "/" + mysqlSetting.get("database") + jdbcOptBuf.toString());
+
         properties.put("username", mysqlSetting.get("username"));
         properties.put("password", mysqlSetting.get("password"));
         properties.put("maxActive", mysqlSetting.get("maxActive", "50"));
