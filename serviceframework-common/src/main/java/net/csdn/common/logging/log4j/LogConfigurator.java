@@ -1,11 +1,17 @@
 package net.csdn.common.logging.log4j;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.config.properties.PropertiesConfigurationBuilder;
 import tech.mlsql.common.utils.collect.ImmutableMap;
 import net.csdn.common.collect.MapBuilder;
 import net.csdn.common.env.Environment;
 import net.csdn.common.settings.ImmutableSettings;
 import net.csdn.common.settings.Settings;
-import org.apache.log4j.PropertyConfigurator;
+
 
 import java.util.Map;
 import java.util.Properties;
@@ -75,6 +81,13 @@ public class LogConfigurator {
                 props.setProperty(key, value);
             }
         }
-        PropertyConfigurator.configure(props);
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = new PropertiesConfigurationBuilder()
+                .setConfigurationSource(ConfigurationSource.NULL_SOURCE)
+                .setRootProperties(props)
+                .setLoggerContext(context)
+                .build();
+        context.setConfiguration(config);
+        Configurator.initialize(config);
     }
 }
