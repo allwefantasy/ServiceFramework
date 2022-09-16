@@ -13,7 +13,7 @@ import net.csdn.common.settings.Settings;
 public class LoggerLoader implements Loader {
     @Override
     public void load(Settings settings) throws Exception {
-        Classes.getDefaultClassLoader().loadClass("org.apache.log4j.Logger");
+        Classes.getDefaultClassLoader().loadClass("org.apache.logging.log4j.Logger");
         LogConfigurator.configure(settings);
     }
 }

@@ -1,8 +1,8 @@
 package net.csdn.common.logging.log4j;
 
 import net.csdn.common.logging.support.AbstractCSLogger;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+
 
 /**
  * BlogInfo: william
@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
  * Time: 下午3:24
  */
 public class Log4jCSLogger extends AbstractCSLogger {
-    private final org.apache.log4j.Logger logger;
+    private final Logger logger;
 
     public Log4jCSLogger(String prefix, Logger logger) {
         super(prefix);
@@ -39,17 +39,17 @@ public class Log4jCSLogger extends AbstractCSLogger {
 
     @Override
     public boolean isWarnEnabled() {
-        return logger.isEnabledFor(Level.WARN);
+        return logger.isWarnEnabled();
     }
 
     @Override
     public boolean isErrorEnabled() {
-        return logger.isEnabledFor(Level.ERROR);
+        return logger.isErrorEnabled();
     }
 
     @Override
     public boolean isHadooEnabled() {
-        return logger.isEnabledFor(Log4jFactory.CSLogLevel.HADOO_LEVEL);
+        return logger.isEnabled(Log4jFactory.CSLogLevel.HADOO_LEVEL);
     }
 
     @Override
