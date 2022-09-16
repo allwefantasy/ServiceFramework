@@ -27,7 +27,7 @@ public class LogConfigurator {
     private static boolean loaded;
 
     private static ImmutableMap<String, String> replacements = new MapBuilder<String, String>()
-            .put("console", "net.csdn.common.logging.log4j.ConsoleAppender")
+            .put("console", "org.apache.logging.log4j.core.appender.WriterAppender")
             .put("async", "org.apache.log4j.AsyncAppender")
             .put("dailyRollingFile", "org.apache.log4j.DailyRollingFileAppender")
             .put("externallyRolledFile", "org.apache.log4j.ExternallyRolledFileAppender")
@@ -48,7 +48,7 @@ public class LogConfigurator {
             .put("simple", "org.apache.log4j.SimpleLayout")
             .put("html", "org.apache.log4j.HTMLLayout")
             .put("pattern", "org.apache.log4j.PatternLayout")
-            .put("consolePattern", "net.csdn.common.logging.log4j.JLinePatternLayout")
+            .put("consolePattern", "org.apache.logging.log4j.core.layout.PatternLayout")
             .put("ttcc", "org.apache.log4j.TTCCLayout")
             .put("xml", "org.apache.log4j.XMLLayout")
             .immutableMap();
