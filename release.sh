@@ -1,9 +1,22 @@
-#mvn clean deploy -DskipTests -Prelease-sign-artifacts -Pscala-2.11
-#https://oss.sonatype.org/#stagingRepositories
-mvn versions:set -DnewVersion=2.0.8
-mvn clean deploy -DskipTests -Prelease-sign-artifacts -Pscala-2.11
+#!/usr/bin/env bash
 
+set -euo pipefail
 
-./dev/change-scala-version.sh 2.12
-mvn clean deploy -DskipTests -Prelease-sign-artifacts -Pscala-2.12
-git co .
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MVN="${MVN:-mvn}"
+
+run_publish() {
+  local label="$1"
+  shift
+
+  echo "==> Publishing ${label}"
+  "${MVN}" clean deploy \
+    -DskipTests=true \
+    -Prelease-sign-artifacts \
+    "$@"
+}
+
+cd "${ROOT_DIR}"
+
+run_publish "Scala 2.11.8 artifacts (*_2.11)" -Pscala-2.11
+run_publish "Scala 2.13.16 artifacts (*_2.13)"

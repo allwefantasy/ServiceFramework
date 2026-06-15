@@ -39,16 +39,15 @@ object AggregateRestClient {
   }
 
   def buildClient[T](hostAndPortList: List[String], proxyStrategy: ProxyStrategy, transportService: HttpTransportService)(implicit manifest: Manifest[T]): T = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
     val items: java.util.List[RestClientProxy] = hostAndPortList.map { target =>
       val restClientProxy = new RestClientProxy(transportService)
       restClientProxy.target("http://" + target + "/")
       restClientProxy
-    }
+    }.asJava
     val cluster: ClusterRestClientProxy = new ClusterRestClientProxy(items, proxyStrategy)
     val clazz = manifest.runtimeClass
     Proxy.newProxyInstance(clazz.getClassLoader, Array(clazz), cluster).asInstanceOf[T]
   }
 
 }
-

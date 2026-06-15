@@ -1,7 +1,5 @@
 package net.csdn.api.controller
 
-import java.util.List
-
 import net.csdn.ServiceFramwork
 import net.csdn.annotation.rest._
 import net.csdn.common.collections.WowCollections
@@ -13,7 +11,7 @@ import net.csdn.common.ScalaMethodMacros.str
 import org.json4s.JsonDSL._
 import tech.mlsql.common.utils.reflect.ClassPath
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.runtime.universe._
 
@@ -28,9 +26,9 @@ object APIDescAC {
     var openAPIs = ArrayBuffer[OpenAPI]()
 
     val controllers = WowCollections.split2(settings.get("application.controller"), ",")
-    controllers.map { c =>
+    controllers.asScala.foreach { c =>
       val classinfos = ClassPath.from(classOf[ServiceFramwork].getClassLoader).getTopLevelClassesRecursive(c)
-      classinfos.map { ci =>
+      classinfos.asScala.foreach { ci =>
         val clzz = Class.forName(ci.getName)
         clzz.getAnnotations.map { a =>
           if (a.annotationType() == classOf[OpenAPIDefinition]) {
@@ -43,7 +41,7 @@ object APIDescAC {
               actions += OpenAction(atAnno.types().mkString(","), atAnno.path().mkString(","), actionAnno, m.getAnnotation(classOf[Parameters]), m.getAnnotation(classOf[Responses]))
 
             }
-            openAPIs += OpenAPI(ci.getName, a.asInstanceOf[OpenAPIDefinition], actions)
+            openAPIs += OpenAPI(ci.getName, a.asInstanceOf[OpenAPIDefinition], actions.toList)
           }
 
         }
@@ -53,12 +51,12 @@ object APIDescAC {
     ser
   }
 
-  def classAccessors[T: TypeTag]: List[MethodSymbol] = typeOf[T].members.collect {
+  def classAccessors[T: TypeTag]: scala.collection.immutable.List[MethodSymbol] = typeOf[T].members.collect {
     case m: MethodSymbol if m.isCaseAccessor => m
   }.toList
 }
 
-case class OpenAPI(name: String, o: OpenAPIDefinition, actions: List[OpenAction])
+case class OpenAPI(name: String, o: OpenAPIDefinition, actions: scala.collection.immutable.List[OpenAction])
 
 case class OpenAction(methods: String, path: String, action: Action, parameters: Parameters, responses: Responses)
 

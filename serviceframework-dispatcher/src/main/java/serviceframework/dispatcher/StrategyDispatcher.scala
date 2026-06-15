@@ -12,7 +12,7 @@ import net.csdn.common.settings.ImmutableSettings._
 import net.csdn.common.settings.Settings
 import net.sf.json.JSONObject
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 
 /**
@@ -44,13 +44,13 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
           try {
             val temp = JSONObject.fromObject(copyStr)
             val time = System.currentTimeMillis()
-            result.addAll(strategies(0).result(temp.toMap[Any, Any]))
+            result.addAll(strategies(0).result(temp.asInstanceOf[JMap[Any, Any]]))
             logger.info( s"""${params.get("_token_")} ${strategies(0).name} ${System.currentTimeMillis() - time}""")
-            for (i <- 1.to(strategies.size)) {
+            for (i <- 1 until strategies.size) {
               val temp2 = JSONObject.fromObject(copyStr)
               temp2.put("_cache_", temp.get("_cache_"))
               val time = System.currentTimeMillis()
-              result.addAll(strategies(i).result(temp2.toMap[Any, Any]))
+              result.addAll(strategies(i).result(temp2.asInstanceOf[JMap[Any, Any]]))
               logger.info( s"""${params.get("_token_")} ${strategies(i).name} ${System.currentTimeMillis() - time}""")
             }
           } catch {
@@ -63,13 +63,11 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
           result
         } else {
           try {
-            result.addAll(strategies.flatMap {
-              f =>
-                val time = System.currentTimeMillis()
-                val res = f.result(params)
-                logger.info( s"""${params.get("_token_")} ${f.name} ${System.currentTimeMillis() - time}""")
-                res
-            })
+            strategies.foreach { f =>
+              val time = System.currentTimeMillis()
+              result.addAll(f.result(params))
+              logger.info( s"""${params.get("_token_")} ${f.name} ${System.currentTimeMillis() - time}""")
+            }
           } catch {
             case e: Exception =>
               logger.error("调用链路异常", e)
@@ -80,7 +78,7 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
           result
         }
 
-      case None => List()
+      case None => new util.ArrayList[T]()
 
     }
   }
@@ -94,8 +92,8 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
     if (!settings.getAsBoolean("strategy.dispatcher.topic.enable", false))
       return Option(List(_strategies.get(key)))
 
-    val kv = _strategies.filter(f => f._2.configParams.containsKey("topic")).
-      flatMap(f => f._2.configParams.get("topic").asInstanceOf[JList[String]].map(k => (k, f._2, 1))).
+    val kv = _strategies.asScala.filter(f => f._2.configParams.containsKey("topic")).
+      flatMap(f => f._2.configParams.get("topic").asInstanceOf[JList[String]].asScala.map(k => (k, f._2, 1))).
       groupBy(j => j._1).map(f => (f._1, f._2.map(k => k._2)))
 
     kv.get(key) match {
@@ -110,7 +108,7 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
 
   def reload(configStr: String) = {
     synchronized {
-      _strategies.foreach(_._2.stop)
+      _strategies.asScala.values.foreach(_.stop)
       loadConfig(configStr)
     }
 
@@ -134,7 +132,7 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
   }
 
   private def load = {
-    _config.foreach {
+    _config.asScala.foreach {
       f =>
         createStrategy(f._1, f._2)
     }
@@ -157,16 +155,17 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
     创建算法。一个策略由0个或者多个算法提供结果
    */
   private def createAlgorithms(desc: JMap[_, _]): JList[Processor[T]] = {
-    if (!desc.containsKey("algorithm") && !desc.containsKey("processor")) return List()
+    if (!desc.containsKey("algorithm") && !desc.containsKey("processor")) return new util.ArrayList[Processor[T]]()
     val rs = if (desc.containsKey("algorithm")) desc.get("algorithm") else desc.get("processor")
-    rs.asInstanceOf[JList[JMap[_, _]]].map {
-      alg =>
-        val name = alg.get("name").asInstanceOf[String]
-        val temp = Class.forName(shortNameMapping.forName(name)).newInstance().asInstanceOf[Processor[T]]
-        val configParams: JList[JMap[Any, Any]] = if (alg.containsKey("params")) alg.get("params").asInstanceOf[JList[JMap[Any, Any]]] else new java.util.ArrayList[JMap[Any, Any]]()
-        temp.initialize(name, configParams)
-        temp
+    val result = new util.ArrayList[Processor[T]]()
+    rs.asInstanceOf[JList[JMap[_, _]]].asScala.foreach { alg =>
+      val name = alg.get("name").asInstanceOf[String]
+      val temp = Class.forName(shortNameMapping.forName(name)).newInstance().asInstanceOf[Processor[T]]
+      val configParams: JList[JMap[Any, Any]] = if (alg.containsKey("params")) alg.get("params").asInstanceOf[JList[JMap[Any, Any]]] else new java.util.ArrayList[JMap[Any, Any]]()
+      temp.initialize(name, configParams)
+      result.add(temp)
     }
+    result
   }
 
   /*
@@ -175,10 +174,10 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
   private def createRefs(desc: JMap[_, _]): JList[Strategy[T]] = {
     val result = new java.util.ArrayList[Strategy[T]]()
     if (!desc.containsKey("ref")) return result
-    desc.get("ref").asInstanceOf[JList[String]].foreach {
+    desc.get("ref").asInstanceOf[JList[String]].asScala.foreach {
       ref =>
-        if (_strategies.contains(_config.get(ref))) {
-          result.add(_strategies.get(_config.get(ref)))
+        if (_strategies.containsKey(ref)) {
+          result.add(_strategies.get(ref))
         } else {
           createStrategy(ref, _config.get(ref)) match {
             case Some(i) => result.add(i)
@@ -194,15 +193,16 @@ class StrategyDispatcher[T] @Inject()(settings: Settings) {
     处理上一阶段的组合器吐出的结果
    */
   private def createCompositors(desc: JMap[_, _]): JList[Compositor[T]] = {
-    if (!desc.containsKey("compositor")) return List()
+    if (!desc.containsKey("compositor")) return new util.ArrayList[Compositor[T]]()
     val temp = desc.get("compositor").asInstanceOf[JList[JMap[_, _]]]
-    temp.map {
-      f =>
-        val compositor = Class.forName(shortNameMapping.forName(f.get("name").asInstanceOf[String])).newInstance().asInstanceOf[Compositor[T]]
-        val configParams: JList[JMap[Any, Any]] = if (f.containsKey("params")) f.get("params").asInstanceOf[JList[JMap[Any, Any]]] else new java.util.ArrayList[JMap[Any, Any]]()
-        compositor.initialize(f.get("typeFilter").asInstanceOf[JList[String]], configParams)
-        compositor
+    val result = new util.ArrayList[Compositor[T]]()
+    temp.asScala.foreach { f =>
+      val compositor = Class.forName(shortNameMapping.forName(f.get("name").asInstanceOf[String])).newInstance().asInstanceOf[Compositor[T]]
+      val configParams: JList[JMap[Any, Any]] = if (f.containsKey("params")) f.get("params").asInstanceOf[JList[JMap[Any, Any]]] else new java.util.ArrayList[JMap[Any, Any]]()
+      compositor.initialize(f.get("typeFilter").asInstanceOf[JList[String]], configParams)
+      result.add(compositor)
     }
+    result
   }
 
 }
@@ -282,5 +282,3 @@ object StrategyDispatcher {
     }
   }
 }
-
-

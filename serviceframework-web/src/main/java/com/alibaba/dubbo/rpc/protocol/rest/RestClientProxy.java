@@ -8,7 +8,7 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.Url;
 import net.csdn.modules.http.RestRequest;
 import net.csdn.modules.transport.HttpTransportService;
-import scala.collection.JavaConversions;
+import scala.collection.JavaConverters;
 
 import java.io.UnsupportedEncodingException;
 import java.lang.annotation.Annotation;
@@ -78,7 +78,7 @@ public class RestClientProxy implements InvocationHandler {
                 params.putAll((Map) abc);
             } else if (abc instanceof scala.collection.immutable.Map) {
                 scala.collection.immutable.Map<String, String> kk = (scala.collection.immutable.Map<String, String>) abc;
-                Map<String, String> newKK = JavaConversions.mapAsJavaMap(kk);
+                Map<String, String> newKK = JavaConverters.mapAsJavaMapConverter(kk).asJava();
                 params.putAll(newKK);
             } else if (abc instanceof RestRequest.Method) {
                 reqMethod = (RestRequest.Method) abc;

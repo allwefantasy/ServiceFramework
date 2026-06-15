@@ -17,3 +17,4 @@ release.properties
 /serviceframework-dispatcher/target
 /serviceframework-common/target
 .DS_Store
+.flattened-pom.xml

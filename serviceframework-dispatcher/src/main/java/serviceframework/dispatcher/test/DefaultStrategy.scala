@@ -3,7 +3,6 @@ package serviceframework.dispatcher.test
 import serviceframework.dispatcher.{Compositor, Processor, Strategy}
 import java.util
 import net.csdn.common.logging.Loggers
-import scala.collection.JavaConversions._
 
 /**
  * 5/22/14 WilliamZhu(allwefantasy@gmail.com)
@@ -34,7 +33,7 @@ class DefaultStrategy[T >: Boolean] extends Strategy[T]{
   }
   def result(params: util.Map[Any, Any]): util.List[T] = {
      processor.get(0).result(params)
-     List()
+     new util.ArrayList[T]()
   }
 
   def configParams: util.Map[Any, Any] = _configParams

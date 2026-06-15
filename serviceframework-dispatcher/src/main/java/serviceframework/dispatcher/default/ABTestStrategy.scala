@@ -36,7 +36,7 @@ class ABTestStrategy[T] extends Strategy[T] {
     this._name = name
     this._ref = ref
     this._compositor = com
-    this._processor = processor
+    this._processor = alg
     this._configParams = params
   }
 
@@ -46,7 +46,7 @@ class ABTestStrategy[T] extends Strategy[T] {
 
 
   def result(params: util.Map[Any, Any]): util.List[T] = {
-    import scala.collection.JavaConversions._
+    import scala.collection.JavaConverters._
 
     require(params.containsKey(cid), s"AB策略，${cid}参数是必须的")
 
@@ -59,7 +59,7 @@ class ABTestStrategy[T] extends Strategy[T] {
 
     require(algOrStra.size() == 2, s"算法和策略必须只有两个")
 
-    val jack = algOrStra.filter(f => _configParams.containsKey(f.name))
+    val jack = algOrStra.asScala.filter(f => _configParams.containsKey(f.name))
     if (jack.size == 0) {
       if (Math.abs(cidValue.hashCode % 10) < 5) {
         algOrStra.get(0).result(params)
@@ -68,7 +68,7 @@ class ABTestStrategy[T] extends Strategy[T] {
       }
     }
     else {
-      val as1 = jack.get(0)
+      val as1 = jack(0)
       val as2 = if (algOrStra.indexOf(as1) == 0) algOrStra.get(1) else algOrStra.get(0)
       if (Math.abs(cidValue.hashCode % 10) < _configParams.get(as1.name).asInstanceOf[Double] * 10) {
         as1.result(params)
