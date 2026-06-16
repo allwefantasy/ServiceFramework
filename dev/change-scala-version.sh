@@ -19,7 +19,7 @@
 
 set -e
 
-VALID_VERSIONS=( 2.11 2.12 )
+VALID_VERSIONS=( 2.11 2.12 2.13 )
 
 usage() {
   echo "Usage: $(basename $0) [-h|--help] <version>
@@ -44,12 +44,6 @@ check_scala_version() {
 
 check_scala_version "$TO_VERSION"
 
-if [ $TO_VERSION = "2.12" ]; then
-  FROM_VERSION="2.11"
-else
-  FROM_VERSION="2.12"
-fi
-
 sed_i() {
   sed -e "$1" "$2" > "$2.tmp" && mv "$2.tmp" "$2"
 }
@@ -58,7 +52,7 @@ export -f sed_i
 
 BASEDIR=$(dirname $0)/..
 find "$BASEDIR" -name 'pom.xml' -not -path '*target*' -print \
-  -exec bash -c "sed_i 's/\(artifactId.*\)_'$FROM_VERSION'/\1_'$TO_VERSION'/g' {}" \;
+  -exec bash -c "sed_i 's/\(artifactId.*\)_2\.[0-9][0-9]*/\1_'$TO_VERSION'/g; s/\(name.*\)_2\.[0-9][0-9]*/\1_'$TO_VERSION'/g' {}" \;
 
 # Also update <scala.binary.version> in parent POM
 # Match any scala binary version to ensure idempotency

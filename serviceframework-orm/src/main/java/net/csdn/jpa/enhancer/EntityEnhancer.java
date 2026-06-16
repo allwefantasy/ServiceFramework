@@ -1,13 +1,13 @@
 package net.csdn.jpa.enhancer;
 
 import javassist.*;
-import javassist.bytecode.AccessFlag;
 import javassist.bytecode.ConstPool;
 import javassist.bytecode.annotation.BooleanMemberValue;
 import javassist.bytecode.annotation.EnumMemberValue;
 import javassist.bytecode.annotation.StringMemberValue;
 import net.csdn.annotation.validate.Validate;
 import net.csdn.common.Strings;
+import net.csdn.common.enhancer.DynamicBytecode;
 import net.csdn.common.enhancer.EnhancerHelper;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
@@ -284,53 +284,17 @@ public class EntityEnhancer implements BitEnhancer {
         }
     }
 
-    boolean isFinal(CtField ctField) {
-        return java.lang.reflect.Modifier.isFinal(ctField.getModifiers());
-    }
-
-    boolean isStatic(CtField ctField) {
-        return java.lang.reflect.Modifier.isStatic(ctField.getModifiers());
-    }
-
     private void autoInjectGetSet(ModelClass modelClass) throws Exception {
 
 
         //hibernate 可能需要 setter/getter 方法，好吧 我们为它添加这些方法
         CtClass ctClass = modelClass.originClass;
-        for (CtField ctField : ctClass.getDeclaredFields()) {
-            if (isFinal(ctField) || isStatic(ctField) || ctField.hasAnnotation(Validate.class))
-                continue;
-            // Property name
-            String propertyName = ctField.getName().substring(0, 1).toUpperCase() + ctField.getName().substring(1);
-            String getter = "get" + propertyName;
-            String setter = "set" + propertyName;
-
-            try {
-                CtMethod ctMethod = ctClass.getDeclaredMethod(getter);
-                if (ctMethod.getParameterTypes().length > 0 || java.lang.reflect.Modifier.isStatic(ctMethod.getModifiers())) {
-                    throw new NotFoundException("it's not a getter !");
-                }
-            } catch (NotFoundException noGetter) {
-
-                String code = "public " + ctField.getType().getName() + " " + getter + "() { return this." + ctField.getName() + "; }";
-                CtMethod getMethod = CtMethod.make(code, ctClass);
-                getMethod.setModifiers(getMethod.getModifiers() | AccessFlag.SYNTHETIC);
-                ctClass.addMethod(getMethod);
+        DynamicBytecode.addBeanAccessors(ctClass, new DynamicBytecode.CtFieldFilter() {
+            @Override
+            public boolean accept(CtField field) throws Exception {
+                return DynamicBytecode.isInstanceDataField(field) && !field.hasAnnotation(Validate.class);
             }
-
-            try {
-                CtMethod ctMethod = ctClass.getDeclaredMethod(setter);
-                if (ctMethod.getParameterTypes().length != 1 || !ctMethod.getParameterTypes()[0].equals(ctField.getType()) || java.lang.reflect.Modifier.isStatic(ctMethod.getModifiers())) {
-                    throw new NotFoundException("it's not a setter !");
-                }
-            } catch (NotFoundException noSetter) {
-                CtMethod setMethod = CtMethod.make("public void " + setter + "(" + ctField.getType().getName() + " value) { this." + ctField.getName() + " = value; }", ctClass);
-                setMethod.setModifiers(setMethod.getModifiers() | AccessFlag.SYNTHETIC);
-                ctClass.addMethod(setMethod);
-            }
-
-        }
-        ctClass.defrost();
+        });
 
     }
 

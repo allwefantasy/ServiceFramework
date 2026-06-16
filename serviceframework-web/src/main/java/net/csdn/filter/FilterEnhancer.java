@@ -1,10 +1,9 @@
 package net.csdn.filter;
 
 import javassist.CtClass;
-import javassist.CtField;
 import javassist.CtMethod;
-import javassist.CtNewMethod;
 import net.csdn.ServiceFramwork;
+import net.csdn.common.enhancer.DynamicBytecode;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
@@ -47,36 +46,17 @@ public class FilterEnhancer extends ControllerEnhancer {
         CtClass controller = classPool.get("net.csdn.modules.http.ApplicationController");
 
         //copy static fields to subclass.Importance because of inheritance strategy of java
-        copyStaticFieldsToSubclass(controller, ctClass);
+        DynamicBytecode.copyStaticFields(controller, ctClass, DynamicBytecode.PARENT_STATIC_FIELD_FILTER);
 
         //copy static methods to subclass
-        copyStaticMethodsToSubclass(controller, ctClass);
+        DynamicBytecode.copyStaticMethods(controller, ctClass, new DynamicBytecode.CtMethodFilter() {
+            @Override
+            public boolean accept(CtMethod method) {
+                return !shouldNotCopyToSubclassStaticMethods.contains(method.getName());
+            }
+        });
 
         return ctClass;
-    }
-
-    private void copyStaticFieldsToSubclass(CtClass document, CtClass targetClass) throws Exception {
-        CtField[] ctFields = document.getFields();
-        for (CtField ctField : ctFields) {
-            if (Modifier.isStatic(ctField.getModifiers()) && ctField.getName().startsWith("parent$_")) {
-                CtField ctField1 = new CtField(ctField.getType(), ctField.getName(), targetClass);
-                ctField1.setModifiers(ctField.getModifiers());
-                targetClass.addField(ctField1);
-            }
-        }
-
-    }
-
-    private void copyStaticMethodsToSubclass(CtClass document, CtClass targetClass) throws Exception {
-        CtMethod[] ctMethods = document.getMethods();
-
-        for (CtMethod ctMethod : ctMethods) {
-            if (Modifier.isStatic(ctMethod.getModifiers()) && !shouldNotCopyToSubclassStaticMethods.contains(ctMethod.getName())) {
-                CtMethod ctNewMethod = CtNewMethod.copy(ctMethod, targetClass, null);
-                targetClass.addMethod(ctNewMethod);
-            }
-
-        }
     }
 
     @Override

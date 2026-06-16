@@ -3,19 +3,19 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>ServiceFramework_${scala.binary.version}</artifactId>
+        <artifactId>ServiceFramework_2.13</artifactId>
         <groupId>net.csdn</groupId>
         <version>2.0.9</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>serviceframework-dispatcher_${scala.binary.version}</artifactId>
-    <name>serviceframework-dispatcher_${scala.binary.version}</name>
+    <artifactId>serviceframework-dispatcher_2.13</artifactId>
+    <name>serviceframework-dispatcher_2.13</name>
     <dependencies>
         <dependency>
             <groupId>net.csdn</groupId>
-            <artifactId>serviceframework-web_${scala.binary.version}</artifactId>
-            <version>${parent.version}</version>
+            <artifactId>serviceframework-web_2.13</artifactId>
+            <version>${project.parent.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

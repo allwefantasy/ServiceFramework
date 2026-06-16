@@ -3,11 +3,11 @@ package net.csdn.jpa.enhancer;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.CtMethod;
-import javassist.CtNewMethod;
+import net.csdn.common.enhancer.DynamicBytecode;
 import net.csdn.common.settings.Settings;
 import net.csdn.enhancer.BitEnhancer;
 
-import java.lang.reflect.Modifier;
+import javax.persistence.Transient;
 import java.util.List;
 
 import static net.csdn.common.collections.WowCollections.list;
@@ -158,6 +158,12 @@ public class ClassMethodEnhancer implements BitEnhancer {
         CtMethod findWithMultiId = CtMethod.make("public static java.util.List find(java.util.List cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").find(cc);}", ctClass);
         ctClass.addMethod(findWithMultiId);
 
+        DynamicBytecode.addJpaDynamicFinders(ctClass, new DynamicBytecode.CtFieldFilter() {
+            @Override
+            public boolean accept(CtField field) throws Exception {
+                return DynamicBytecode.isInstanceDataField(field) && !field.hasAnnotation(Transient.class);
+            }
+        });
 
         ctClass.defrost();
 
@@ -165,26 +171,15 @@ public class ClassMethodEnhancer implements BitEnhancer {
 
 
     private void copyStaticMethodsToSubclass(CtClass document, CtClass targetClass) throws Exception {
-        CtMethod[] ctMethods = document.getMethods();
-
-        for (CtMethod ctMethod : ctMethods) {
-            if (Modifier.isStatic(ctMethod.getModifiers()) && shouldCopyToSubclassStaticMethods.contains(ctMethod.getName())) {
-                CtMethod ctNewMethod = CtNewMethod.copy(ctMethod, targetClass, null);
-                targetClass.addMethod(ctNewMethod);
+        DynamicBytecode.copyStaticMethods(document, targetClass, new DynamicBytecode.CtMethodFilter() {
+            @Override
+            public boolean accept(CtMethod method) {
+                return shouldCopyToSubclassStaticMethods.contains(method.getName());
             }
-
-        }
+        });
     }
 
     private void copyStaticFieldsToSubclass(CtClass document, CtClass targetClass) throws Exception {
-        CtField[] ctFields = document.getFields();
-        for (CtField ctField : ctFields) {
-            if (Modifier.isStatic(ctField.getModifiers()) && ctField.getName().startsWith("parent$_")) {
-                CtField ctField1 = new CtField(ctField.getType(), ctField.getName(), targetClass);
-                ctField1.setModifiers(ctField.getModifiers());
-                targetClass.addField(ctField1);
-            }
-        }
-
+        DynamicBytecode.copyStaticFields(document, targetClass, DynamicBytecode.PARENT_STATIC_FIELD_FILTER);
     }
 }

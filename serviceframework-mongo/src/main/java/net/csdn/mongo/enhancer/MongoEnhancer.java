@@ -1,7 +1,7 @@
 package net.csdn.mongo.enhancer;
 
 import javassist.*;
-import javassist.bytecode.AccessFlag;
+import net.csdn.common.enhancer.DynamicBytecode;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.logging.support.MessageFormat;
@@ -58,10 +58,15 @@ public class MongoEnhancer extends Enhancer {
 
 
         //copy static fields to subclass.Importance because of inheritance strategy of java
-        copyStaticFieldsToSubclass(document, ctClass);
+        DynamicBytecode.copyStaticFields(document, ctClass, DynamicBytecode.PARENT_STATIC_FIELD_FILTER);
 
         //copy static methods to subclass
-        copyStaticMethodsToSubclass(document, ctClass);
+        DynamicBytecode.copyStaticMethods(document, ctClass, new DynamicBytecode.CtMethodFilter() {
+            @Override
+            public boolean accept(CtMethod method) {
+                return !shouldNotCopyToSubclassStaticMethods.contains(method.getName());
+            }
+        });
 
         enhanceCriteriaClassMethods(ctClass);
 
@@ -77,85 +82,28 @@ public class MongoEnhancer extends Enhancer {
         return ctClass;
     }
 
-    private void copyStaticFieldsToSubclass(CtClass document, CtClass targetClass) throws Exception {
-        CtField[] ctFields = document.getFields();
-        for (CtField ctField : ctFields) {
-            if (Modifier.isStatic(ctField.getModifiers()) && ctField.getName().startsWith("parent$_")) {
-                CtField ctField1 = new CtField(ctField.getType(), ctField.getName(), targetClass);
-                ctField1.setModifiers(ctField.getModifiers());
-                targetClass.addField(ctField1);
-            }
-        }
-
-    }
-
-    private void copyStaticMethodsToSubclass(CtClass document, CtClass targetClass) throws Exception {
-        CtMethod[] ctMethods = document.getMethods();
-
-        for (CtMethod ctMethod : ctMethods) {
-            if (Modifier.isStatic(ctMethod.getModifiers()) && !shouldNotCopyToSubclassStaticMethods.contains(ctMethod.getName())) {
-                CtMethod ctNewMethod = CtNewMethod.copy(ctMethod, targetClass, null);
-                targetClass.addMethod(ctNewMethod);
-            }
-
-        }
-    }
-
-
-    private boolean isFinal(CtField ctField) {
-        return Modifier.isFinal(ctField.getModifiers());
-    }
-
-    private boolean isStatic(CtField ctField) {
-        return Modifier.isStatic(ctField.getModifiers());
-    }
-
     private void enhanceGetterSetterMethods(CtClass ctClass) throws Exception {
 
 
         //hibernate 可能需要 setter/getter 方法，好吧 我们为它添加这些方法
 
-        for (CtField ctField : ctClass.getDeclaredFields()) {
-            if (isFinal(ctField) || isStatic(ctField) || ctField.hasAnnotation(Validate.class) || ctField.hasAnnotation(Transient.class) || ctField.getName().contains("$"))
-                continue;
-            // Property name
-            String originalPropertyName = ctField.getName();
-            String propertyName = ctField.getName().substring(0, 1).toUpperCase() + ctField.getName().substring(1);
-            String getter = "get" + propertyName;
-            String setter = "set" + propertyName;
-
-            try {
-                CtMethod ctMethod = ctClass.getDeclaredMethod(getter);
-                if (ctMethod.getParameterTypes().length > 0 || Modifier.isStatic(ctMethod.getModifiers())) {
-                    throw new NotFoundException("it's not a getter !");
-                }
-            } catch (NotFoundException noGetter) {
-
-                String code = "public " + ctField.getType().getName() + " " + getter + "() { return this." + ctField.getName() + "; }";
-                CtMethod getMethod = CtMethod.make(code, ctClass);
-                getMethod.setModifiers(getMethod.getModifiers() | AccessFlag.SYNTHETIC);
-                ctClass.addMethod(getMethod);
+        DynamicBytecode.addBeanAccessors(ctClass, new DynamicBytecode.CtFieldFilter() {
+            @Override
+            public boolean accept(CtField field) throws Exception {
+                return DynamicBytecode.isInstanceDataField(field)
+                        && !field.hasAnnotation(Validate.class)
+                        && !field.hasAnnotation(Transient.class);
             }
-            String methodBody = MessageFormat.format(
-                    "attributes.put({},{});",
-                    "translateFromAlias(\"" + originalPropertyName + "\")",
-                    "value"
-            );
-            try {
-                CtMethod ctMethod = ctClass.getDeclaredMethod(setter);
-                if (ctMethod.getParameterTypes().length != 1 || !ctMethod.getParameterTypes()[0].equals(ctField.getType()) || Modifier.isStatic(ctMethod.getModifiers())) {
-                    throw new NotFoundException("it's not a setter !");
-                }
-                ctClass.getClassFile().getMethods().remove(ctClass.getClassFile().getMethod(ctMethod.getName()));
-            } catch (NotFoundException noSetter) {
-
+        }, new DynamicBytecode.SetterBody() {
+            @Override
+            public String beforeAssignment(CtField field) {
+                return MessageFormat.format(
+                        "attributes.put({},{});",
+                        "translateFromAlias(" + DynamicBytecode.javaString(field.getName()) + ")",
+                        "value"
+                );
             }
-            CtMethod setMethod = CtMethod.make("public void " + setter + "(" + ctField.getType().getName() + " value) { " + methodBody + " this." + ctField.getName() + " = value; }", ctClass);
-            setMethod.setModifiers(setMethod.getModifiers() | AccessFlag.SYNTHETIC);
-            ctClass.addMethod(setMethod);
-
-        }
-
+        }, true);
 
     }
 
@@ -309,6 +257,14 @@ public class MongoEnhancer extends Enhancer {
                 "    }", ctClass);
         ctClass.addMethod(findMulti);
 
+        DynamicBytecode.addMongoDynamicFinders(ctClass, new DynamicBytecode.CtFieldFilter() {
+            @Override
+            public boolean accept(CtField field) throws Exception {
+                return DynamicBytecode.isInstanceDataField(field)
+                        && !field.hasAnnotation(Validate.class)
+                        && !field.hasAnnotation(Transient.class);
+            }
+        });
 
     }
 

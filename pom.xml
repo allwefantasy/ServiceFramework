@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>net.csdn</groupId>
-    <artifactId>ServiceFramework_${scala.binary.version}</artifactId>
+    <artifactId>ServiceFramework_2.13</artifactId>
     <packaging>pom</packaging>
     <version>2.0.9</version>
     <name>ServiceFramework</name>
@@ -65,6 +65,7 @@
         <skipTests>false</skipTests>
         <scala.jline.version>2.11.0-M3</scala.jline.version>
         <jetty.version>9.2.16.v20160414</jetty.version>
+        <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
     </properties>
 
     <repositories>
@@ -287,6 +288,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -338,6 +340,8 @@
                 <artifactId>maven-scala-plugin</artifactId>
                 <version>2.15.2</version>
                 <configuration>
+                    <scalaVersion>${scala.version}</scalaVersion>
+                    <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
                     <args>
                         <arg>
                             -g:vars
