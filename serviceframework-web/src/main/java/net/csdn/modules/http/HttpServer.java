@@ -225,18 +225,22 @@ public class HttpServer {
     }
 
     public void close() {
-        try {
-            server.stop();
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (server != null) {
+            try {
+                server.stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void join() {
-        try {
-            server.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (server != null) {
+            try {
+                server.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
