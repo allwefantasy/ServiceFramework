@@ -12,7 +12,7 @@ written by  java language according to the Model-View-Controller(MVC) pattern.
 clone and build:
 
     git clone git@github.com:allwefantasy/ServiceFramework.git
-    mvn install -Pscala-2.11 -Pjetty-8 -Pweb-include-jetty-8
+    mvn install -Pscala-2.11
 
 If you wanna switch scala version,use follow command:
 

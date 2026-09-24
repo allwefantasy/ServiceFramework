@@ -18,3 +18,13 @@ release.properties
 /serviceframework-common/target
 .DS_Store
 .flattened-pom.xml
+
+.auto-coder/
+/actions/
+/output.txt
+.autocoderrules
+.autocodertools
+.autocodercommands
+.autocoderagents
+.autocoderlinters
+.autocoderworkflow
