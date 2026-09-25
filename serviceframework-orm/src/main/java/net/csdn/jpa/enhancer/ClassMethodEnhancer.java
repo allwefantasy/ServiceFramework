@@ -39,39 +39,43 @@ public class ClassMethodEnhancer implements BitEnhancer {
 
     }
 
-    private void copyStaticMethodsToSubclass(CtClass ctClass) {
-
-        try {
-            CtClass parent = ctClass.getSuperclass();
-            while (!parent.getName().equals("net.csdn.jpa.model.Model")) {
-                if (parent.getName().equals("java.lang.Object")) break;
-                parent = parent.getSuperclass();
-            }
-            copyStaticMethodsToSubclass(parent, ctClass);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+    private void copyStaticMethodsToSubclass(CtClass ctClass) throws Exception {
+        copyStaticMethodsToSubclass(modelType(ctClass), ctClass);
     }
 
-    private void copyStaticFieldsToSubclass(CtClass ctClass) {
+    private void copyStaticFieldsToSubclass(CtClass ctClass) throws Exception {
+        copyStaticFieldsToSubclass(modelType(ctClass), ctClass);
+    }
 
-        try {
-            CtClass parent = ctClass.getSuperclass();
-            while (!parent.getName().equals("net.csdn.jpa.model.Model")) {
-                if (parent.getName().equals("java.lang.Object")) break;
-                parent = parent.getSuperclass();
+    private static CtClass modelType(CtClass ctClass) throws Exception {
+        CtClass parent = ctClass.getSuperclass();
+        while (parent != null && !parent.getName().equals(ModelClass.MODEL_CLASS_NAME)) {
+            if (parent.getName().equals("java.lang.Object")) {
+                break;
             }
-            copyStaticFieldsToSubclass(parent, ctClass);
-        } catch (Exception e) {
-            e.printStackTrace();
+            parent = parent.getSuperclass();
         }
-
+        if (parent == null || !parent.getName().equals(ModelClass.MODEL_CLASS_NAME)) {
+            throw new net.csdn.common.enhancer.EnhancementFailure(
+                    net.csdn.common.enhancer.EnhancementFailure.Category.ENHANCEMENT,
+                    ctClass.getName(),
+                    net.csdn.common.enhancer.EnhancementRuleIds.ORM_QUERY,
+                    "enhance",
+                    "Model was not found in the superclass chain",
+                    null);
+        }
+        return parent;
     }
 
     private void enhanceModelMethods(CtClass ctClass) throws Exception {
-        String entityName = ctClass.getName();
-        String simpleEntityName = ctClass.getSimpleName();
+        ModelNames.defrost(ctClass);
+        String binaryName = ctClass.getName();
+        String jpqlEntity = ModelNames.readEntityName(ctClass);
+        ModelNames.defrost(ctClass);
+        if (jpqlEntity == null || jpqlEntity.length() == 0) {
+            jpqlEntity = binaryName;
+        }
+        String entityName = jpqlEntity;
 
 // count
         CtMethod count = CtMethod.make("public static long count() { return getJPAContext().jpql().count(\"" + entityName + "\"); }", ctClass);
@@ -86,7 +90,7 @@ public class ClassMethodEnhancer implements BitEnhancer {
         ctClass.addMethod(findAll);
 
 // findById
-        CtMethod findById = CtMethod.make("public static net.csdn.jpa.model.JPABase findById(Object id) { return  getJPAContext().jpql().findById(" + entityName + ".class, id); }", ctClass);
+        CtMethod findById = CtMethod.make("public static net.csdn.jpa.model.JPABase findById(Object id) { return  getJPAContext().jpql().findById(" + binaryName + ".class, id); }", ctClass);
         ctClass.addMethod(findById);
 
 // find
@@ -114,48 +118,48 @@ public class ClassMethodEnhancer implements BitEnhancer {
         ctClass.addMethod(findOneBy);
 
 // create
-        CtMethod create = CtMethod.make("public static net.csdn.jpa.model.JPABase create(java.util.Map params) { return  getJPAContext().jpql().create(" + entityName + ".class, params); }", ctClass);
+        CtMethod create = CtMethod.make("public static net.csdn.jpa.model.JPABase create(java.util.Map params) { return  getJPAContext().jpql().create(" + binaryName + ".class, params); }", ctClass);
         ctClass.addMethod(create);
 
 // where
-        CtMethod where = CtMethod.make("public static net.csdn.jpa.model.JPQL where(String cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").where(cc);}", ctClass);
+        CtMethod where = CtMethod.make("public static net.csdn.jpa.model.JPQL where(String cc){return getJPAContext().jpql(\"" + jpqlEntity + "\").where(cc);}", ctClass);
         ctClass.addMethod(where);
 
 // in query
-        CtMethod in = CtMethod.make("public static net.csdn.jpa.model.JPQL in(String cc,java.util.Map params){return getJPAContext().jpql(\"" + simpleEntityName + "\").in(cc,params);}", ctClass);
+        CtMethod in = CtMethod.make("public static net.csdn.jpa.model.JPQL in(String cc,java.util.Map params){return getJPAContext().jpql(\"" + jpqlEntity + "\").in(cc,params);}", ctClass);
         ctClass.addMethod(in);
 
-        CtMethod in2 = CtMethod.make("public static net.csdn.jpa.model.JPQL in(String cc,java.util.List params){return getJPAContext().jpql(\"" + simpleEntityName + "\").in(cc,params);}", ctClass);
+        CtMethod in2 = CtMethod.make("public static net.csdn.jpa.model.JPQL in(String cc,java.util.List params){return getJPAContext().jpql(\"" + jpqlEntity + "\").in(cc,params);}", ctClass);
         ctClass.addMethod(in2);
 
 // where2
-        CtMethod where2 = CtMethod.make("public static net.csdn.jpa.model.JPQL where(String cc,java.util.Map params){return getJPAContext().jpql(\"" + simpleEntityName + "\").where(cc,params);}", ctClass);
+        CtMethod where2 = CtMethod.make("public static net.csdn.jpa.model.JPQL where(String cc,java.util.Map params){return getJPAContext().jpql(\"" + jpqlEntity + "\").where(cc,params);}", ctClass);
         ctClass.addMethod(where2);
 // where3
-        CtMethod where3 = CtMethod.make("public static net.csdn.jpa.model.JPQL where(java.util.Map params){return getJPAContext().jpql(\"" + simpleEntityName + "\").where(params);}", ctClass);
+        CtMethod where3 = CtMethod.make("public static net.csdn.jpa.model.JPQL where(java.util.Map params){return getJPAContext().jpql(\"" + jpqlEntity + "\").where(params);}", ctClass);
         ctClass.addMethod(where3);
 
 // select
-        CtMethod select = CtMethod.make("public static net.csdn.jpa.model.JPQL select(String cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").select(cc);}", ctClass);
+        CtMethod select = CtMethod.make("public static net.csdn.jpa.model.JPQL select(String cc){return getJPAContext().jpql(\"" + jpqlEntity + "\").select(cc);}", ctClass);
         ctClass.addMethod(select);
 // joins
-        CtMethod joins = CtMethod.make("public static net.csdn.jpa.model.JPQL joins(String cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").joins(cc);}", ctClass);
+        CtMethod joins = CtMethod.make("public static net.csdn.jpa.model.JPQL joins(String cc){return getJPAContext().jpql(\"" + jpqlEntity + "\").joins(cc);}", ctClass);
         ctClass.addMethod(joins);
 
 // order
-        CtMethod order = CtMethod.make("public static net.csdn.jpa.model.JPQL order(String cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").order(cc);}", ctClass);
+        CtMethod order = CtMethod.make("public static net.csdn.jpa.model.JPQL order(String cc){return getJPAContext().jpql(\"" + jpqlEntity + "\").order(cc);}", ctClass);
         ctClass.addMethod(order);
 // limit
-        CtMethod limit = CtMethod.make("public static net.csdn.jpa.model.JPQL limit(int cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").limit(cc);}", ctClass);
+        CtMethod limit = CtMethod.make("public static net.csdn.jpa.model.JPQL limit(int cc){return getJPAContext().jpql(\"" + jpqlEntity + "\").limit(cc);}", ctClass);
         ctClass.addMethod(limit);
 // offset
-        CtMethod offset = CtMethod.make("public static net.csdn.jpa.model.JPQL offset(int cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").offset(cc);}", ctClass);
+        CtMethod offset = CtMethod.make("public static net.csdn.jpa.model.JPQL offset(int cc){return getJPAContext().jpql(\"" + jpqlEntity + "\").offset(cc);}", ctClass);
         ctClass.addMethod(offset);
 
-        CtMethod findWithSingleId = CtMethod.make("public static net.csdn.jpa.model.JPABase  find(Integer cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").find(cc);}", ctClass);
+        CtMethod findWithSingleId = CtMethod.make("public static net.csdn.jpa.model.JPABase  find(Integer cc){return getJPAContext().jpql(\"" + jpqlEntity + "\").find(cc);}", ctClass);
         ctClass.addMethod(findWithSingleId);
 
-        CtMethod findWithMultiId = CtMethod.make("public static java.util.List find(java.util.List cc){return getJPAContext().jpql(\"" + simpleEntityName + "\").find(cc);}", ctClass);
+        CtMethod findWithMultiId = CtMethod.make("public static java.util.List find(java.util.List cc){return getJPAContext().jpql(\"" + jpqlEntity + "\").find(cc);}", ctClass);
         ctClass.addMethod(findWithMultiId);
 
         DynamicBytecode.addJpaDynamicFinders(ctClass, new DynamicBytecode.CtFieldFilter() {

@@ -1,16 +1,17 @@
 package net.csdn.modules.http;
 
 import net.csdn.ServiceFramwork;
-import net.csdn.annotation.filter.AroundFilter;
-import net.csdn.annotation.filter.BeforeFilter;
+import net.csdn.bootstrap.ApplicationContext;
 import net.csdn.common.collect.Tuple;
+import net.csdn.common.enhancer.EnhancementFailure;
 import net.csdn.common.exception.ArgumentErrorException;
 import net.csdn.common.exception.RecordNotFoundException;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.path.PathTrie;
 import net.csdn.common.reflect.ReflectHelper;
-import net.csdn.modules.http.support.FilterHelper2;
+import net.csdn.modules.http.support.ControllerFilterPlan;
+import net.csdn.modules.http.support.FilterChain;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -91,7 +92,7 @@ public class RestController {
             }
 
         }
-        ApplicationController applicationController = ServiceFramwork.injector.getInstance(handlerKey.v1());
+        ApplicationController applicationController = ServiceFramwork.currentInjector().getInstance(handlerKey.v1());
         enhanceApplicationController(applicationController, request, restResponse);
         if (handlerKey == defaultHandlerKey) {
             handlerKey.v2().invoke(applicationController);
@@ -108,37 +109,27 @@ public class RestController {
 
 
     private void filter(Tuple<Class<ApplicationController>, Method> handlerKey, ApplicationController applicationController) throws Exception {
-        Map<Method, Map<Class, List<Method>>> result = FilterHelper2.create(handlerKey.v1());
-        Map<Class, List<Method>> filters = result.get(handlerKey.v2());
-        WowAroundFilter first = null;
-        if (filters.containsKey(BeforeFilter.class)) {
-            for (Method filter : filters.get(BeforeFilter.class)) {
-                filter.setAccessible(true);
-                filter.invoke(applicationController);
-            }
-        }
-        if (filters.containsKey(AroundFilter.class)) {
-            Iterator<Method> iterator = filters.get(AroundFilter.class).iterator();
+        filtersFor(handlerKey.v1()).chain(handlerKey.v1(), handlerKey.v2()).invoke(applicationController, handlerKey.v2());
+    }
 
-            WowAroundFilter wowAroundFilter = null;
-            if (iterator.hasNext()) {
-                Method currentFilter = iterator.next();
-                wowAroundFilter = new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController);
-                first = wowAroundFilter;
-            }
-            while (iterator.hasNext()) {
-                Method currentFilter = iterator.next();
-                wowAroundFilter.setNext(new WowAroundFilter(currentFilter, handlerKey.v2(), applicationController));
-                wowAroundFilter = wowAroundFilter.getNext();
-            }
+    private ControllerFilterPlan filtersFor(Class<?> controller) {
+        if (ApplicationContext.foreignScope()) {
+            throw new EnhancementFailure(
+                    EnhancementFailure.Category.LIFECYCLE,
+                    controller.getName(),
+                    "controller-filter",
+                    "filter",
+                    "active enhancement context is not an application context",
+                    null);
         }
-
-        if (first != null) {
-            first.invoke();
-        } else {
-            handlerKey.v2().invoke(applicationController);
+        ApplicationContext current = ApplicationContext.currentOrNull();
+        if (current == null) {
+            current = ApplicationContext.defaultContext();
         }
-
+        if (current != null && current.filters() != null && current.filters().contains(controller)) {
+            return current.filters();
+        }
+        return ControllerFilterPlan.compile(java.util.Collections.<Class<?>>singletonList(controller));
     }
 
 

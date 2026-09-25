@@ -97,18 +97,18 @@ public class ManyToManyEnhancer {
 
                 String maybeTable1 = Strings.toUnderscoreCase(ctClass.getSimpleName()) + "_" + Strings.toUnderscoreCase(otherClassSimpleName);
                 String maybeTable2 = Strings.toUnderscoreCase(otherClassSimpleName) + "_" + Strings.toUnderscoreCase(ctClass.getSimpleName());
-                String finalTableName = dbInfo.tableNames.contains(maybeTable1) ? maybeTable1 : maybeTable2;
+                String finalTableName = dbInfo.hasTable(maybeTable1) ? maybeTable1 : maybeTable2;
                 setCascadeWithDefault(ctField, "ManyToMany");
                 boolean isMaster = false;
                 if (!ctField.hasAnnotation(ManyToManyHint.class)) {
-                    if (dbInfo.tableNames.contains(maybeTable1)) {
+                    if (dbInfo.hasTable(maybeTable1)) {
                         setMappedBy(other, ctField.getName(), "ManyToMany");
                         isMaster = true;
                         finalTableName = maybeTable1;
                         addManyToManyAnnotation(ctField, other, maybeTable1);
                     }
 
-                    if (dbInfo.tableNames.contains(maybeTable2)) {
+                    if (dbInfo.hasTable(maybeTable2)) {
                         setMappedBy(ctField, mappedByFieldName, "ManyToMany");
                         finalTableName = maybeTable2;
                         addManyToManyAnnotation(other, ctField, maybeTable2);

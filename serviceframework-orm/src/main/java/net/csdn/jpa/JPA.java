@@ -2,40 +2,38 @@ package net.csdn.jpa;
 
 
 import com.google.inject.Injector;
-import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.LoaderClassPath;
-import net.csdn.common.collect.Tuple;
-import net.csdn.common.env.Environment;
-import net.csdn.common.io.Streams;
+import net.csdn.common.enhancer.EnhancementContext;
+import net.csdn.common.enhancer.EnhancementDiagnostics;
+import net.csdn.common.enhancer.EnhancementFailure;
+import net.csdn.common.enhancer.StartupPhaseTrace;
+import net.csdn.common.enhancer.EnhancementRule;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.scan.DefaultScanService;
 import net.csdn.common.scan.ScanService;
 import net.csdn.common.settings.Settings;
-import net.csdn.enhancer.ActiveORMEnhancer;
 import net.csdn.jpa.context.JPAConfig;
-import net.csdn.jpa.enhancer.JPAEnhancer;
 import net.csdn.jpa.enhancer.ModelClass;
+import net.csdn.jpa.enhancer.OrmEnhancer;
 import net.csdn.jpa.model.Model;
 import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
 import net.csdn.jpa.type.impl.MysqlType;
 import net.csdn.validate.ValidatorLoader;
 
+import javax.persistence.Entity;
 import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import static net.csdn.common.logging.support.MessageFormat.format;
+import java.util.Set;
 
 /**
  * User: WilliamZhu
@@ -66,130 +64,213 @@ import static net.csdn.common.logging.support.MessageFormat.format;
 public class JPA {
 
     private static CSLogger logger = Loggers.getLogger(JPA.class);
+    private static volatile EnhancementContext defaultContext;
+    public static final Map<String, Class<Model>> models = new SessionModelMap();
 
+    static EnhancementContext defaultContext() {
+        return defaultContext;
+    }
 
-    private static JPAConfig jpaConfig;
-    public final static Map<String, Class<Model>> models = new HashMap<String, Class<Model>>();
-
-    private static CSDNORMConfiguration ormConfiguration;
-
-    public static void configure(CSDNORMConfiguration csdnormConfiguration) {
-        ormConfiguration = csdnormConfiguration;
-        if (!ormConfiguration.settings.getAsBoolean(JPA.mode() + ".datasources.mysql.disable", false)) {
-            ormConfiguration.buildDefaultDBInfo();
-            loadModels();
-            try {
-                new ValidatorLoader().load();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-
+    public static void configure(CSDNORMConfiguration configuration) {
+        if (configuration == null) {
+            throw configurationFailure("configuration is required");
         }
+        EnhancementContext bound = EnhancementContext.currentOrNull();
+        if (bound != null) {
+            configure(configuration, bound);
+            return;
+        }
+        EnhancementContext existing = defaultContext;
+        if (existing != null && !existing.isClosed()) {
+            configure(configuration, existing);
+            return;
+        }
+        ClassLoader loader = configuration.getClassLoader();
+        if (loader == null) {
+            throw configurationFailure("application ClassLoader is required");
+        }
+        EnhancementDiagnostics diagnostics = configuration.enhancementDiagnostics();
+        EnhancementContext created = diagnostics == null
+                ? EnhancementContext.open(loader)
+                : EnhancementContext.open(loader, diagnostics);
+        defaultContext = created;
+        try {
+            configure(configuration, created);
+        } catch (RuntimeException ex) {
+            if (defaultContext == created) {
+                defaultContext = null;
+            }
+            if (!created.isClosed()) {
+                try {
+                    created.close();
+                } catch (RuntimeException closeFailure) {
+                    ex.addSuppressed(closeFailure);
+                }
+            }
+            throw ex;
+        }
+    }
 
+    /**
+     * Uses {@code context} as the owner of this configuration. The caller closes it.
+     * A repeated call with the same already-running configuration is a no-op.
+     * A different configuration cannot replace classes already defined in that loader.
+     * When {@code configuration.enhancementDiagnostics} is set, it must be the same
+     * instance already bound to {@code context}.
+     */
+    public static void configure(CSDNORMConfiguration configuration, EnhancementContext context) {
+        if (configuration == null || context == null) {
+            throw configurationFailure("configuration and enhancement context are required");
+        }
+        rejectDiagnosticsMismatch(configuration, context);
+        EnhancementContext.Scope scope = context.activate();
+        try {
+            doConfigure(configuration, context);
+        } finally {
+            scope.close();
+        }
+    }
+
+    public static void shutdown() {
+        EnhancementContext context = defaultContext;
+        defaultContext = null;
+        if (context != null && !context.isClosed()) {
+            context.close();
+        }
+    }
+
+    private static void doConfigure(CSDNORMConfiguration configuration, EnhancementContext context) {
+        OrmSession session = OrmSession.attach(context);
+        String fingerprint = fingerprint(configuration);
+        if (session.isConfigured() && fingerprint.equals(session.fingerprint())) {
+            return;
+        }
+        if (session.hasDefinedModels() && !fingerprint.equals(session.fingerprint())) {
+            throw new EnhancementFailure(
+                    EnhancementFailure.Category.CONFLICT,
+                    null,
+                    null,
+                    "configure",
+                    "this application loader already defined models for a different configuration; create a new application ClassLoader",
+                    null);
+        }
+        if (session.hasDefinedModels()) {
+            try {
+                if (!mysqlDisabled(configuration)) {
+                    new ValidatorLoader().load();
+                }
+                session.markConfigured(fingerprint);
+            } catch (RuntimeException e) {
+                throw wrap("load", e);
+            }
+            return;
+        }
+        session.bindConfiguration(configuration);
+        try {
+            if (!mysqlDisabled(configuration)) {
+                configuration.buildDefaultDBInfo();
+                session.setDbInfo(configuration.getDbInfo());
+                new JPAModelLoader().load();
+                new ValidatorLoader().load();
+            }
+            session.markConfigured(fingerprint);
+        } catch (EnhancementFailure failure) {
+            throw failure;
+        } catch (RuntimeException e) {
+            throw wrap("configure", e);
+        }
     }
 
     public static boolean isConfigured() {
-        return ormConfiguration != null && !ormConfiguration.settings.getAsBoolean(JPA.mode() + ".datasources.mysql.disable", false);
+        OrmSession session = OrmSession.currentOrNull();
+        if (session == null || !session.isConfigured() || !session.hasConfiguration()) {
+            return false;
+        }
+        return !mysqlDisabled(session.configuration());
     }
 
     public static synchronized JPAConfig getJPAConfig() {
-        if (jpaConfig == null) {
-            try {
-                modifyPersistenceXml(new Tuple<Settings, Environment>(settings(), environment()));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            jpaConfig = new JPAConfig(properties(), settings().get(JPA.mode() + ".datasources.mysql.database"));
+        OrmSession session = OrmSession.current();
+        JPAConfig existing = session.jpaConfig();
+        if (existing != null && existing.isEnabled()) {
+            return existing;
         }
-        return jpaConfig;
+        List<Class<?>> managed = session.managedTypes();
+        if (managed.isEmpty()) {
+            throw configurationFailure("no entity classes are registered");
+        }
+        String unitName = settings().get(mode() + ".datasources.mysql.database");
+        if (unitName == null || unitName.length() == 0) {
+            unitName = "serviceframework";
+        }
+        StartupPhaseTrace.Frame emf = StartupPhaseTrace.open(session.context(), "jpa.emf");
+        try {
+            JPAConfig created = JPAConfig.bootstrap(properties(), unitName, managed, classLoader());
+            session.setJpaConfig(created);
+            return created;
+        } catch (EnhancementFailure failure) {
+            throw failure;
+        } catch (RuntimeException e) {
+            throw new EnhancementFailure(
+                    EnhancementFailure.Category.CONFIGURATION,
+                    null,
+                    null,
+                    "bootstrap",
+                    "JPAConfig was not created",
+                    e);
+        } finally {
+            emf.close();
+        }
     }
 
-    //自动同步application.xml文件的配置到persistence.xml
-    private static void modifyPersistenceXml(Tuple<Settings, Environment> tuple) throws Exception {
-
-        String fileContent = persistenceContent();
-        Map<String, Settings> groups = tuple.v1().getGroups(mode() + ".datasources");
-        Settings mysqlSetting = groups.get("mysql");
-        //
-        StringBuffer stringBuffer = new StringBuffer();
-        for (Class clzz : models.values()) {
-            stringBuffer.append(format("<class>{}</class>", clzz.getName()));
-        }
-        String path = classLoader().getResource(".").getPath();
-        File persistDir = new File(path + "META-INF/");
-        if (!persistDir.exists()) {
-            persistDir.mkdirs();
-        }
-        File persistFile = new File(persistDir.getPath() + "/persistence.xml");
-        if (persistFile.exists()) {
-            persistFile.delete();
-        }
-        Streams.copy(format(fileContent, mysqlSetting.get("database"), stringBuffer.toString()), new FileWriter(persistFile));
+    public static void setJPAConfig(JPAConfig jpaConfig) {
+        OrmSession.current().setJpaConfig(jpaConfig);
     }
 
-    private static String persistenceContent() {
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\"\n" +
-                "             xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-                "             xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd\"\n" +
-                "             version=\"2.0\">\n" +
-                "    <persistence-unit name=\"{}\">\n" +
-                "        {}\n" +
-                "        <properties>\n" +
-                "        </properties>\n" +
-                "    </persistence-unit>\n" +
-                "</persistence>";
-
-    }
-
-    public static void setJPAConfig(JPAConfig _jpaConfig) {
-        jpaConfig = _jpaConfig;
+    public static Class<? extends Model> resolveModel(String name) {
+        return OrmSession.current().registry().resolve(name);
     }
 
     public static ClassLoader classLoader() {
-        return ormConfiguration.classLoader.getClassLoader();
+        return OrmSession.current().configuration().getClassLoader();
     }
 
     public static String mode() {
-        return ormConfiguration.mode;
+        return OrmSession.current().configuration().getMode();
     }
 
     public static ClassPool classPool() {
-        return ormConfiguration.classPool;
+        return OrmSession.current().context().classPool();
     }
 
     public static Injector injector() {
-        return ormConfiguration.injector;
-
+        return OrmSession.current().configuration().getInjector();
     }
 
     public static Settings settings() {
-        return ormConfiguration.settings;
-    }
-
-    public static Environment environment() {
-        return ormConfiguration.environment;
+        return OrmSession.current().configuration().getSettings();
     }
 
     public static DBType dbType() {
-        return ormConfiguration.dbType;
+        return OrmSession.current().configuration().getDbType();
     }
 
     public static DBInfo dbInfo() {
-        return ormConfiguration.dbInfo;
+        OrmSession session = OrmSession.current();
+        if (session.dbInfo() != null) {
+            return session.dbInfo();
+        }
+        return session.configuration().getDbInfo();
     }
 
     public static Map<String, String> properties() {
-
         Map<String, Settings> groups = settings().getGroups(mode() + ".datasources");
-
         Settings mysqlSetting = groups.get("mysql");
         return properties(mysqlSetting);
     }
 
     public static Map<String, String> properties(Settings mysqlSetting) {
-        Map<String, String> properties = new HashMap<String, String>();
+        Map<String, String> properties = new java.util.HashMap<String, String>();
         properties.put("hibernate.connection.provider_class", mysqlSetting.get("provider_class", "net.csdn.hibernate.support.DruidConnectionProvider"));
         properties.put("show_sql", mysqlSetting.get("show_sql", "true"));
         properties.put("driver_class", mysqlSetting.get("driver", "com.mysql.jdbc.Driver"));
@@ -201,14 +282,20 @@ public class JPA {
         jdbcOptBuf.append("?useUnicode=true&characterEncoding=utf8");
         for (Map.Entry<String, String> entry : jdbcOpts.entrySet()) {
             try {
-                jdbcOptBuf.append("&" + entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                jdbcOptBuf.append("&" + entry.getKey() + "=" + java.net.URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
+            } catch (java.io.UnsupportedEncodingException e) {
+                throw new EnhancementFailure(
+                        EnhancementFailure.Category.CONFIGURATION,
+                        null,
+                        null,
+                        "configure",
+                        "jdbc option was not encoded",
+                        e);
             }
         }
 
         properties.put("url", "jdbc:mysql://" + mysqlSetting.get("host") + ":" + mysqlSetting.get("port") + "/" + mysqlSetting.get("database") + jdbcOptBuf.toString());
-        logger.info("connect url:" + properties.get("url"));
+        logger.info("connect url:" + JdbcEndpoints.endpoint(properties.get("url")));
         properties.put("username", mysqlSetting.get("username"));
         properties.put("password", mysqlSetting.get("password"));
         properties.put("maxActive", mysqlSetting.get("maxActive", "50"));
@@ -224,31 +311,178 @@ public class JPA {
         properties.put("init", mysqlSetting.get("init", "true"));
         properties.put("testWhileIdle", mysqlSetting.get("testWhileIdle", "true"));
         properties.put("connectionProperties", "druid.stat.logSlowSql=" + mysqlSetting.get("logSlowSql", "true") + ";druid.stat.slowSqlMillis=" + mysqlSetting.get("slowSqlMillis", "500"));
-        properties.put("filters", "log4j");
+        if (classIsPresent("org.apache.log4j.Priority")) {
+            properties.put("filters", "log4j");
+        }
         return properties;
     }
 
-    public static void loadModels() {
+    private static boolean classIsPresent(String name) {
         try {
-            new JPAModelLoader().load();
-        } catch (Exception e) {
-            e.printStackTrace();
+            Class.forName(name);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 
+    public static void loadModels() {
+        new JPAModelLoader().load();
+    }
+
     public static void injector(Injector injector) {
-        ormConfiguration.injector = injector;
+        OrmSession.current().configuration().setInjector(injector);
+    }
+
+    private static void rejectDiagnosticsMismatch(CSDNORMConfiguration configuration, EnhancementContext context) {
+        EnhancementDiagnostics requested = configuration.enhancementDiagnostics();
+        if (requested == null) {
+            return;
+        }
+        if (context.diagnostics() != requested) {
+            throw configurationFailure("enhancement context and diagnostics disagree");
+        }
+    }
+
+    /**
+     * Records the database-schema digest on events written while ORM enhances.
+     * An application revision already stored on the diagnostics object is kept.
+     * {@code orm-1} is the schema-format token and is written only when the
+     * caller supplied no revision. That token is restored afterwards, together
+     * with the previous digest, so a later module event does not keep this
+     * digest. Disabled diagnostics return before the snapshot is hashed.
+     */
+    private static SchemaNote noteOrmSchema(OrmSession session) {
+        EnhancementDiagnostics diagnostics = session.context().diagnostics();
+        if (diagnostics == null || !diagnostics.enabled()) {
+            return SchemaNote.notNoted();
+        }
+        DBInfo info = session.dbInfo();
+        if (info == null) {
+            return SchemaNote.notNoted();
+        }
+        String previousVersion = diagnostics.configVersion();
+        String previousDigest = diagnostics.schemaDigest();
+        String revision = previousVersion != null ? previousVersion : DBInfo.DIAGNOSTICS_VERSION;
+        diagnostics.noteSafeMetadata(revision, info.schemaDigest());
+        return new SchemaNote(true, previousVersion, previousDigest);
+    }
+
+    private static void restoreOrmSchema(OrmSession session, SchemaNote note) {
+        if (note == null || !note.noted || note.previousVersion == null) {
+            return;
+        }
+        EnhancementContext context = session.context();
+        if (context.isClosed()) {
+            return;
+        }
+        EnhancementDiagnostics diagnostics = context.diagnostics();
+        if (diagnostics == null || !diagnostics.enabled()) {
+            return;
+        }
+        diagnostics.noteSafeMetadata(note.previousVersion, note.previousDigest);
+    }
+
+    private static boolean mysqlDisabled(CSDNORMConfiguration configuration) {
+        return configuration.getSettings().getAsBoolean(configuration.getMode() + ".datasources.mysql.disable", false);
+    }
+
+    private static String fingerprint(CSDNORMConfiguration configuration) {
+        StringBuilder raw = new StringBuilder();
+        raw.append(configuration.getMode()).append('\n');
+        raw.append(System.identityHashCode(configuration.getClassLoader())).append('\n');
+        raw.append(String.valueOf(configuration.getSettings().get("application.model"))).append('\n');
+        try {
+            Map<String, Settings> groups = configuration.getSettings().getGroups(configuration.getMode() + ".datasources");
+            Settings mysql = groups.get("mysql");
+            if (mysql != null) {
+                raw.append(String.valueOf(mysql.get("host"))).append('\n');
+                raw.append(String.valueOf(mysql.get("port"))).append('\n');
+                raw.append(String.valueOf(mysql.get("database"))).append('\n');
+                raw.append(String.valueOf(mysql.get("username"))).append('\n');
+                raw.append(String.valueOf(mysql.get("password"))).append('\n');
+                raw.append(String.valueOf(mysql.get("disable"))).append('\n');
+            }
+        } catch (RuntimeException e) {
+            throw configurationFailure("mysql settings were not read", e);
+        }
+        List<EnhancementRule> rules = configuration.enhancementRules();
+        for (int i = 0; i < rules.size(); i++) {
+            raw.append(rules.get(i).id()).append(':').append(rules.get(i).version()).append('\n');
+        }
+        try {
+            byte[] bytes = MessageDigest.getInstance("SHA-256").digest(raw.toString().getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder(bytes.length * 2);
+            for (int i = 0; i < bytes.length; i++) {
+                int value = bytes[i] & 0xff;
+                if (value < 16) {
+                    hex.append('0');
+                }
+                hex.append(Integer.toHexString(value));
+            }
+            return hex.toString();
+        } catch (Exception e) {
+            throw configurationFailure("configuration fingerprint was not computed", e);
+        }
+    }
+
+    private static EnhancementFailure configurationFailure(String detail) {
+        return configurationFailure(detail, null);
+    }
+
+    private static EnhancementFailure configurationFailure(String detail, Exception cause) {
+        return new EnhancementFailure(
+                EnhancementFailure.Category.CONFIGURATION,
+                null,
+                null,
+                "configure",
+                detail,
+                cause);
+    }
+
+    private static EnhancementFailure wrap(String phase, RuntimeException e) {
+        if (e instanceof EnhancementFailure) {
+            return (EnhancementFailure) e;
+        }
+        return new EnhancementFailure(
+                EnhancementFailure.Category.ENHANCEMENT,
+                null,
+                null,
+                phase,
+                e.getMessage() == null ? e.getClass().getName() : e.getMessage(),
+                e);
     }
 
     public static class CSDNORMConfiguration {
         private Settings settings;
-        private Environment environment;
         private Class classLoader;
         private String mode;
         private ClassPool classPool;
         private Injector injector;
         private DBType dbType;
         private DBInfo dbInfo;
+        private EnhancementDiagnostics diagnostics;
+        private final List<EnhancementRule> enhancementRules = new ArrayList<EnhancementRule>();
+
+        /**
+         * Opt in to diagnostics for the context {@link JPA#configure(CSDNORMConfiguration)}
+         * creates and owns. Omit this call and that context stays disabled: no hash,
+         * no method scan, no schema digest, no report. A context passed to
+         * {@link JPA#configure(CSDNORMConfiguration, EnhancementContext)} already
+         * carries its own diagnostics; pass the same instance here or omit this
+         * call. {@code null} is rejected. This method does not accept {@link Settings}.
+         */
+        public CSDNORMConfiguration enhancementDiagnostics(EnhancementDiagnostics diagnostics) {
+            if (diagnostics == null) {
+                throw configurationFailure("diagnostics are required");
+            }
+            this.diagnostics = diagnostics;
+            return this;
+        }
+
+        public EnhancementDiagnostics enhancementDiagnostics() {
+            return diagnostics;
+        }
 
         public Settings getSettings() {
             return settings;
@@ -258,16 +492,12 @@ public class JPA {
             this.settings = settings;
         }
 
-        public Environment getEnvironment() {
-            return environment;
-        }
-
-        public void setEnvironment(Environment environment) {
-            this.environment = environment;
-        }
-
         public ClassLoader getClassLoader() {
-            return classLoader.getClassLoader();
+            return classLoader == null ? null : classLoader.getClassLoader();
+        }
+
+        public Class getLoaderClass() {
+            return classLoader;
         }
 
         public void setClassLoader(Class classLoader) {
@@ -314,14 +544,24 @@ public class JPA {
             this.dbInfo = dbInfo;
         }
 
+        public CSDNORMConfiguration addEnhancementRule(EnhancementRule rule) {
+            if (rule == null || rule.id() == null || rule.id().trim().length() == 0) {
+                throw configurationFailure("enhancement rule id is required");
+            }
+            enhancementRules.add(rule);
+            return this;
+        }
+
+        public List<EnhancementRule> enhancementRules() {
+            return java.util.Collections.unmodifiableList(enhancementRules);
+        }
+
         public CSDNORMConfiguration(String _mode, Settings _settings, Class _classLoader) {
             mode = _mode;
             settings = _settings;
-
             classLoader = _classLoader;
             buildDefaultClassPool();
             buildDefaultDbType();
-
         }
 
         public CSDNORMConfiguration(String _mode, Settings _settings, Class _classLoader, ClassPool classPool) {
@@ -330,7 +570,6 @@ public class JPA {
             classLoader = _classLoader;
             this.classPool = classPool;
             buildDefaultDbType();
-
         }
 
         public void buildDefaultClassPool() {
@@ -346,56 +585,165 @@ public class JPA {
         public void buildDefaultDBInfo() {
             dbInfo = new DBInfo(settings);
         }
-
-
     }
 
     public static class JPAModelLoader {
-        public void load() throws Exception {
-            final ActiveORMEnhancer enhancer = new JPAEnhancer(JPA.settings());
-
-            final List<CtClass> classList = new ArrayList<CtClass>();
+        public void load() {
+            final OrmSession session = OrmSession.current();
+            final EnhancementContext context = session.context();
+            final List<CtClass> discovered = new ArrayList<CtClass>();
+            String packageName = settings().get("application.model");
+            if (packageName == null || packageName.trim().length() == 0) {
+                throw new EnhancementFailure(
+                        EnhancementFailure.Category.CONFIGURATION,
+                        null,
+                        null,
+                        "scan",
+                        "application.model is required",
+                        null);
+            }
             ScanService scanService = new DefaultScanService();
-            scanService.setLoader(ormConfiguration.classLoader);
-            scanService.scanArchives(settings().get("application.model"), new ScanService.LoadClassEnhanceCallBack() {
-                @Override
-                public Class loaded(DataInputStream classFile) {
-                    try {
-                        CtClass clzz = enhancer.enhanceThisClass(classFile);
-                        if (clzz != null) {
-                            classList.add(clzz);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return null;
-                }
-            });
-
-            List<ModelClass> roots = enhancer.enhanceThisClass2(classList);
-            for (ModelClass modelClass : roots) {
-                loadClass(modelClass);
-            }
-        }
-
-        private void loadClass(ModelClass modelClass) {
-            loadClass(modelClass.originClass);
-            for (ModelClass temp : modelClass.children()) {
-                if (temp.isLeafNode()) {
-                    loadClass(temp.originClass);
-                } else {
-                    loadClass(temp);
-                }
-            }
-        }
-
-        private void loadClass(CtClass ctClass) {
+            scanService.setLoader(session.configuration().getLoaderClass());
+            StartupPhaseTrace.Frame scan = StartupPhaseTrace.open(context, "scan.orm");
             try {
-                Class<Model> clzz = (Class<Model>) ctClass.toClass(JPA.classLoader(), JPA.class.getProtectionDomain());
-                JPA.models.put(clzz.getSimpleName(), clzz);
-            } catch (CannotCompileException e) {
-                e.printStackTrace();
+                scanService.scanArchives(packageName, new ScanService.LoadClassEnhanceCallBack() {
+                    @Override
+                    public Class loaded(DataInputStream classFile) {
+                        try {
+                            CtClass type = context.classPool().makeClassIfNew(classFile);
+                            context.track(type);
+                            if (ModelClass.isModelSubclass(type)) {
+                                discovered.add(type);
+                            }
+                        } catch (EnhancementFailure failure) {
+                            throw failure;
+                        } catch (Exception e) {
+                            throw new EnhancementFailure(
+                                    EnhancementFailure.Category.SCAN,
+                                    null,
+                                    null,
+                                    "scan",
+                                    "model class bytes were not read",
+                                    e);
+                        }
+                        return null;
+                    }
+                });
+            } catch (EnhancementFailure failure) {
+                throw failure;
+            } catch (Exception e) {
+                throw new EnhancementFailure(
+                        EnhancementFailure.Category.SCAN,
+                        packageName,
+                        null,
+                        "scan",
+                        "model scan failed",
+                        e);
+            } finally {
+                scan.close();
             }
+            SchemaNote schemaNote = noteOrmSchema(session);
+            try {
+                List<ModelClass> order = OrmEnhancer.enhance(discovered);
+                for (int i = 0; i < order.size(); i++) {
+                    ModelClass modelClass = order.get(i);
+                    Class<?> defined;
+                    try {
+                        defined = context.define(modelClass.originClass);
+                    } catch (EnhancementFailure failure) {
+                        throw failure;
+                    } catch (RuntimeException e) {
+                        throw new EnhancementFailure(
+                                EnhancementFailure.Category.DEFINITION,
+                                modelClass.originClass.getName(),
+                                null,
+                                "define",
+                                "model class was not defined; create a new application ClassLoader if this loader already contains it",
+                                e);
+                    }
+                    if (!Model.class.isAssignableFrom(defined)) {
+                        throw new EnhancementFailure(
+                                EnhancementFailure.Category.ENHANCEMENT,
+                                defined.getName(),
+                                null,
+                                "define",
+                                "defined class does not extend Model",
+                                null);
+                    }
+                    if (defined.getAnnotation(Entity.class) != null) {
+                        @SuppressWarnings("unchecked")
+                        Class<? extends Model> modelType = (Class<? extends Model>) defined;
+                        session.registry().register(modelType);
+                        session.addManagedType(defined);
+                    }
+                }
+                if (!order.isEmpty()) {
+                    session.markDefinedModels();
+                }
+            } finally {
+                restoreOrmSchema(session, schemaNote);
+            }
+        }
+    }
+
+    private static final class SchemaNote {
+        private final boolean noted;
+        private final String previousVersion;
+        private final String previousDigest;
+
+        private SchemaNote(boolean noted, String previousVersion, String previousDigest) {
+            this.noted = noted;
+            this.previousVersion = previousVersion;
+            this.previousDigest = previousDigest;
+        }
+
+        private static SchemaNote notNoted() {
+            return new SchemaNote(false, null, null);
+        }
+    }
+
+    private static final class SessionModelMap extends AbstractMap<String, Class<Model>> {
+        @Override
+        public Class<Model> get(Object key) {
+            if (!(key instanceof String)) {
+                return null;
+            }
+            OrmSession session = OrmSession.currentOrNull();
+            if (session == null) {
+                return null;
+            }
+            return cast(session.registry().get((String) key));
+        }
+
+        @Override
+        public Class<Model> put(String key, Class<Model> value) {
+            if (value == null) {
+                throw configurationFailure("model class is required");
+            }
+            OrmSession.current().registry().register(value, key);
+            return null;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return get(key) != null;
+        }
+
+        @Override
+        public Set<Entry<String, Class<Model>>> entrySet() {
+            Map<String, Class<Model>> canonical = new LinkedHashMap<String, Class<Model>>();
+            OrmSession session = OrmSession.currentOrNull();
+            if (session != null) {
+                for (Class<? extends Model> type : session.registry().values()) {
+                    canonical.put(type.getName(), cast(type));
+                }
+            }
+            return canonical.entrySet();
+        }
+
+        @SuppressWarnings("unchecked")
+        private static Class<Model> cast(Class<? extends Model> type) {
+            return (Class<Model>) type;
         }
     }
 }

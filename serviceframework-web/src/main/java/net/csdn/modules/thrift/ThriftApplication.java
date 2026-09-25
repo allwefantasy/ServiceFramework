@@ -155,7 +155,7 @@ public class ThriftApplication {
 
 
     public <T> T service(Class<T> clzz) {
-        return ServiceFramwork.injector.getInstance(clzz);
+        return ServiceFramwork.currentInjector().getInstance(clzz);
     }
 
     //时间扩展

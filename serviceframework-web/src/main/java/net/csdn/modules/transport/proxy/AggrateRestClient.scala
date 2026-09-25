@@ -26,7 +26,7 @@ object AggregateRestClient {
     if (clients.containsKey(hostAndPort)) {
       clients.get(hostAndPort).asInstanceOf[T]
     } else {
-      f(new FirstMeetProxyStrategy(), ServiceFramwork.injector.getInstance(classOf[HttpTransportService]))
+      f(new FirstMeetProxyStrategy(), ServiceFramwork.currentInjector().getInstance(classOf[HttpTransportService]))
     }
   }
 

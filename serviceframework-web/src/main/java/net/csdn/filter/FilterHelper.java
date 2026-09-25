@@ -17,4 +17,9 @@ public class FilterHelper {
         public static String only = "only";
         public static String except = "except";
     }
+
+    public static class AfterFilter {
+        public static String only = "only";
+        public static String except = "except";
+    }
 }

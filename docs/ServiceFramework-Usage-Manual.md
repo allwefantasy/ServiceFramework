@@ -381,7 +381,7 @@ DynamicBytecode.addMongoDynamicFinders(ctClass, fieldFilter);
 
 ## 11. 测试
 
-当前新增了三组参数化测试：
+三组参数化测试仍然在：
 
 | 模块 | 测试类 | 用例数 |
 | --- | --- | --- |
@@ -389,44 +389,12 @@ DynamicBytecode.addMongoDynamicFinders(ctClass, fieldFilter);
 | orm | `DynamicJpaFinderBytecodeTest` | 260 |
 | mongo | `DynamicMongoFinderBytecodeTest` | 260 |
 
-加上原有 ScalaTest：
+这 1020 个用例只覆盖命名、签名和生成片段。更早手册里的合计 1032、JDK `1.8.0_492` / `17.0.19` 是旧记录，不是当前矩阵。
 
-- `RestClientProxySuite`：5 个。
-- `APIDescACSuite`：1 个。
-- `StrategyDispatcherSuite`：6 个。
+2026-09-25 的默认矩阵是每个 JDK 1212 个测试、0 跳过：common 559，ORM 306，Mongo 282，Web 37 JUnit 加 6 个 ScalaTest，dispatcher 22 个 ScalaTest。命令和哈希在 [serviceframework-bytecode-migration.md](serviceframework-bytecode-migration.md)。不设置 `SF_ORM_MYSQL`、`SF_COMPAT_MONGO`、`SF_COMPAT_WEB_DB` 时，实库用例会跳过；那种跳过不是这次验收。
 
-总计：
+## 12. 维护说明
 
-```text
-JUnit: 1020
-ScalaTest: 12
-Total: 1032
-```
+JDK 8 / JDK 17 的类定义、Javassist 3.33.0-GA、实库开关和有界伴生查询已经按默认矩阵验收。动态 finder 没有改成无限的字段组合；多字段查询走显式的 `模型名Queries`，见 [generated-query-api.md](generated-query-api.md)。没有增强结果缓存，也没有热替换。
 
-运行：
-
-```bash
-mvn test -DskipTests=false
-```
-
-最近一次本机验证：
-
-```text
-BUILD SUCCESS
-Tests run: 1032
-JDK8: 1.8.0_492
-JDK17: 17.0.19
-```
-
-## 12. 维护建议
-
-为了继续把动态字节码能力推到更深，建议按以下顺序演进：
-
-1. 增加 JDK17 CI job，和 JDK8 同时跑 `mvn test`。
-2. 升级或隔离 Javassist 版本验证，重点关注 JDK17 模块访问。
-3. 为真实数据库集成测试单独提供 profile，例如 `-Pintegration-mysql`、`-Pintegration-mongo`。
-4. 将 Model/Document 扫描结果输出成 debug 日志，方便定位增强了哪些类。
-5. 给动态 finder 增加多字段组合，例如 `findByNameAndStatus`。
-6. 给动态 finder 增加排序后缀，例如 `findAllByStatusOrderByCreatedAtDesc`。
-
-这些建议都可以在不破坏当前 API 的前提下逐步推进。
+Scala 2.11、Scala 2.12 和 JPMS 仍未验证。外部 `active_orm` 仓库没有纳入这次验收。

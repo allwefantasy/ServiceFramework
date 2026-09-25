@@ -8,7 +8,7 @@ import net.csdn.ServiceFramwork
  */
 trait ServiceInj {
   def findService[T](clzz:Class[T]):T = {
-    ServiceFramwork.injector.getInstance(clzz)
+    ServiceFramwork.currentInjector().getInstance(clzz)
   }
 
 }

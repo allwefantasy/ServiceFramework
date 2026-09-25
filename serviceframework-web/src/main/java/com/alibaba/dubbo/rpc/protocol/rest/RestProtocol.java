@@ -13,9 +13,15 @@ import java.lang.reflect.Proxy;
  * 7/2/15 WilliamZhu(allwefantasy@gmail.com)
  */
 public class RestProtocol extends AbstractProxyProtocol {
-    private final static Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
-    private final static HttpTransportService transportService = ServiceFramwork.injector.getInstance(HttpTransportService.class);
     public static final String NAME = "rest";
+
+    private static Settings settings() {
+        return ServiceFramwork.currentInjector().getInstance(Settings.class);
+    }
+
+    private static HttpTransportService transportService() {
+        return ServiceFramwork.currentInjector().getInstance(HttpTransportService.class);
+    }
 
     @Override
     protected <T> Runnable doExport(T t, Class<T> tClass, URL url) throws RpcException {
@@ -30,7 +36,7 @@ public class RestProtocol extends AbstractProxyProtocol {
     @Override
     protected <T> T doRefer(Class<T> tClass, URL url) throws RpcException {
 
-        RestClientProxy restClientProxy = new RestClientProxy(transportService);
+        RestClientProxy restClientProxy = new RestClientProxy(transportService());
         restClientProxy.target("http://" + url.getHost() + ":" + url.getPort() + "/" + getContextPath(url));
         Class<?>[] intfs =
                 {
@@ -46,7 +52,7 @@ public class RestProtocol extends AbstractProxyProtocol {
 
     @Override
     public int getDefaultPort() {
-        return settings.getAsInt("http.port", 9002);
+        return settings().getAsInt("http.port", 9002);
     }
 }
 

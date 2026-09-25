@@ -22,7 +22,14 @@
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>2.11.4</version>
+            <version>3.12.14</version>
+        </dependency>
+        <!-- Driver POM declares slf4j-api 1.7.6 optional, so Maven does not bring it.
+             1.7.32 is the API only (class major 49). The application chooses a binding. -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.32</version>
         </dependency>
     </dependencies>
 

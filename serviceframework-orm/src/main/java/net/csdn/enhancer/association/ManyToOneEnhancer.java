@@ -51,7 +51,9 @@ public class ManyToOneEnhancer {
                         "name", new StringMemberValue(Strings.toUnderscoreCase(ctField.getName() + "_id"), ctField.getFieldInfo2().getConstPool())
                 ));
 
-                if (mappedByFieldName == null) return;
+                if (mappedByFieldName == null) {
+                    continue;
+                }
 
                 //默认设置为cascade = CascadeType.PERSIST
                 setCascadeWithDefault(ctField, "ManyToOne");

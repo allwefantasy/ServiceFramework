@@ -47,8 +47,28 @@ public class JPQL {
     public JPQL(JPAContext jpaContext, String entity) {
         this.jpaContext = jpaContext;
         this.entity = entity;
-        this.defaultName = entity.toLowerCase();
+        this.defaultName = alias(entity);
         this.columns = getColumns();
+    }
+
+    private static String alias(String entityName) {
+        if (entityName == null || entityName.length() == 0) {
+            return "e";
+        }
+        int dot = entityName.lastIndexOf('.');
+        String simple = dot < 0 ? entityName : entityName.substring(dot + 1);
+        StringBuilder alias = new StringBuilder();
+        for (int i = 0; i < simple.length(); i++) {
+            char ch = simple.charAt(i);
+            if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_'
+                    || (alias.length() > 0 && ch >= '0' && ch <= '9')) {
+                alias.append(ch);
+            }
+        }
+        if (alias.length() == 0) {
+            return "e";
+        }
+        return alias.toString().toLowerCase();
     }
 
     //如果关闭，那么使用新开一个(通常写测试类会往第二个分支走)
@@ -135,8 +155,8 @@ public class JPQL {
         modelAndAlias = modelAndAlias.trim();
         String[] modelAndAliasArray = modelAndAlias.split("\\s+");
         if (modelAndAliasArray.length == 1) {
-            defaultName = entity.toLowerCase();
             entity = modelAndAlias;
+            defaultName = alias(entity);
         } else {
             defaultName = modelAndAliasArray[1];
             entity = modelAndAliasArray[0];
@@ -173,23 +193,17 @@ public class JPQL {
     }
 
     private Set<String> getColumns() {
-        Metamodel metamodel = em().getMetamodel();
-        Iterator entities = metamodel.getEntities().iterator();
         Set<String> columns = new HashSet<String>();
-        while (entities.hasNext()) {
-            EntityType entityType = (EntityType) entities.next();
-
-            if (entity.equals(entityType.getName())) {
-                try {
-                    Set<Attribute> attributes = entityType.getAttributes();
-                    for (Attribute attribute : attributes) {
-                        columns.add(attribute.getName());
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-            }
+        if (entity == null || entity.length() == 0) {
+            return columns;
+        }
+        Class<? extends Model> model = JPA.resolveModel(entity);
+        EntityType entityType = em().getMetamodel().entity(model);
+        this.entity = entityType.getName();
+        this.defaultName = alias(this.entity);
+        Set attributes = entityType.getAttributes();
+        for (Object item : attributes) {
+            columns.add(((Attribute) item).getName());
         }
         return columns;
     }

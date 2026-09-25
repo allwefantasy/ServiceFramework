@@ -1,6 +1,9 @@
 package net.csdn.modules.http;
 
+import com.google.inject.Injector;
 import net.csdn.ServiceFramwork;
+import net.csdn.bootstrap.ApplicationContext;
+import net.csdn.common.enhancer.EnhancementContext;
 import net.csdn.common.Strings;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.collections.WowCollections;
@@ -47,7 +50,7 @@ public abstract class ApplicationController {
     protected CSLogger logger = Loggers.getLogger(getClass());
     protected RestRequest request;
     protected RestResponse restResponse;
-    protected Settings settings = ServiceFramwork.injector.getInstance(Settings.class);
+    protected Settings settings = lookupSettings();
 
     public Class const_document_get(String name) {
         return inner_const_get("document", name);
@@ -83,7 +86,22 @@ public abstract class ApplicationController {
 
 
     public <T> T findService(Class<T> clzz) {
-        return ServiceFramwork.injector.getInstance(clzz);
+        return ServiceFramwork.currentInjector().getInstance(clzz);
+    }
+
+    private static Settings lookupSettings() {
+        ApplicationContext current = ApplicationContext.currentOrNull();
+        if (current != null) {
+            Injector injector = current.injector();
+            if (injector == null) {
+                return null;
+            }
+            return injector.getInstance(Settings.class);
+        }
+        if (EnhancementContext.currentOrNull() != null || ServiceFramwork.injector == null) {
+            return null;
+        }
+        return ServiceFramwork.injector.getInstance(Settings.class);
     }
 
     public <T> T findRPCService(String name, Class<T> clzz) {
@@ -210,7 +228,7 @@ public abstract class ApplicationController {
     }
 
     private String getActionName() {
-        RestController restController = ServiceFramwork.injector.getInstance(RestController.class);
+        RestController restController = ServiceFramwork.currentInjector().getInstance(RestController.class);
         Tuple<Class<ApplicationController>, Method> handlerKey = restController.getHandler(request);
         return handlerKey.v2().getName();
     }
@@ -643,6 +661,7 @@ public abstract class ApplicationController {
 
     public static Map<String, Map<String, List>> parent$_before_filter_info;
     public static Map<String, Map<String, List>> parent$_around_filter_info;
+    public static Map<String, Map<String, List>> parent$_after_filter_info;
 
     public static Map<String, Map<String, List>> parent$_before_filter_info() {
         if (parent$_before_filter_info == null) {
@@ -658,12 +677,23 @@ public abstract class ApplicationController {
         return parent$_around_filter_info;
     }
 
+    public static Map<String, Map<String, List>> parent$_after_filter_info() {
+        if (parent$_after_filter_info == null) {
+            parent$_after_filter_info = new LinkedHashMap();
+        }
+        return parent$_after_filter_info;
+    }
+
     public static void beforeFilter(String filter, Map info) {
         parent$_before_filter_info().put(filter, info);
     }
 
     public static void aroundFilter(String filter, Map info) {
         parent$_around_filter_info().put(filter, info);
+    }
+
+    public static void afterFilter(String filter, Map info) {
+        parent$_after_filter_info().put(filter, info);
     }
 
 }

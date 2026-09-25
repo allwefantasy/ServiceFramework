@@ -60,15 +60,13 @@ public class FilterEnhancer extends ControllerEnhancer {
     }
 
     @Override
-    public void enhanceThisClass2(List<CtClass> ctClasses) throws Exception {
-        for (CtClass ctClass : ctClasses) {
-            if (Modifier.isAbstract(ctClass.getModifiers())) continue;
-            try {
-                ctClass.toClass(ServiceFramwork.scanService.getLoader().getClassLoader(), ServiceFramwork.scanService.getLoader().getProtectionDomain());
-            } catch (Exception e) {
-                logger.error("Fail to load ctClass " + ctClass.getName(), e);
-            }
-
-        }
+    public void enhanceThisClass2(List<CtClass> ctClasses) {
+        throw new net.csdn.common.enhancer.EnhancementFailure(
+                net.csdn.common.enhancer.EnhancementFailure.Category.UNSUPPORTED,
+                ctClasses == null || ctClasses.isEmpty() ? null : ctClasses.get(0).getName(),
+                net.csdn.common.enhancer.EnhancementRuleIds.CONTROLLER_FILTER,
+                "define",
+                "define controllers with ApplicationContext and ControllerFilterRule; toClass is not a definition path",
+                null);
     }
 }

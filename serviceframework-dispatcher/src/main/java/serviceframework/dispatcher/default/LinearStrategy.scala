@@ -8,6 +8,9 @@ import serviceframework.dispatcher.{Compositor, Processor, Strategy}
 /**
  * 4/19/16 WilliamZhu(allwefantasy@gmail.com)
  */
+/**
+  * 默认策略不级联 stop。扩展实例的生命周期由 StrategyDispatcher 管理。
+  */
 class LinearStrategy[T] extends Strategy[T] {
 
   var _name: String = _

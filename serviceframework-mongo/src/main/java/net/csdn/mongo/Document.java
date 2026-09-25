@@ -4,6 +4,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import net.csdn.common.collections.WowCollections;
+import net.csdn.common.enhancer.EnhancementContext;
+import net.csdn.common.enhancer.EnhancementFailure;
+import net.csdn.common.enhancer.EnhancementRuleIds;
 import net.csdn.common.exception.AutoGeneration;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
@@ -25,8 +28,11 @@ import org.apache.commons.lang.StringUtils;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -144,6 +150,11 @@ public class Document {
     protected static Map<String, AssociationEmbedded> parent$_associations_embedded;
     protected static Map<String, String> parent$_alias_names;
 
+    /**
+     * Not a routing slot. {@code configure} does not assign it: writing the latest
+     * client here makes two applications read whichever database was opened last.
+     * Use {@link #mongo()} or the collection copied onto each model.
+     */
     public static MongoMongo mongoMongo;
 
 
@@ -165,7 +176,31 @@ public class Document {
 
 
     public static DBCollection collection() {
+        if (EnhancementContext.currentOrNull() != null) {
+            MongoMongo live = MongoMongo.current();
+            if (live == null || live.isClientClosed() || live.configuration().isClosed()) {
+                throw new EnhancementFailure(
+                        EnhancementFailure.Category.LIFECYCLE,
+                        null,
+                        EnhancementRuleIds.MONGO_DOCUMENT,
+                        "collection",
+                        "the active enhancement context has no mongo client",
+                        null);
+            }
+            if (parent$_collectionName == null) {
+                return null;
+            }
+            return live.collection(parent$_collectionName);
+        }
         return parent$_collection;
+    }
+
+    /**
+     * Active scope, or the only open client. Ambiguous when two clients are open
+     * and this thread has not activated one of them.
+     */
+    public static MongoMongo mongo() {
+        return MongoMongo.resolve();
     }
 
     public static Map<String, Association> associationsMetaData() {
@@ -174,6 +209,133 @@ public class Document {
 
     public static Map<String, AssociationEmbedded> associationsEmbeddedMetaData() {
         return parent$_associations_embedded;
+    }
+
+    /**
+     * Copies the superclass association maps into this model's own maps.
+     * Called at the start of each enhanced model's class initializer, after the
+     * superclass has been initialized. The child can then add or replace names
+     * without writing through to the parent map.
+     */
+    public static void copyInheritedAssociationMetadata(Class<?> model) {
+        if (model == null || model == Document.class) {
+            return;
+        }
+        copyAssociationMap(model, "parent$_associations");
+        copyAssociationMap(model, "parent$_associations_embedded");
+    }
+
+    /**
+     * Fails configuration when an association accessor has no metadata entry.
+     * A missing entry used to surface as a null dereference on the first call.
+     */
+    public static void verifyAssociationAccessors(Class<?> model) {
+        if (model == null || model == Document.class) {
+            return;
+        }
+        Map associations = declaredMap(model, "parent$_associations");
+        Map embedded = declaredMap(model, "parent$_associations_embedded");
+        Method[] methods;
+        try {
+            methods = model.getDeclaredMethods();
+        } catch (RuntimeException thrown) {
+            throw associationFailure(model, "verify", "cannot read association methods", thrown);
+        }
+        for (int i = 0; i < methods.length; i++) {
+            Method method = methods[i];
+            int modifiers = method.getModifiers();
+            if (Modifier.isStatic(modifiers) || method.getParameterTypes().length != 0) {
+                continue;
+            }
+            if (method.isSynthetic() || method.isBridge()) {
+                continue;
+            }
+            Class<?> returned = method.getReturnType();
+            if (Association.class.isAssignableFrom(returned)) {
+                requireMetadata(model, method.getName(), returned, associations);
+            } else if (AssociationEmbedded.class.isAssignableFrom(returned)) {
+                requireMetadata(model, method.getName(), returned, embedded);
+            }
+        }
+    }
+
+    private static void copyAssociationMap(Class<?> model, String fieldName) {
+        Field field = declaredField(model, fieldName);
+        if (field == null) {
+            return;
+        }
+        try {
+            if (field.get(null) != null) {
+                return;
+            }
+            Map copied = new HashMap();
+            Map inherited = inheritedMap(model.getSuperclass(), fieldName);
+            if (inherited != null) {
+                copied.putAll(inherited);
+            }
+            field.set(null, copied);
+        } catch (IllegalAccessException thrown) {
+            throw associationFailure(model, fieldName, "cannot copy association metadata", thrown);
+        }
+    }
+
+    private static Map inheritedMap(Class<?> type, String fieldName) throws IllegalAccessException {
+        Class<?> cursor = type;
+        while (cursor != null && cursor != Document.class && cursor != Object.class) {
+            Field field = declaredField(cursor, fieldName);
+            if (field != null) {
+                Object value = field.get(null);
+                return value instanceof Map ? (Map) value : null;
+            }
+            cursor = cursor.getSuperclass();
+        }
+        return null;
+    }
+
+    private static void requireMetadata(Class<?> model, String name, Class<?> returned, Map metadata) {
+        Object value = metadata == null ? null : metadata.get(name);
+        if (!returned.isInstance(value)) {
+            String found = value == null ? "no metadata" : value.getClass().getName();
+            throw associationFailure(
+                    model,
+                    name,
+                    "association " + name + " has " + found + " on " + model.getName()
+                            + "; expected " + returned.getName(),
+                    null);
+        }
+    }
+
+    private static Map declaredMap(Class<?> model, String fieldName) {
+        Field field = declaredField(model, fieldName);
+        if (field == null) {
+            return null;
+        }
+        try {
+            Object value = field.get(null);
+            return value instanceof Map ? (Map) value : null;
+        } catch (IllegalAccessException thrown) {
+            throw associationFailure(model, fieldName, "cannot read association metadata", thrown);
+        }
+    }
+
+    private static Field declaredField(Class<?> type, String fieldName) {
+        try {
+            Field field = type.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return field;
+        } catch (NoSuchFieldException thrown) {
+            return null;
+        }
+    }
+
+    private static EnhancementFailure associationFailure(Class<?> model, String name, String detail, Throwable cause) {
+        return new EnhancementFailure(
+                EnhancementFailure.Category.CONFLICT,
+                model == null ? null : model.getName(),
+                EnhancementRuleIds.MONGO_DOCUMENT,
+                "initialize",
+                detail,
+                cause);
     }
 
     public static List fields() {
@@ -196,9 +358,18 @@ public class Document {
      # Warning: you should call this Class Method in subclass.
     */
     protected static DBCollection storeIn(String name) {
-
         parent$_collectionName = name;
-        parent$_collection = mongoMongo.database().getCollection(name);
+        MongoMongo live = MongoMongo.current();
+        if (live == null) {
+            throw new EnhancementFailure(
+                    EnhancementFailure.Category.LIFECYCLE,
+                    null,
+                    "mongo-document",
+                    "initialize",
+                    "storeIn requires an active mongo context on this thread",
+                    null);
+        }
+        parent$_collection = live.collection(name);
         return parent$_collection;
     }
 
@@ -219,7 +390,7 @@ public class Document {
      index({ ssn: 1 }, { unique: true, name: "ssn_index" })
      */
     protected static void index(Map keys, Map indexOptions) {
-        parent$_collection.ensureIndex(translateMapToDBObject(keys), translateMapToDBObject(indexOptions));
+        parent$_collection.createIndex(translateMapToDBObject(keys), translateMapToDBObject(indexOptions));
     }
 
     public static DBObject translateMapToDBObject(Map map) {

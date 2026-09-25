@@ -1,5 +1,5 @@
-**报告已重写（2026-09-24）**
+**报告已重写（2026-09-24），清单已于 2026-09-25 按默认矩阵勾选。**
 
-请阅读 [ServiceFramework 字节码增强与扩展性优化 TODO：同时兼容 JDK 8 / JDK 17](/Users/williammacintel/projects/ServiceFramework/docs/serviceframework-bytecode-todo-jdk8-jdk17-2026-09-24.md)。
+请阅读 [ServiceFramework 字节码增强与扩展性优化 TODO：同时兼容 JDK 8 / JDK 17](serviceframework-bytecode-todo-jdk8-jdk17-2026-09-24.md)。当前实现和迁移说明在 [serviceframework-bytecode-migration.md](serviceframework-bytecode-migration.md)。
 
-新版仅覆盖 ServiceFramework、ORM/ActiveORM、MongoMongo 及实际使用的依赖，包含 15 项分优先级 TODO、双 JDK 验收矩阵与扩展机制设计。原报告正文已由新版替代。
+原报告正文已由那份 TODO 替代。ORM 的权威实现是本仓库的 `serviceframework-orm`。外部 `active_orm` 没有纳入那次验收。

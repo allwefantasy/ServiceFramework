@@ -25,11 +25,11 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
 
     @Override
     public void process(Settings settings, HttpServletRequest request, HttpServletResponse response, ProcessInfo processInfo) {
-        boolean disableMySql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+        boolean disableMySql = settings.getAsBoolean(ServiceFramwork.currentMode() + ".datasources.mysql.disable", false);
         systemLog(processInfo.startTime, request, settings, processInfo);
         endORM(disableMySql);
         closeTx(settings, processInfo);
-        API api = ServiceFramwork.injector.getInstance(API.class);
+        API api = ServiceFramwork.currentInjector().getInstance(API.class);
         api.statusIncrement(processInfo.method, processInfo.status);
         api.averageTimeIncrement(processInfo.method, System.currentTimeMillis() - processInfo.startTime);
     }
@@ -42,7 +42,7 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
 
 
     private void closeTx(Settings settings, ProcessInfo processInfo) {
-        boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+        boolean disableMysql = settings.getAsBoolean(ServiceFramwork.currentMode() + ".datasources.mysql.disable", false);
         if (!disableMysql && processInfo.method != null && processInfo.method.getAnnotation(NoTransaction.class) == null) {
             try {
                 JPA.getJPAConfig().getJPAContext().closeTx(false);
@@ -53,7 +53,7 @@ public class DefaultHttpFinishProcessor implements HttpFinishProcessor {
     }
 
     private void systemLog(long startTime, HttpServletRequest httpServletRequest, Settings settings, ProcessInfo processInfo) {
-        boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+        boolean disableMysql = settings.getAsBoolean(ServiceFramwork.currentMode() + ".datasources.mysql.disable", false);
         boolean logEnable = settings.getAsBoolean("application.log.enable", true);
         if (logEnable) {
             long endTime = System.currentTimeMillis();

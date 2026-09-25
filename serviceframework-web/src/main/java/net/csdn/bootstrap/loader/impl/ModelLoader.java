@@ -1,65 +1,41 @@
 package net.csdn.bootstrap.loader.impl;
 
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import net.csdn.ServiceFramwork;
+import net.csdn.bootstrap.ApplicationContext;
+import net.csdn.bootstrap.extension.OrmFrameworkExtension;
 import net.csdn.bootstrap.loader.Loader;
-import net.csdn.common.scan.ScanService;
+import net.csdn.common.enhancer.EnhancementPlan;
+import net.csdn.common.enhancer.EnhancementRuleIds;
 import net.csdn.common.settings.Settings;
-import net.csdn.enhancer.ControllerEnhancer;
-import net.csdn.filter.FilterEnhancer;
 import net.csdn.jpa.JPA;
-import net.csdn.jpa.model.Model;
 
-import javax.persistence.DiscriminatorColumn;
-import java.io.DataInputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * BlogInfo: WilliamZhu
- * Date: 12-7-2
- * Time: 上午11:29
+ * Compatibility entry for the ORM lifecycle. Scanning and definition stay in
+ * {@link JPA#configure(JPA.CSDNORMConfiguration, net.csdn.common.enhancer.EnhancementContext)}.
+ * This loader does not call {@code toClass} and does not swallow failures.
  */
 public class ModelLoader implements Loader {
     @Override
     public void load(Settings settings) throws Exception {
-        final ControllerEnhancer enhancer = new FilterEnhancer(settings);
-        final List<CtClass> classList = new ArrayList<CtClass>();
-        ServiceFramwork.scanService.scanArchives(settings.get("application.model"), new ScanService.LoadClassEnhanceCallBack() {
-            @Override
-            public Class loaded(DataInputStream classFile) {
-                try {
-                    classList.add(enhancer.enhanceThisClass(classFile));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-        });
-
-        enhancer.enhanceThisClass2(classList);
-
-
-        for (CtClass ctClass : classList) {
-            if (ctClass.hasAnnotation(DiscriminatorColumn.class)) {
-                loadClass(ctClass);
-            }
-        }
-
-        for (CtClass ctClass : classList) {
-            if (!ctClass.hasAnnotation(DiscriminatorColumn.class)) {
-                loadClass(ctClass);
-            }
+        ApplicationContext application = ApplicationContext.require();
+        JPA.CSDNORMConfiguration configuration = new JPA.CSDNORMConfiguration(
+                application.mode().name(),
+                settings,
+                application.marker());
+        JPA.configure(configuration, application.enhancementContext());
+        if (!OrmFrameworkExtension.mysqlDisabled(settings, application)) {
+            markIfRuleRan(application, EnhancementRuleIds.ENTITY_MAPPING);
         }
     }
 
-    private void loadClass(CtClass ctClass) {
-        try {
-            Class<Model> clzz = (Class<Model>)ctClass.toClass();
-            JPA.models.put(clzz.getSimpleName(), clzz);
-        } catch (CannotCompileException e) {
-            e.printStackTrace();
+    public static void markIfRuleRan(ApplicationContext application, String ruleId) {
+        List<EnhancementPlan.Execution> executions = application.enhancementContext().executions();
+        for (int i = 0; i < executions.size(); i++) {
+            if (ruleId.equals(executions.get(i).ruleId())) {
+                application.markClassesDefined();
+                return;
+            }
         }
     }
 }

@@ -3,6 +3,8 @@ package net.csdn.modules.http;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import net.csdn.ServiceFramwork;
+import net.csdn.bootstrap.ApplicationContext;
+import net.csdn.common.enhancer.EnhancementContext;
 import net.csdn.annotation.NoTransaction;
 import net.csdn.common.collect.Tuple;
 import net.csdn.common.env.Environment;
@@ -20,6 +22,7 @@ import net.csdn.modules.http.processor.ProcessInfo;
 import net.csdn.modules.http.processor.impl.DefaultHttpFinishProcessor;
 import net.csdn.modules.http.processor.impl.DefaultHttpStartProcessor;
 import net.csdn.modules.http.support.HttpHolder;
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -49,6 +52,8 @@ public class HttpServer {
     private Settings settings;
     private API api;
     private final int httpPort;
+    private int boundPort = -1;
+    private final ApplicationContext applicationContext;
 
     private List<HttpStartProcessor> httpStartProcessorList = new ArrayList();
     private List<HttpFinishProcessor> httpFinishProcessorList = new ArrayList();
@@ -73,17 +78,22 @@ public class HttpServer {
         this.settings = settings;
         this.restController = restController;
         this.api = api;
+        this.applicationContext = ApplicationContext.currentOrNull();
         registerHttpStartProcessor(new DefaultHttpStartProcessor());
         registerHttpFinishProcessor(new DefaultHttpFinishProcessor());
 
         Environment environment = new Environment(settings);
-        disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+        disableMysql = settings.getAsBoolean(ServiceFramwork.currentMode() + ".datasources.mysql.disable", false);
         JettyServer jettyServer = new JettyServer();
         httpPort = settings.getAsInt("http.port", generateHttpPort());
 
         server = jettyServer.createServer(settings.getAsInt("http.threads.min", 100),
                 settings.getAsInt("http.threads.max", 1000));
-        ServerConnector connector = jettyServer.createConnector(server, settings.get("http.host", ""), httpPort);
+        String httpHost = settings.get("http.host", "");
+        if (httpHost != null && httpHost.trim().length() == 0) {
+            httpHost = null;
+        }
+        ServerConnector connector = jettyServer.createConnector(server, httpHost, httpPort);
         connector.setIdleTimeout(settings.getAsInt("http.server.idleTimeout", 30000));
 
         server.addConnector(connector);
@@ -108,6 +118,9 @@ public class HttpServer {
 
 
     private int generateHttpPort() {
+        if (settings.getAsInt("http.port", -1) == 0) {
+            return 0;
+        }
         String clzz = settings.get("http.class.port", "");
         if (!clzz.isEmpty()) {
             PortGenerator pg = null;
@@ -122,7 +135,11 @@ public class HttpServer {
     }
 
     public int getHttpPort() {
-        return httpPort;
+        return boundPort > 0 ? boundPort : httpPort;
+    }
+
+    public boolean isRunning() {
+        return server.isStarted();
     }
 
     class DefaultHandler extends AbstractHandler {
@@ -140,7 +157,7 @@ public class HttpServer {
 
         private void defaultErrorAction(DefaultResponse channel, Exception e) {
             if (restController.errorHandlerKey() != null) {
-                ApplicationController errorApplicationController = ServiceFramwork.injector.getInstance(restController.errorHandlerKey().v1());
+                ApplicationController errorApplicationController = ServiceFramwork.currentInjector().getInstance(restController.errorHandlerKey().v1());
                 try {
                     RestController.enhanceApplicationController(errorApplicationController, HttpServer.httpHolder().restRequest(), channel);
                     try {
@@ -164,7 +181,8 @@ public class HttpServer {
 
         @Override
         public void handle(String s, Request request, final HttpServletRequest httpServletRequest, final HttpServletResponse httpServletResponse) throws IOException, ServletException {
-
+            EnhancementContext.Scope scope = applicationContext == null ? null : applicationContext.activate();
+            try {
             DefaultResponse channel = new DefaultResponse(httpServletRequest, httpServletResponse, restController);
             ProcessInfo processInfo = new ProcessInfo();
             try {
@@ -204,31 +222,47 @@ public class HttpServer {
             }
 
 
+            } finally {
+                if (scope != null) {
+                    scope.close();
+                }
+            }
         }
     }
 
 
     public void start() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    server.start();
-                    server.join();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
+        try {
+            if (!server.isStarted()) {
+                server.start();
             }
-        }).start();
-
+            Connector[] connectors = server.getConnectors();
+            for (int i = 0; i < connectors.length; i++) {
+                if (connectors[i] instanceof ServerConnector) {
+                    int local = ((ServerConnector) connectors[i]).getLocalPort();
+                    if (local > 0) {
+                        boundPort = local;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("HTTP server did not bind", e);
+        }
     }
 
     public void close() {
         try {
-            server.stop();
+            if (server.isRunning() || server.isStarted() || server.isStarting() || server.isStopping()) {
+                server.stop();
+            }
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new IllegalStateException("HTTP server did not stop", e);
+        } finally {
+            try {
+                server.destroy();
+            } catch (Exception ignored) {
+                // stop already reported the primary failure when it threw
+            }
         }
     }
 

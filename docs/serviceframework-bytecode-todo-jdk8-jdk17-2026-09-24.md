@@ -1,144 +1,112 @@
 **ServiceFramework 字节码增强与扩展性优化 TODO：同时兼容 JDK 8 / JDK 17**
 
-日期：2026-09-24。状态：源码评估与实施清单，尚未实施产品改造。
+日期：2026-09-24 列出，2026-09-25 按默认矩阵验收。当前行为和迁移步骤在 [serviceframework-bytecode-migration.md](serviceframework-bytecode-migration.md)。逐项证据指向那次独立运行的 [summary.md](../target/bytecode-final-verification-20260925/summary.md)。
 
-建议先完成“正确生成、可靠加载、真实调用”的基础，再统一增强规则与模块扩展入口，最后增加类型可见的查询能力和性能优化。兼容目标是：同一套业务增强逻辑、同一版本的 Java 8 基线产物，能够在 JDK 8 和 JDK 17 上运行，并分别通过实际启动和业务测试。
+状态：T01–T15 在本仓库默认矩阵上通过。Scala 2.11、Scala 2.12 和 JPMS 没有跑，保持未验证。外部 `active_orm` 仓库没有改，也没有测。没有增强结果缓存，也没有把扫描流峰值写成整个启动变快。Thrift 和 Dubbo 没有作为流量执行。
 
-**范围与当前事实**
+勾选只表示下面写明的证据成立。原条目里更宽的设想，如果这次没有做，写在该条的边界里，不另算成已完成的优化。
 
-本文的 ORM 指 ServiceFramework 内的 ActiveORM/JPA 实现及其独立同源仓库 `active_orm`。评估覆盖整个 ServiceFramework，但优化重点是字节码增强、扫描与类加载，以及直接影响这些能力的依赖和运行生命周期。
+**范围**
 
-| 范围 | 当前实现 | 本次重点 |
-| --- | --- | --- |
-| `serviceframework-common` | `DynamicBytecode`、扫描、反射、配置及公共工具 | 正确性、统一类定义入口、元数据与诊断 |
-| `serviceframework-orm` | ActiveORM、JPA/Hibernate、实体/静态查询/关联增强 | 多级继承、属性映射、查询行为、事务与注册身份 |
-| `serviceframework-mongo` | MongoMongo、Document、Criteria、setter 与 finder 增强 | 自定义 setter、alias、继承、实际读写与查询 |
-| `serviceframework-web` | Bootstrap、Controller/Filter、Service/Util、Guice、HTTP/RPC | 启动顺序、必需增强失败、扩展注册与关闭 |
-| `serviceframework-dispatcher` | Strategy、Processor、Compositor 的配置与反射实例化 | 扩展类型校验、实例生命周期、错误定位 |
-| `serviceframework-jetty-9-server` | Jetty 服务容器 | 双 JDK 启停及 HTTP 集成验证 |
-| 独立 `active_orm` 仓库 | 与框架内 ORM 同源，若干同包同名实现已经不同 | 确立维护主线，减少两份实现长期分叉 |
-| 实际依赖 | Javassist、Hibernate/JPA、Guice、数据库驱动、Jetty、Scala、common-utils 等 | 依赖版本收敛、Java 8 API 基线、JDK 17 实际运行 |
+ORM 的权威实现是本仓库的 `serviceframework-orm`。独立 `active_orm` 仍是另一份更老的代码，见 [active-orm-maintenance.md](active-orm-maintenance.md)。这次验收覆盖 common、ORM、Mongo、Web、dispatcher 和 jetty-9-server 的默认 Scala 2.13.16 产物。
 
-当前 `serviceframework-orm/pom.xml` 没有把独立 `ActiveORM` artifact 作为依赖；相关实现直接存在于框架模块中。抽查的 `JPA`、`JPAEnhancer`、`ClassMethodEnhancer`、`EntityEnhancer`、`Model` 与独立仓库均有差异。因此，修复默认先落在框架实际使用的代码上，再明确独立仓库如何同步。
+| 范围 | 现在的入口 |
+| --- | --- |
+| `serviceframework-common` | `ClassDefiner`、`EnhancementContext`、`EnhancementPlan`、`DynamicBytecode`、`DefaultScanService` |
+| `serviceframework-orm` | `OrmEnhancer`、`JPA.configure`、伴生查询处理器 |
+| `serviceframework-mongo` | `MongoMongo.configure`、`mongo-document` |
+| `serviceframework-web` | `ApplicationContext`、`FrameworkExtension`、Controller 过滤器 |
+| `serviceframework-dispatcher` | 策略加载和 `ServiceFramwork.currentInjector()` |
+| `serviceframework-jetty-9-server` | HTTP 容器。模块自己没有测试类，端口在 Web 生命周期套件里 |
 
-`common-utils` 在本框架中的直接调用主要是集合、字符串/配置辅助、缓存和 classpath 扫描。本次检索未发现框架调用其 Java/Scala 动态编译器，优化清单只覆盖实际使用的部分。
+- [x] **T01 · P0：定义支持矩阵，建立双 JDK 验收入口。** 公共代码和依赖按 Java 8 可运行基线约束。JDK 17 编译，同一批 JAR 再在 JDK 8 和 JDK 17 上跑，中间不编译。Java 使用 `--release 8`，并用 Animal Sniffer 的 `java18` 签名检查，不只看 `source/target=1.8`。默认 Scala 2.13 纳入验收；`scala-2.11` 和 `scala-2.12` 在父 POM 里标成未验证。
 
-**从哪里开始：第一批必须完成的 TODO**
+  证据：一次 JDK 17 `install -DskipTests`，然后两个 JDK 的 Surefire + ScalaTest，class/JAR 清单不变。Animal Sniffer 六个模块 BUILD SUCCESS。运行时是 `1.8.0_504` 和 `17.0.20.1`。每个 JDK 1212 个测试，0 跳过。见 summary 的 T01 和 [jdk-compatibility.md](jdk-compatibility.md)。
 
-以下均为待办，勾选条件是对应验收通过；文档中的方案和已有小探针不能代替完成状态。
+- [x] **T02 · P0：收敛字节码及启动依赖。** 选定并统一的是 Javassist **3.33.0-GA**。3.30.2-GA 是更早的对照，不是这次全框架矩阵的运行版本。Guice 5.1.0，不再使用 Mycila。Hibernate 5.3.7.Final 和 `javax.persistence-api` 2.2 保留。Jetty 仍是 `9.2.16.v20160414`。业务接口仍是 `javax.persistence`。
 
-- [ ] **T01 · P0：定义支持矩阵，建立双 JDK 验收入口。** 从父 POM 和现有三组字节码测试开始。公共 Java/Scala 代码及依赖按 Java 8 可运行基线约束；增加 JDK 8、JDK 17 的独立测试进程，并验证同一批发布 JAR 在两个运行时上工作。JDK 17 编译 Java 时使用 `--release 8` 或等效的 API 基线检查，不能只看 `source/target=1.8`。验收：两个 JDK 都有真实生成、加载和调用结果，记录实际运行参数、依赖版本与产物摘要。默认 Scala 2.13 组合先纳入验收，旧 Scala profiles 分别列出支持状态。[S1][S9]
+  证据：每条 classpath 上的 Javassist SHA-256 是 `1620478adc5f4d2eccd356e59513c270f1508bed53ce75deffb3107b7b43db2c`。`duplicate_key_classes` 为 0。Guice core 和 assistedinject 是两个归档、类不重复。JAXB API、activation API、JPA API 在出现时各来自一个归档。SLF4J 只有 API：common、dispatcher、jetty 是 1.5.8，ORM、Mongo、Web 是 1.7.32。没有第二份 ActiveORM。可见 class 主版本高于 52 的数量是 0。`AUDIT_OK`，可见 class 181404。失败条件是这些前缀下的 class 重复，不是每个前缀只能来自一个归档。应用自己的 SLF4J 绑定只要类名不重复就可以留在 classpath 上。见 [jdk-compatibility.md](jdk-compatibility.md)。
 
-- [ ] **T02 · P0：收敛字节码及启动依赖。** 将 Javassist `3.30.2-GA` 作为本轮升级候选基线，并统一管理全模块使用的版本。审计 Guice 与 Mycila Guice 的同名类冲突，以及 Hibernate 代理、JPA API、Jetty、驱动和公共依赖的实际解析结果。当前直接声明包含 Javassist `3.23.1-GA`、Guice `3.0`/Mycila `3.0-20100927`、Hibernate `5.3.7.Final`、Jetty `9.2.16.v20160414`。这些是待审计的声明版本，不代表每项都已实测失败。验收：依赖树可解释、关键类唯一、JDK 8 可见类及 API 满足基线，保留当前 `javax.persistence` 等业务接口边界。[S1][S2]
+- [x] **T03 · P0：把定义类的操作收口到一个入口。** `ClassDefiner` 检查类名、目标加载器、同包锚点、`ProtectionDomain` 和命名模块。JDK 8 走 `CtClass.toClass(loader, domain)`。JDK 9+ 走同包 neighbor 的 `ClassPool.toClass`。两条路径都要求包锚点。命名模块直接拒绝。不使用 `--add-opens`。
 
-- [ ] **T03 · P0：把所有定义类的操作收口到一个入口。** 在 common 中设计 `ClassDefiner`，明确目标类名、目标加载器、同包锚点、ProtectionDomain 与错误信息。迁移 ORM、Mongo、Controller/Filter、Service、Util、Application 和测试启动代码中的分散 `toClass()`。JDK 17 路径使用合法的同包锚点/Lookup；JDK 8 走兼容路径。验收：主力 classpath 部署不依赖全局 `--add-opens`，生成类落在预期加载器中，同包访问与框架类型转换均成功；锚点或访问条件不满足时明确失败。[S3][S4][S5][S6]
+  证据：`ClassDefinerTest` 在两个 JDK 上都是 10/10，覆盖锚点、包内访问、重复定义、缺锚点、加载器或保护域不一致，以及 Java 8 字节码上限。实现是 [ClassDefiner.java](../serviceframework-common/src/main/java/net/csdn/common/enhancer/ClassDefiner.java)。
 
-- [ ] **T04 · P0：修复已复现的字节码语义问题。** `DynamicBytecode` 替换 setter 时按精确方法签名匹配，保留其他重载；生成 getter/setter 前检查完整继承关系及 final/static/返回类型冲突；跨类复制属性时转换目标常量池。另明确静态字段初值、初始化代码与元数据容器是共享还是每个模型独立，不能认为复制字段声明就完成了初始化。验收：已有重载、继承 final、静态常量反例转为正确行为；自定义 setter 的校验/副作用和模型间元数据独立性有实际调用断言。[S2][S5]
+- [x] **T04 · P0：修复已复现的字节码语义问题。** setter 按精确签名替换，其它重载保留。生成 getter/setter 前检查继承链上的 final、static 和返回类型。静态字段复制进目标常量池；`<clinit>` 不复制。每个模型自己的静态元数据不和父类共用。
 
-- [ ] **T05 · P0：修正扫描、继承遍历和模型身份。** 核查并修复 `DefaultScanService.scanArchives(String)` 的自身递归、URL 协议用 `==` 比较、资源读取失败处理；修正 `ModelClass` 中把 CtClass 实现类名当模型名比较，以及循环不向更上层父类推进的问题。JPA 注册当前按 `simpleName` 存储，应改为无歧义身份，并为旧短名称保留唯一时才生效的别名。验收：目录/JAR/带空格路径扫描一致，三级以上继承及字段遮蔽正确，两个包内同名模型不会静默覆盖。[S3][S7]
+  证据：`DynamicBytecodeBehaviorTest` 8/8。说明在 [enhancement-contract.md](enhancement-contract.md)。
 
-- [ ] **T06 · P0：让必需增强失败准确中止启动。** 扫描、ORM 加载、Controller 增强中的异常不再只打印后继续注册。将错误分为可选模块未启用、配置错误、增强冲突、类定义失败等明确类别；必需模型和控制器必须完整就绪后再启动服务。验收：故意制造 final 冲突、缺失依赖、错误关联或非法字节码时，启动给出类名、规则、阶段和原因，HTTP/RPC 不以半成品状态开始服务；失败清理关闭已创建资源。[S3][S4][S6]
+- [x] **T05 · P0：修正扫描、继承遍历和模型身份。** `scanArchives(String)` 不再调用自己。目录、JAR 和带空格的路径按资源打开并关闭流。模型注册主键是二进制名，简单名只有唯一命中时才能用。
 
-- [ ] **T07 · P0：补真实应用和数据库验收。** 现有参数化测试继续验证命名、签名和生成片段，同时增加加载后调用及真实业务链路。验收至少包括：ORM 保存/查询/事务回滚/关联/继承；Mongo 的 alias、setter、自定义逻辑及读写查询；Controller 的 before/after/around 顺序和异常路径；Service/Util 注入；Jetty 启停；dispatcher 的策略加载。每个支持的运行配置都在 JDK 8/17 上跑，覆盖启用与关闭可选模块。轻量数据库可做快速测试，最终结论需要实际支持的数据库/驱动组合。[S4][S5][S6][S9]
+  证据：`DefaultScanServiceTest` 8/8，`ModelClassHierarchyTest` 3/3，`ModelRegistryTest` 1/1。嵌套 JAR 仍然不打开。
 
-建议实际开工顺序：**T01 验收骨架 → T02/T03 依赖与加载入口 → T04/T05 正确性 → T06/T07 完整启动与业务验收**。第一批完成标准是“同一应用产物在两种 JDK 上正确工作”，而不是测试数量增加或 Maven 编译成功。
+- [x] **T06 · P0：让必需增强失败准确中止启动。** 扫描、ORM、Mongo 和 Controller 的失败抛出 `EnhancementFailure`，带类名、规则、阶段和原因。失败路径会关掉已经创建的资源。HTTP 不会在增强或数据库失败之后继续监听。
 
-**第二批：让框架能够稳定扩展**
+  证据：生命周期和数据库套件覆盖了必需增强、坏过滤器、缺失实体、非法关联、错误的 MySQL 端点和 Mongo 连接失败。这些失败在监听之前端口就是拒绝的。日志里的类名、规则和阶段来自这些测试自己的断言。
 
-- [ ] **T08 · P1：增加增强规则 SPI 与执行计划。** 将字段/访问器、ORM 实体、ORM 查询、关联、Mongo、Controller 规则分开注册，共用分析与冲突检查。规则声明 ID、版本、适用对象和前后依赖，顺序稳定，循环依赖和相互冲突在类定义前发现。验收：新增规则只需提供扩展实现和注册信息；同一规则重复执行有明确的跳过/冲突结果；业务规则不直接调用 `toClass()`。[S2][S3][S5][S6]
+  边界：实跑的服务器协议是 HTTP。Thrift 和 Dubbo 的流量测试没有跑，不能写成通过。Jetty 模块没有自己的测试类。
 
-- [ ] **T09 · P1：统一模块注册和启停契约。** 在已有 `registerModule`、Guice Module、`type_mapping`、验证器配置和 dispatcher 接口之上增加模块描述及生命周期。模块声明所需能力、提供能力、配置检查、注册、启动和关闭；核心负责依赖顺序及反向关闭。验收：增加验证器、查询扩展或数据库适配器时，主体改动位于扩展模块；未启用的模块不要求其实现类在运行 classpath 上可用，错误配置在启动前可定位。[S4][S10]
+- [x] **T07 · P0：补真实应用和数据库验收。** 参数化用例继续覆盖命名和签名。另外有加载后的调用，以及 MySQL 8.0.46、MongoDB 4.4.29 上的业务链路。可选模块的打开和关闭都在两个 JDK 上跑过。三个环境开关是 `SF_ORM_MYSQL`、`SF_COMPAT_MONGO`、`SF_COMPAT_WEB_DB`，终验三个都打开，所以这些用例没有跳过。
 
-- [ ] **T10 · P1：把全局状态收归应用上下文。** 将 ClassPool、模型树、模型注册表、Guice 模块列表、增强记录与资源关闭动作纳入有明确所有者的 `ApplicationContext`/`EnhancementContext`。重点处理 `ModelClass.ROOTS`、`CTModelClasses`、`JPA.models` 和 `ServiceFramwork` 的静态集合。先支持单应用正确启停，再验证两个独立应用上下文；现有静态 API 可通过默认上下文逐步兼容。验收：重复初始化不累积旧模型或模块，关闭后释放连接/线程/上下文引用；若采用独立应用加载器，释放句柄后再检查加载器回收及 Metaspace 走势。[S3][S7][S10]
+  证据：`ApplicationLifecycleTest`（无数据库的 HTTP 过滤器、Service/Util 注入、端口关闭）、`ApplicationDatabaseTest` 9/9、`OrmMysqlBusinessTest` 6/6、`QuillImportCompileTest`、`MongoEnhancementLiveTest` 18/18、dispatcher ScalaTest 22/22。Connector/J 是 5.1.6，Mongo Java 驱动是 3.12.14。
 
-- [ ] **T11 · P1：确定 ActiveORM 的单一维护主线。** 先以框架内实际使用版本修复和建立测试，再决定把共用 ORM 核心抽成可独立发布的模块，或让独立仓库按明确版本同步。当前独立仓库仍声明 Java 6 编译目标与更老的 Hibernate，不能直接当成已满足本轮兼容目标的替代品。验收：增强实现有一个权威来源，两种使用方式共享回归契约，依赖检查阻止同包同名的两份 ORM 实现同时进入同一 classpath。[S11]
+  边界：没有 Thrift 或 Dubbo 流量。只开 HTTP、只关数据库的单元跑法仍会跳过实库用例；那种跳过不是这一条的验收。
 
-- [ ] **T12 · P1：补足增强诊断和成本指标。** 为每个类记录原始字节摘要、规则/配置/模式元数据版本、加载器归属、生成方法数量、耗时、跳过或失败原因。按需输出增强前后差异、生成源码片段或 class 文件，报告存于应用自己的诊断目录。验收：一次启动能查明某个方法由哪条规则生成、为什么未生成、失败在哪个阶段；关闭诊断时开销可测且受控。
+- [x] **T08 · P1：增加增强规则与执行计划。** 规则有 id、版本、`requires` 和 `before`。`EnhancementPlan.compile` 在改类之前检查重复 id、未知依赖和环。规则不调用 `toClass()`。同一个 context 里同一个类名的第二次 `apply` 是 `CONFLICT`。
 
-**第三批：增加业务开发能力并优化性能**
+  证据：`EnhancementPlanTest` 10/10，`OrmRulePlanTest` 3/3。这些测试里规则不定义类。发现方式是显式 `EnhancementRules.register`，不是 ServiceLoader。
 
-- [ ] **T13 · P2：提供编译器和 IDE 可见的生成 API。** 优先根据模型/查询元数据在构建期生成伴生查询类或 Repository 接口，例如 `OrderQueries.findByStatus(...)`；类型信息明确，运行时生成与构建期生成共用规则。注解处理器适合生成新源文件，不能直接视为给原 Model 原地添加方法的机制；若需要原 Model 上的静态生成方法，必须设计业务调用方编译之前的构建阶段。验收：普通 Java/Scala 业务源码可直接编译调用，IDE 可补全，运行结果与声明一致。
+- [x] **T09 · P1：统一模块注册和启停契约。** `FrameworkExtension` 声明 id、能力、依赖、`validate`、`register`、`start` 和 `close`。核心按依赖排序，并按反序关闭。配置错误在打开端口之前失败。
 
-- [ ] **T14 · P2：按声明扩展查询与映射能力。** 先支持实际需要的组合条件、排序/分页、DTO 映射或自定义校验。使用显式查询声明或有限命名规则，检查字段/类型/运算符并绑定查询参数。限制单类生成的方法数量与字节码体积，避免枚举所有字段组合。验收：一组真实业务查询能减少重复代码，结果与手写实现相同，错误声明在启动或构建时准确报错。
+  证据：`disabledExtensionsAreNotLoadedFromARefusingLoader` 和 `disabledMissingClassStillStarts` 在 18 个生命周期测试里面。禁用名单上的实现类没有被 `Class.forName`。`enabled(...)` 只在类已经加载之后调用，所以它自己避免不了加载。
 
-- [ ] **T15 · P2：根据测量优化热点。** 先分别测 classpath 扫描、数据库元数据读取、增强、类定义、容器初始化和业务调用。按结果选择复用扫描/模式快照、减少重复生成、缓存已解析调用入口或生成直接访问器。缓存键包含原始类、规则与配置版本、数据库模式摘要和目标环境，并限定所属应用上下文。验收：报告冷启动、重复启动、热调用及内存相对基线的变化；依赖或模式变化不会误用旧产物。
+  边界：验收的是禁用实现类、不连接、不扫描。没有从 Web 的父 classpath 上删掉 JPA、JAXB、activation 或 SLF4J 的 API jar，审计仍然解析它们。RefusingLoader 只拒绝子加载器上的 ORM/Mongo 实现类名，而且当时 HTTP、Thrift、Dubbo 都是关的。
 
-**JDK 8 / JDK 17 如何同时支持**
+- [x] **T10 · P1：把全局状态收归应用上下文。** `EnhancementContext` 和 `ApplicationContext` 拥有 ClassPool、模型、Guice 模块、增强记录和关闭动作。`ServiceFramwork` 上的静态字段只别名默认应用。两个独立加载器互不改写。关闭后可以再启动一个新加载器。同一个活着的加载器不能再定义。
 
-公共接口和业务增强规则保持 Java 8 基线，把类定义操作集中到适配层。Scala 二进制版本仍按自己的 artifact 区分；“同时兼容两个 JDK”不等于 Scala 2.11/2.12/2.13 共用一个二进制包。
+  证据：`ApplicationLifecycleTest`、`OrmContextIsolationTest` 7/7、`DefaultContextCloseTest`、`MongoEnhancementLiveTest`。显式禁用或空的上下文不会借另一个应用的池。没有 scope 时才回到默认应用。
 
-本次会话已核对 Javassist `3.30.2-GA`：发行包的 426 个普通 class 均为版本 52，官方加载实现保留旧 JDK 路径，并在较新 JDK 上利用同包锚点取得 Lookup。它可作为本轮候选基线；依赖升级与加载入口迁移必须一起验收。[官方对应版本实现](https://github.com/jboss-javassist/javassist/blob/rel_3_30_2_ga/src/main/javassist/util/proxy/DefineClassHelper.java)
+  边界：弱引用测试观察到加载器可以被回收。阶段 JSON 里的 Metaspace 不是卸载证明。没有热替换。
 
-同包锚点方案使用的是四参数 `ClassPool.toClass` 入口，示意如下：
+- [x] **T11 · P1：确定 ActiveORM 的单一维护主线。** 权威实现是本仓库的 `serviceframework-orm`。框架内的 ORM 用法和“把同一个框架 ORM artifact 单独放上 classpath”共用这一份回归契约。依赖审计拒绝两份同名 `net.csdn.jpa` class。
 
-```java
-Class<?> defined = pool.toClass(
-    enhancedClass,
-    packageAnchor,
-    packageAnchor.getClassLoader(),
-    packageAnchor.getProtectionDomain()
-);
-```
+  证据：Web classpath 上的 `net/csdn/jpa` 实现是安装好的 `serviceframework-orm_2.13-2.0.9.jar`。ORM 模块的 `target/classes` 和 `target/test-classes` 类名不相交，`duplicate_key_classes` 为 0。没有独立 ActiveORM artifact。
 
-`packageAnchor` 必须是目标加载器内、与目标类同包的另一个已加载类。不能为获取锚点而先加载待增强目标本身。可以由应用 starter 或构建工具提供每个受增强包的锚点；获取不到合法锚点时明确诊断，并采用预先设计的构建期增强或应用加载器方案。JDK 17 还必须满足对应模块访问条件；不能把 `toClass(neighbor)`、`toClass(Lookup)` 单独视为在 JDK 8 上也能无条件直接执行的 API。
+  边界：外部 `active_orm` 仓库没有移植，也没有在这次矩阵里测试。
 
-本次会话的独立探针已验证：该四参数入口在 JDK 17.0.20.1 上加载 Java 8 格式生成类，调用同包非 public 方法得到 42，加载器身份正确，未使用额外模块开放参数。这验证了一个加载方案；本次尚未运行 JDK 8 实机探针，也没有据此宣称整个框架已通过双 JDK 验收。
+- [x] **T12 · P1：补足增强诊断和成本指标。** 打开诊断时记录原始字节摘要、规则、版本、加载器、方法变化、耗时和失败阶段。诊断关闭且没有 `EnhancementObserver` 时，这些计数保持 0。只关诊断、另有观察器时，原始字节仍会交给观察器，但 hash、字节读取计数、方法检查和写盘仍是 0。`applyReason` / `skipReason` 只在诊断打开时调用。class 文件和生成源码都要另开开关。报告写到调用方给的目录。
 
-| 验收层次 | JDK 8 | JDK 17 | 通过条件 |
-| --- | --- | --- | --- |
-| 构建与依赖 | 用 Java 8 API 基线检查并运行构建/测试 | 编译时限制 Java 8 API，检查完整解析依赖 | 产物及实际可见依赖满足 Java 8 基线；正确处理 multi-release JAR 与 module-info |
-| 相同产物运行 | 加载并调用 | 加载并调用 | 使用同一批发布 JAR，生成行为及结果一致 |
-| 字节码边界 | 重载、final、多级继承、注解、泛型、初始值、重复增强 | 同左，另检查模块访问和加载器归属 | 实际 JVM 校验与调用断言通过 |
-| 打包与扫描 | 目录及普通 JAR | 目录及普通 JAR | 扫描集合、映射和生成结果一致；嵌套 JAR 等额外包装形式单独声明支持 |
-| ORM/Mongo/Web | 实际支持的数据库与启动配置 | 同一组业务场景 | 事务、关联、alias、过滤器、依赖注入及服务器启停正确 |
-| 扩展和生命周期 | 新增规则/模块、重复初始化、关闭 | 同左 | 不重复定义类，不残留旧上下文，失败状态可诊断 |
+  证据：冷启动和重复启动的 JSON 是 `diagnostics: off`，并且 `observer` 为 false。这组基线没有观察器。基准会在 hash、字节读取、方法检查或写盘不为 0 时中止。那组 0 是零捕获，不是“有观察器也不会读类字节”。两个 JDK 的冒烟写出真实的增强前后 class，没有 `sources/`。`WebRecord`、`WebNote`、`BothController` 的六个哈希跨 JDK 一致。`report.txt` 没有 `password=`、`jdbc:` 或 `SF_COMPAT`。schema 摘要在 `ALTER` 之后改变，调用方修订 `config-20260924` 保留。说明在 [enhancement-diagnostics.md](enhancement-diagnostics.md)。
 
-首批支持口径以当前 classpath 部署方式为准。JPMS module-path 部署若要支持，应另加模块可读性/开放性用例。当前 Scala 2.11/2.12 profiles 使用较老版本，需要各自的工具链与依赖核验，不能由默认 Scala 2.13 测试通过推断它们也通过。
+- [x] **T13 · P2：提供编译器和 IDE 可见的生成 API。** 构建期生成同包的 `模型名Queries`，不往模型类里插方法。处理器要显式 `-processor net.csdn.jpa.query.ServiceFrameworkQueryProcessor`。IDE 把 `-s` 目录标成 generated sources。
 
-**扩展机制具体怎样设计**
+  证据：`QueryApiRegressionTest` 11/11，含 Java 调用方、Scala 调用方和非法声明。没有因为缺源码树而跳过。见 [generated-query-api.md](generated-query-api.md)。
 
-建议沿着现有增强器逐步增加以下契约；这些是拟新增的设计名称，尚未实现。
+- [x] **T14 · P2：按声明扩展查询。** 已落地的是有界 AND、排序和分页，字段、运算符和参数在编译期检查，运行期再复核。显式 `EntityManager` 和当前上下文两种重载都有。错误声明让编译失败。
 
-| 契约 | 负责什么 | 应保持的边界 |
-| --- | --- | --- |
-| `EnhancementRule` | 匹配元数据、声明需要的规则、提出字段/方法/注解修改 | 不定义 JVM 类，不注册运行实例 |
-| `EnhancementContext` | 提供类层级、原始字节、配置/模式快照、ClassPool、加载策略与诊断 | 生命周期归一个应用上下文，规则之间不通过全局静态变量通信 |
-| `EnhancementPlan` / `EnhancementResult` | 保存修改计划、冲突检查、规则版本、输入/输出摘要和诊断 | 顺序确定，同一输入可解释、可复核；执行前先检查完整计划 |
-| `ClassDefiner` | 在指定环境中定义完成校验的类 | 统一处理 JDK 差异、包/模块条件和重复定义问题 |
-| `FrameworkExtension` | 贡献规则、Guice 绑定、验证器、元数据/数据库适配器及启停钩子 | 先校验依赖，统一注册和关闭，保留已有配置接入方式 |
+  证据：同一套 `QueryApiRegressionTest`。这次运行不需要全局的所有权覆盖。
 
-一条完整流程应为：
+  边界：没有 DTO、任意 JPQL，或枚举全部字段组合。
 
-`扫描原始 class → 建立类型/关系与模式元数据 → 生成增强计划 → 检查冲突与顺序 → 生成并校验字节码 → 按依赖顺序定义类 → 注册 ORM/IOC/路由 → 启动服务`
+- [x] **T15 · P2：根据测量处理热点。** 验收的是测出冷启动、重复启动和热调用，扫描的逻辑流峰值在更早的夹具里从 25 降到 1，以及没有引入增强结果缓存。原条目里列出的模式快照缓存、调用入口缓存和直接访问器没有做。依赖或模式变化不会碰到一份不存在的旧增强缓存。
 
-这样，字段、查询、关联和 Controller 扩展都经过同一个计划与校验过程。新增规则可以通过显式注册或 Java SPI 发现；SPI 实现本身不得为了匹配对象而提前加载应用目标类。执行顺序采用依赖关系及稳定排序，缺少前置规则或存在环时在启动前失败。
+  证据：`dev/measure-framework-phases.sh --cold 3 --warmup 1 --repeated 5 --hot 20` 退出码 0。JDK 8 冷启动墙钟 p50 4360502596 纳秒，JDK 17 是 3835738867 纳秒。这是热的操作系统和热的数据库，n 很小。扫描 25→1 的记录在 `/tmp/sf-t12-bench-verified/enhancement-costs.json`，这次矩阵没有重测，`startupSpeedupClaimed` 是 false。数字和限制在迁移说明里。
 
-例如，新增一类组合查询可以只提交查询声明、规则实现与构建期 API 生成器，共用已有 ORM/Mongo 元数据和加载入口；新增数据库适配则把当前 DBInfo 的元数据读取及 DBType 的类型映射整理成可替换契约，通过模块注册接入，保留现有 MySQL 路径的回归测试。
+**和当初草案不同的地方**
 
-增强中新增字段、方法和关联结构，应在类首次定义前完成。第一阶段的扩展模式是“安装扩展后重启应用”。如果后续确实需要运行期切换，单独设计应用加载器与上下文替换、请求排空和旧引用释放，并重新验收类型共享边界。JVM 类定义不可回滚，因此生成计划可在定义前撤销，但定义阶段失败后不能声称已经恢复为原来的类。
+类定义不是一份在两个 JDK 上都调用的四参数示意。Java 8 运行时只调用 `CtClass.toClass(ClassLoader, ProtectionDomain)`；更近的 JDK 才把锚点当作 neighbor 传给 `ClassPool.toClass`。锚点和“拒绝命名模块”在两条路径之前都执行。实现见 `ClassDefiner`，不要把更早的探针片段当成现在的代码。
 
-**关键依据及验证边界**
+扩展契约已经是 `EnhancementRule`、`EnhancementContext`、`EnhancementPlan`、`ClassDefiner` 和 `FrameworkExtension`。安装方式是启动前 `addExtension`、配置类名，或各模块的 `addEnhancementRule` / `registerRule`。生效方式是重新启动。没有热替换。
 
-已有独立复现确认了四类与本范围直接相关的问题：旧加载入口在 JDK 17 默认参数下失败；setter 的其他重载被删除；继承 final getter 导致类定义失败；字段属性跨常量池复制后，探针常量值变为 null。字段复制结论是工具层反例，尚未证明现有业务数据已损坏。
-
-本轮源码复核还发现扫描自身递归、URL 字符串身份比较、继承遍历和模型短名称注册等具体风险，已列入 T05；这些尚未新增运行探针或数据库验收。静态 ClassPool 和注册集合说明需要明确生命周期，不能仅凭静态字段就宣称已发生内存泄漏；`CtClass.detach()` 也不等于 JVM 类已经卸载。
-
-现有手册记载共 1032 条测试，其中新增 1020 条来自三组参数化字节码测试，主要覆盖命名、签名和生成片段。手册里的历史 JDK 8/17 测试记录保留为历史依据；本轮没有重跑整套测试，真实应用兼容结论按 T01/T07 的验收标准补齐。
-
-本机工作区快照：ServiceFramework `ded2363`、active_orm `35e40ac`、common-utils `66d35ec`；存在工作区修改，HEAD 不等于全部被读源码。报告编写没有修改框架实现、依赖配置或运行服务。
+更早的 common-only 500 测试和 Javassist 3.30.2 对照，只作为历史基线写在迁移说明的最后一节。当前全框架数字是每个 JDK 1212，不是 500，也不是手册里更早的 1032。
 
 **源码索引**
 
-- **[S1] 模块和依赖声明：** [父 POM](/Users/williammacintel/projects/ServiceFramework/pom.xml:50)、[common POM](/Users/williammacintel/projects/ServiceFramework/serviceframework-common/pom.xml:46)、[ORM POM](/Users/williammacintel/projects/ServiceFramework/serviceframework-orm/pom.xml:16)。
-- **[S2] 公共增强操作：** [DynamicBytecode](/Users/williammacintel/projects/ServiceFramework/serviceframework-common/src/main/java/net/csdn/common/enhancer/DynamicBytecode.java:152)。
-- **[S3] ORM 增强与加载：** [JPAEnhancer](/Users/williammacintel/projects/ServiceFramework/serviceframework-orm/src/main/java/net/csdn/jpa/enhancer/JPAEnhancer.java:66)、[JPA.JPAModelLoader](/Users/williammacintel/projects/ServiceFramework/serviceframework-orm/src/main/java/net/csdn/jpa/JPA.java:354)、[EntityEnhancer](/Users/williammacintel/projects/ServiceFramework/serviceframework-orm/src/main/java/net/csdn/jpa/enhancer/EntityEnhancer.java:44)、[ClassMethodEnhancer](/Users/williammacintel/projects/ServiceFramework/serviceframework-orm/src/main/java/net/csdn/jpa/enhancer/ClassMethodEnhancer.java:73)。
-- **[S4] 启动和 IOC：** [Bootstrap](/Users/williammacintel/projects/ServiceFramework/serviceframework-web/src/main/java/net/csdn/bootstrap/Bootstrap.java:62)、[ModuelLoader](/Users/williammacintel/projects/ServiceFramework/serviceframework-web/src/main/java/net/csdn/bootstrap/loader/impl/ModuelLoader.java:29)。
-- **[S5] Mongo 增强：** [MongoEnhancer](/Users/williammacintel/projects/ServiceFramework/serviceframework-mongo/src/main/java/net/csdn/mongo/enhancer/MongoEnhancer.java:90)。
-- **[S6] Controller 增强：** [FilterEnhancer](/Users/williammacintel/projects/ServiceFramework/serviceframework-web/src/main/java/net/csdn/filter/FilterEnhancer.java:39)。
-- **[S7] 扫描和模型元数据：** [DefaultScanService](/Users/williammacintel/projects/ServiceFramework/serviceframework-common/src/main/java/net/csdn/common/scan/DefaultScanService.java:32)、[ModelClass](/Users/williammacintel/projects/ServiceFramework/serviceframework-orm/src/main/java/net/csdn/jpa/enhancer/ModelClass.java:25)。
-- **[S8] 实际使用的扫描依赖：** [common-utils ClassPath](/Users/williammacintel/projects/common-utils/src/main/java/tech/mlsql/common/utils/reflect/ClassPath.java:434)。当前实现已有系统加载器的 `java.class.path` 路径；目录/JAR 包装及框架包装层仍需按 T05 验证。
-- **[S9] 已有测试及历史说明：** [使用手册](/Users/williammacintel/projects/ServiceFramework/docs/ServiceFramework-Usage-Manual.md:378)、[common 测试](/Users/williammacintel/projects/ServiceFramework/serviceframework-common/src/test/java/net/csdn/common/enhancer/DynamicBytecodeConventionTest.java)、[ORM 测试](/Users/williammacintel/projects/ServiceFramework/serviceframework-orm/src/test/java/net/csdn/jpa/enhancer/DynamicJpaFinderBytecodeTest.java)、[Mongo 测试](/Users/williammacintel/projects/ServiceFramework/serviceframework-mongo/src/test/java/net/csdn/mongo/enhancer/DynamicMongoFinderBytecodeTest.java)。
-- **[S10] 扩展注册与共享状态：** [ServiceFramwork](/Users/williammacintel/projects/ServiceFramework/serviceframework-web/src/main/java/net/csdn/ServiceFramwork.java:19)、[StrategyDispatcher](/Users/williammacintel/projects/ServiceFramework/serviceframework-dispatcher/src/main/java/serviceframework/dispatcher/StrategyDispatcher.scala:146)。
-- **[S11] 独立 ORM 仓库：** [ActiveORM POM](/Users/williammacintel/projects/active_orm/pom.xml)、[ActiveORM JPA](/Users/williammacintel/projects/active_orm/src/main/java/net/csdn/jpa/JPA.java)。
-
-第一批完成后再推进 T08–T12 的扩展基础，随后以 T13–T15 交付可编译调用的新能力及可测量的收益。上述 TODO 均保持未完成状态，直至对应源码改造与验收实际完成。
+- 父 POM：[pom.xml](../pom.xml)
+- 类定义：[ClassDefiner](../serviceframework-common/src/main/java/net/csdn/common/enhancer/ClassDefiner.java)、[DynamicBytecode](../serviceframework-common/src/main/java/net/csdn/common/enhancer/DynamicBytecode.java)
+- ORM：[JPA](../serviceframework-orm/src/main/java/net/csdn/jpa/JPA.java)、[JPAEnhancer](../serviceframework-orm/src/main/java/net/csdn/jpa/enhancer/JPAEnhancer.java)、[EntityEnhancer](../serviceframework-orm/src/main/java/net/csdn/jpa/enhancer/EntityEnhancer.java)、[ClassMethodEnhancer](../serviceframework-orm/src/main/java/net/csdn/jpa/enhancer/ClassMethodEnhancer.java)、[ModelClass](../serviceframework-orm/src/main/java/net/csdn/jpa/enhancer/ModelClass.java)
+- 启动：[Bootstrap](../serviceframework-web/src/main/java/net/csdn/bootstrap/Bootstrap.java)、[ApplicationContext](../serviceframework-web/src/main/java/net/csdn/bootstrap/ApplicationContext.java)、[ModuelLoader](../serviceframework-web/src/main/java/net/csdn/bootstrap/loader/impl/ModuelLoader.java)、[ServiceFramwork](../serviceframework-web/src/main/java/net/csdn/ServiceFramwork.java)
+- Mongo：[MongoEnhancer](../serviceframework-mongo/src/main/java/net/csdn/mongo/enhancer/MongoEnhancer.java)
+- Controller：[FilterEnhancer](../serviceframework-web/src/main/java/net/csdn/filter/FilterEnhancer.java)
+- 扫描：[DefaultScanService](../serviceframework-common/src/main/java/net/csdn/common/scan/DefaultScanService.java)。它调用依赖里的 `tech.mlsql.common.utils.reflect.ClassPath`，那个源码不在本仓库。
+- Dispatcher：[StrategyDispatcher](../serviceframework-dispatcher/src/main/java/serviceframework/dispatcher/StrategyDispatcher.scala)、[ServiceInj](../serviceframework-dispatcher/src/main/java/serviceframework/dispatcher/ServiceInj.scala)
+- 参数化测试：[DynamicBytecodeConventionTest](../serviceframework-common/src/test/java/net/csdn/common/enhancer/DynamicBytecodeConventionTest.java)、[DynamicJpaFinderBytecodeTest](../serviceframework-orm/src/test/java/net/csdn/jpa/enhancer/DynamicJpaFinderBytecodeTest.java)、[DynamicMongoFinderBytecodeTest](../serviceframework-mongo/src/test/java/net/csdn/mongo/enhancer/DynamicMongoFinderBytecodeTest.java)

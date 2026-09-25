@@ -16,7 +16,7 @@ object Test extends net.csdn.bootstrap.Application {
     ServiceFramwork.disableHTTP()
     ServiceFramwork.disableThrift()
     net.csdn.bootstrap.Application.main(args)
-    val transport = ServiceFramwork.injector.getInstance(classOf[HttpTransportService])
+    val transport = ServiceFramwork.currentInjector().getInstance(classOf[HttpTransportService])
     Range(0, 100000).foreach {
       f =>
         transport.http(new Url("http://127.0.0.1:9002/say/hello"), null, RestRequest.Method.GET)

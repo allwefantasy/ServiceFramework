@@ -12,13 +12,9 @@ written by  java language according to the Model-View-Controller(MVC) pattern.
 clone and build:
 
     git clone git@github.com:allwefantasy/ServiceFramework.git
-    mvn install -Pscala-2.11
+    mvn install
 
-If you wanna switch scala version,use follow command:
-
-    ./dev/change-version-to-2.10.sh
-
-however,we realy recommend you clone source and using 'maven deploy -DskipTests' command to upload jar to your private maven repository.
+The accepted JDK 8 / JDK 17 matrix uses the default Scala 2.13.16 classpath build. The `scala-2.11` and `scala-2.12` profiles were not part of that run. Local JDK paths are in [docs/jdk-compatibility.md](docs/jdk-compatibility.md). The bytecode migration guide is [docs/serviceframework-bytecode-migration.md](docs/serviceframework-bytecode-migration.md).
 
 make sure config/application.yml,config/logging.yml are present in your project root.
 

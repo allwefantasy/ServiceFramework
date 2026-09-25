@@ -1,13 +1,16 @@
 package net.csdn.modules.http;
 
-import net.csdn.common.exception.ExceptionHandler;
+import net.csdn.common.exception.RenderFinish;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * User: WilliamZhu
- * Date: 12-12-4
- * Time: 下午9:00
+ * One around filter. {@link #getNext()} returns the next node, not this node.
+ * The last node's action swallows {@link RenderFinish} so code after
+ * {@code next.invoke()} still runs. Every other throwable propagates to that
+ * around method and then to the caller. This class does not render or log
+ * the throwable away.
  */
 public class WowAroundFilter {
     private WowAroundFilter next;
@@ -22,28 +25,33 @@ public class WowAroundFilter {
     }
 
     public void invoke() throws Exception {
-        try {
-            WowAroundFilter wowAroundFilter = this.next;
-            if (wowAroundFilter == null) {
-                wowAroundFilter = new WowAroundFilter(null, action, applicationController) {
-                    @Override
-                    public void invoke() throws Exception {
-                        try {
-                            WowAroundFilter.this.action.invoke(applicationController);
-                        } catch (Exception e) {
-                            ExceptionHandler.renderHandle(e);
-                        }
-                    }
-                };
-
-            }
-            currentFilter.setAccessible(true);
-            currentFilter.invoke(applicationController, wowAroundFilter);
-
-        } catch (Exception e) {
-            ExceptionHandler.renderHandle(e);
+        if (currentFilter == null) {
+            invokeAction();
+            return;
         }
+        WowAroundFilter following = this.next;
+        if (following == null) {
+            following = new WowAroundFilter(null, action, applicationController);
+        }
+        currentFilter.setAccessible(true);
+        try {
+            currentFilter.invoke(applicationController, following);
+        } catch (InvocationTargetException e) {
+            throw propagate(e);
+        }
+    }
 
+    private void invokeAction() throws Exception {
+        action.setAccessible(true);
+        try {
+            action.invoke(applicationController);
+        } catch (InvocationTargetException e) {
+            Throwable target = root(e);
+            if (target instanceof RenderFinish) {
+                return;
+            }
+            throw propagate(e);
+        }
     }
 
     public void setNext(WowAroundFilter next) {
@@ -51,6 +59,29 @@ public class WowAroundFilter {
     }
 
     public WowAroundFilter getNext() {
-        return this;
+        return next;
+    }
+
+    private static Exception propagate(InvocationTargetException thrown) throws Exception {
+        Throwable target = root(thrown);
+        if (target instanceof Error) {
+            throw (Error) target;
+        }
+        if (target instanceof Exception) {
+            throw (Exception) target;
+        }
+        throw thrown;
+    }
+
+    private static Throwable root(Throwable thrown) {
+        Throwable current = thrown;
+        while (current instanceof InvocationTargetException) {
+            Throwable target = ((InvocationTargetException) current).getTargetException();
+            if (target == null) {
+                break;
+            }
+            current = target;
+        }
+        return current;
     }
 }

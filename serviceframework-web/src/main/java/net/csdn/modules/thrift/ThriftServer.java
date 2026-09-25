@@ -41,7 +41,7 @@ public class ThriftServer {
     public ThriftServer(Settings settings) {
         this.settings = settings;
         boolean disableThrift = settings.getAsBoolean("thrift.disable", false);
-        if (disableThrift || ServiceFramwork.mode.equals(ServiceFramwork.Mode.test)) return;
+        if (disableThrift) return;
         Map<String, String> services = settings.getByPrefix(prefix + ".").getAsMap();
         Map<String, Map<String, String>> newServices = new HashMap<String, Map<String, String>>();
         for (Map.Entry<String, String> entry : services.entrySet()) {

@@ -23,13 +23,13 @@ public class DefaultHttpStartProcessor implements HttpStartProcessor {
 
     @Override
     public void process(Settings settings, HttpServletRequest request, HttpServletResponse response, ProcessInfo processInfo) {
-        disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+        disableMysql = settings.getAsBoolean(ServiceFramwork.currentMode() + ".datasources.mysql.disable", false);
         startORM(disableMysql);
-        ServiceFramwork.injector.getInstance(API.class).qpsIncrement(processInfo.method);
+        ServiceFramwork.currentInjector().getInstance(API.class).qpsIncrement(processInfo.method);
 
         boolean qpsLimitEnable = settings.getAsBoolean("qpslimit.enable", false);
         if (qpsLimitEnable) {
-            QpsManager qpsManager = ServiceFramwork.injector.getInstance(QpsManager.class);
+            QpsManager qpsManager = ServiceFramwork.currentInjector().getInstance(QpsManager.class);
             if (qpsManager.check(request.getRequestURI())) {
                 logger.error("qps 限流");
                 throw new RuntimeException("qps-overflow");

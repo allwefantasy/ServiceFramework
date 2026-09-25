@@ -1,11 +1,12 @@
 package net.csdn.junit;
 
 import com.google.inject.Injector;
-import javassist.CtClass;
 import net.csdn.ServiceFramwork;
+import net.csdn.bootstrap.Bootstrap;
 import net.csdn.jpa.JPA;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -29,21 +30,43 @@ public class IocTest {
     }
 
     public static void initEnv(Class classLoader) {
+        injector = null;
         try {
             ServiceFramwork.mode = ServiceFramwork.Mode.test;
             ServiceFramwork.scanService.setLoader(classLoader);
-            CtClass ctClass = ServiceFramwork.classPool.get("net.csdn.bootstrap.Bootstrap");
-            if (checkClassLoaded(ctClass.getName())) {
-                return;
-            }
-            //加载Guice容器
-            Method method = ctClass.toClass().getDeclaredMethod("configureSystem");
-            method.setAccessible(true);
-            method.invoke(null);
-            injector = ServiceFramwork.injector;
-        } catch (Exception e) {
-            e.printStackTrace();
+            ServiceFramwork.disableHTTP();
+            ServiceFramwork.disableThrift();
+            ServiceFramwork.disableDubbo();
+            ServiceFramwork.enableNoThreadJoin();
+            Bootstrap.configureSystem();
+            injector = ServiceFramwork.currentInjector();
+        } catch (Throwable failure) {
+            injector = null;
+            throw propagate(failure);
         }
+    }
+
+    private static RuntimeException propagate(Throwable failure) {
+        Throwable cause = unwrap(failure);
+        if (cause instanceof RuntimeException) {
+            throw (RuntimeException) cause;
+        }
+        if (cause instanceof Error) {
+            throw (Error) cause;
+        }
+        String message = cause.getMessage();
+        if (message == null || message.length() == 0) {
+            message = cause.getClass().getName();
+        }
+        throw new IllegalStateException(message, cause);
+    }
+
+    private static Throwable unwrap(Throwable failure) {
+        Throwable cause = failure;
+        while (cause instanceof InvocationTargetException && cause.getCause() != null) {
+            cause = cause.getCause();
+        }
+        return cause;
     }
 
     public void dbCommit() {

@@ -5,7 +5,11 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import net.csdn.common.collections.WowCollections;
+import net.csdn.common.enhancer.EnhancementFailure;
+import net.csdn.common.enhancer.EnhancementRuleIds;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -270,10 +274,8 @@ public class Criteria {
     }
 
     private void init() {
-        if (kclass != null) {
-            collection = (DBCollection) staticMethod(kclass, "collection");
-        }
-        if (collection == null && !isEmpty(tableName)) collection = Document.mongoMongo.collection(tableName);
+        // collection() reads the active context on each call. Caching here would
+        // keep the client that happened to be current at construction.
     }
 
     public List fetch() {
@@ -378,7 +380,50 @@ public class Criteria {
     private DBCollection collection;
 
     public DBCollection collection() {
+        if (kclass != null) {
+            DBCollection live = invokeModelCollection(kclass);
+            if (live != null) {
+                collection = live;
+                return live;
+            }
+        }
+        if (!isEmpty(tableName)) {
+            collection = MongoMongo.resolve().collection(tableName);
+            return collection;
+        }
         return collection;
+    }
+
+    private static DBCollection invokeModelCollection(Class<Document> type) {
+        try {
+            Method method = type.getMethod("collection");
+            return (DBCollection) method.invoke(null);
+        } catch (InvocationTargetException thrown) {
+            Throwable cause = thrown.getCause() == null ? thrown : thrown.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            if (cause instanceof Error) {
+                throw (Error) cause;
+            }
+            throw new EnhancementFailure(
+                    EnhancementFailure.Category.LIFECYCLE,
+                    type.getName(),
+                    EnhancementRuleIds.MONGO_DOCUMENT,
+                    "collection",
+                    "model collection failed",
+                    cause instanceof Exception ? (Exception) cause : new RuntimeException(cause));
+        } catch (IllegalAccessException thrown) {
+            throw new EnhancementFailure(
+                    EnhancementFailure.Category.LIFECYCLE,
+                    type.getName(),
+                    EnhancementRuleIds.MONGO_DOCUMENT,
+                    "collection",
+                    "model collection is not accessible",
+                    thrown);
+        } catch (NoSuchMethodException thrown) {
+            return null;
+        }
     }
 
     public Criteria(Class<Document> kclass) {

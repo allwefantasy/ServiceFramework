@@ -3,7 +3,7 @@ package net.csdn.bootstrap.loader.impl;
 import com.google.inject.AbstractModule;
 import com.google.inject.Module;
 import com.google.inject.Singleton;
-import net.csdn.ServiceFramwork;
+import net.csdn.bootstrap.ApplicationContext;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.scan.ScanModule;
 import net.csdn.common.settings.Settings;
@@ -28,6 +28,7 @@ import java.util.List;
 public class ModuelLoader implements Loader {
     @Override
     public void load(final Settings settings) {
+        final ApplicationContext application = ApplicationContext.require();
         final List<Module> moduleList = new ArrayList<Module>();
         moduleList.add(new SettingsModule(settings));
         moduleList.add(new ThreadPoolModule());
@@ -35,18 +36,18 @@ public class ModuelLoader implements Loader {
         moduleList.add(new HttpModule());
         moduleList.add(new ScanModule());
         moduleList.add(new ControllerModule());
-        boolean disableRedis = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.redis.disable", true);
+        boolean disableRedis = settings.getAsBoolean(application.mode().name() + ".datasources.redis.disable", true);
         if (!disableRedis) {
             moduleList.add(new CacheModule());
         }
         moduleList.add(new AppCacheModule());
-        boolean disableMysql = settings.getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+        boolean disableMysql = settings.getAsBoolean(application.mode().name() + ".datasources.mysql.disable", false);
 
         if (!disableMysql) {
             moduleList.add(new AbstractModule() {
                 @Override
                 protected void configure() {
-                    bind(DBInfo.class).in(Singleton.class);
+                    bind(DBInfo.class).toInstance(new DBInfo(settings));
                 }
             });
             moduleList.add(new AbstractModule() {
@@ -55,15 +56,21 @@ public class ModuelLoader implements Loader {
                     String clzzName = settings.get("type_mapping", "net.csdn.jpa.type.impl.MysqlType");
                     final Class czz;
                     try {
-                        czz = Class.forName(clzzName);
+                        czz = Class.forName(clzzName, false, application.targetLoader());
                         bind(DBType.class).to(czz).in(Singleton.class);
                     } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                        throw new net.csdn.common.enhancer.EnhancementFailure(
+                                net.csdn.common.enhancer.EnhancementFailure.Category.CONFIGURATION,
+                                clzzName,
+                                "orm",
+                                "extension",
+                                "type_mapping class was not found",
+                                e);
                     }
                 }
             });
         }
-        moduleList.addAll(ServiceFramwork.modules);
-        ServiceFramwork.AllModules.addAll(moduleList);
+        moduleList.addAll(application.registeredModules());
+        application.allModules().addAll(moduleList);
     }
 }

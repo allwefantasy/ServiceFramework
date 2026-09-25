@@ -1,3 +1,5 @@
+# Legacy Log4j 1 document. LogConfigurator translates console / dailyRollingFile,
+# conversionPattern and datePattern into Log4j 2. It does not copy application settings.
 rootLogger: INFO,console,file
 
 

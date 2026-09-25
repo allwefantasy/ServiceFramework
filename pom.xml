@@ -66,6 +66,19 @@
         <scala.jline.version>2.11.0-M3</scala.jline.version>
         <jetty.version>9.2.16.v20160414</jetty.version>
         <maven.project.sourceRoots.warningsDisabled>true</maven.project.sourceRoots.warningsDisabled>
+        <!-- JDK 17 builds with the Java 8 API surface. Not source/target alone. -->
+        <maven.compiler.release>8</maven.compiler.release>
+        <!-- Override -Djavassist.version=3.30.2-GA to compare that runtime. -->
+        <javassist.version>3.33.0-GA</javassist.version>
+        <guice.version>5.1.0</guice.version>
+        <mysql.connector.version>5.1.6</mysql.connector.version>
+        <javax.persistence.api.version>2.2</javax.persistence.api.version>
+        <scalac.release.arg>-release:8</scalac.release.arg>
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <scala.maven.plugin.version>4.9.2</scala.maven.plugin.version>
+        <surefire.version>3.2.5</surefire.version>
+        <scalatest.plugin.version>2.2.0</scalatest.plugin.version>
+        <animal.sniffer.version>1.24</animal.sniffer.version>
     </properties>
 
     <repositories>
@@ -84,6 +97,7 @@
 
     <profiles>
 
+        <!-- UNVERIFIED. Not part of the JDK 8/17 baseline. 2.11.8 scalac has no -release. -->
         <profile>
             <id>scala-2.11</id>
             <properties>
@@ -92,8 +106,10 @@
                 <json4s.version>3.2.11</json4s.version>
                 <scalatest.version>3.2.3</scalatest.version>
                 <common-utils.version>0.3.9.2</common-utils.version>
+                <scalac.release.arg>-target:jvm-1.8</scalac.release.arg>
             </properties>
         </profile>
+        <!-- UNVERIFIED. Not part of the JDK 8/17 baseline. -->
         <profile>
             <id>scala-2.12</id>
             <properties>
@@ -141,6 +157,36 @@
         </profile>
 
     </profiles>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.javassist</groupId>
+                <artifactId>javassist</artifactId>
+                <version>${javassist.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.inject</groupId>
+                <artifactId>guice</artifactId>
+                <version>${guice.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.inject.extensions</groupId>
+                <artifactId>guice-assistedinject</artifactId>
+                <version>${guice.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.persistence</groupId>
+                <artifactId>javax.persistence-api</artifactId>
+                <version>${javax.persistence.api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.connector.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
@@ -279,11 +325,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.8.1</version>
+                <version>${surefire.version}</version>
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
+                    <useModulePath>false</useModulePath>
                 </configuration>
-
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -336,18 +382,23 @@
             </plugin>
 
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <version>2.15.2</version>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>${scala.maven.plugin.version}</version>
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
                     <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+                    <sourceDir>${project.build.sourceDirectory}</sourceDir>
+                    <testSourceDir>${project.basedir}/src/test/scala</testSourceDir>
+                    <compileOrder>Mixed</compileOrder>
+                    <sendJavaToScalac>true</sendJavaToScalac>
+                    <recompileMode>all</recompileMode>
+                    <release>${maven.compiler.release}</release>
+                    <displayCmd>true</displayCmd>
                     <args>
-                        <arg>
-                            -g:vars
-                        </arg>
+                        <arg>${scalac.release.arg}</arg>
+                        <arg>-g:vars</arg>
                     </args>
-                    <verbose>true</verbose>
                 </configuration>
                 <executions>
                     <execution>
@@ -370,15 +421,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <!--<compilerArgument>-parameters</compilerArgument>-->
-                    <compilerArgument>-g</compilerArgument>
-                    <verbose>true</verbose>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>${maven.compiler.release}</release>
+                    <debug>true</debug>
+                    <debuglevel>lines,vars,source</debuglevel>
                 </configuration>
-
             </plugin>
 
 
@@ -402,17 +450,40 @@
             <plugin>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest-maven-plugin</artifactId>
-                <version>1.0</version>
-                <!-- Note config is repeated in surefire config -->
+                <version>${scalatest.plugin.version}</version>
                 <configuration>
                     <skipTests>${skipTests}</skipTests>
-                    <tagsToExclude>streaming.core.NotToRunTag</tagsToExclude>
+                    <reportsDirectory>${project.build.directory}/scalatest-reports</reportsDirectory>
+                    <filereports>WDF TestSuite.txt</filereports>
                 </configuration>
                 <executions>
                     <execution>
                         <id>test</id>
+                        <phase>test</phase>
                         <goals>
                             <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- java18 is the Java 8 signature, not Java 18. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>animal-sniffer-maven-plugin</artifactId>
+                <version>${animal.sniffer.version}</version>
+                <configuration>
+                    <signature>
+                        <groupId>org.codehaus.mojo.signature</groupId>
+                        <artifactId>java18</artifactId>
+                        <version>1.0</version>
+                    </signature>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>check-java8-api</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>

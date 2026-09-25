@@ -3,10 +3,21 @@ package net.csdn.modules.persist.mysql;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
+import net.csdn.jpa.OrmSession;
 
 import javax.sql.DataSource;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static net.csdn.common.collections.WowCollections.join;
 
@@ -17,69 +28,146 @@ import static net.csdn.common.collections.WowCollections.join;
  */
 public class MysqlClient {
 
+    private static final MysqlClient CURRENT = new MysqlClient(true);
+
+    private final boolean bridge;
+    private final Map<String, MysqlClient> services;
     private DataSource dataSource = null;
-    private static Map<String, MysqlClient> mysqlManagers = new HashMap<String, MysqlClient>();
     private DataSourceManager dataSourceManager;
-
     private CSLogger logger = Loggers.getLogger(MysqlClient.class);
-
     private Settings settings;
 
+    /**
+     * Bridge to the current application client. It does not retain a datasource.
+     */
+    public static MysqlClient currentBridge() {
+        return CURRENT;
+    }
+
+    private MysqlClient(boolean bridge) {
+        this.bridge = bridge;
+        this.services = null;
+    }
 
     public MysqlClient settings(Settings settings) {
+        MysqlClient owner = facade();
+        if (owner != this) {
+            return owner.settings(settings);
+        }
         this.settings = settings;
         return this;
     }
 
-    public MysqlClient(DataSourceManager _dataSourceManager, Settings _settings) {
-        this.settings = _settings;
-        for (Map.Entry<String, DataSource> entry : _dataSourceManager.dataSourceMap().entrySet()) {
-            mysqlManagers.put(entry.getKey(), new MysqlClient(_dataSourceManager, settings, entry.getValue()));
+    public MysqlClient(DataSourceManager dataSourceManager, Settings settings) {
+        this.bridge = false;
+        this.settings = settings;
+        this.dataSourceManager = dataSourceManager;
+        this.services = new LinkedHashMap<String, MysqlClient>();
+        for (Map.Entry<String, DataSource> entry : dataSourceManager.dataSourceMap().entrySet()) {
+            this.services.put(entry.getKey(), new MysqlClient(dataSourceManager, settings, entry.getValue(), this.services));
         }
-
     }
 
-    public MysqlClient(DataSourceManager _dataSourceManager) {
-        for (Map.Entry<String, DataSource> entry : _dataSourceManager.dataSourceMap().entrySet()) {
-            mysqlManagers.put(entry.getKey(), new MysqlClient(_dataSourceManager, null, entry.getValue()));
-        }
-
+    public MysqlClient(DataSourceManager dataSourceManager) {
+        this(dataSourceManager, null);
     }
 
     public MysqlClient(DataSource dataSource) {
+        this.bridge = false;
         this.dataSource = dataSource;
+        this.services = null;
     }
 
-    private MysqlClient(DataSourceManager dataSourceManager, Settings settings, DataSource _dataSource) {
+    private MysqlClient(DataSourceManager dataSourceManager, Settings settings, DataSource dataSource, Map<String, MysqlClient> services) {
+        this.bridge = false;
         this.settings = settings;
-        this.dataSource = _dataSource;
+        this.dataSource = dataSource;
         this.dataSourceManager = dataSourceManager;
+        this.services = services;
     }
 
     public MysqlClient mysqlService(String dataSourceName) {
-        return mysqlManagers.get(dataSourceName);
+        MysqlClient owner = facade();
+        if (owner != this) {
+            return owner.mysqlService(dataSourceName);
+        }
+        if (services == null) {
+            return null;
+        }
+        return services.get(dataSourceName);
     }
 
-    public void addNewMySQL(String name, Settings properites) {
-        DataSource ds = dataSourceManager.buildPool(properites);
+    public void addNewMySQL(String name, Settings properties) {
+        MysqlClient owner = facade();
+        if (owner != this) {
+            owner.addNewMySQL(name, properties);
+            return;
+        }
+        if (dataSourceManager == null || services == null) {
+            throw new IllegalStateException("mysql registry is not available");
+        }
+        DataSource ds = dataSourceManager.buildPool(properties);
         dataSourceManager.dataSourceMap().put(name, ds);
-        mysqlManagers.put(name, new MysqlClient(dataSourceManager, null, ds));
+        synchronized (services) {
+            services.put(name, new MysqlClient(dataSourceManager, settings, ds, services));
+        }
     }
 
     public MysqlClient defaultMysqlService() {
-        return mysqlManagers.get("mysql");
+        MysqlClient owner = facade();
+        if (owner != this) {
+            return owner.defaultMysqlService();
+        }
+        if (services == null) {
+            return null;
+        }
+        return services.get("mysql");
     }
 
     public DataSource dataSource() {
+        MysqlClient owner = facade();
+        if (owner != this) {
+            return owner.dataSource();
+        }
+        if (dataSource == null && services != null) {
+            MysqlClient delegated = services.get("mysql");
+            return delegated == null ? null : delegated.dataSource;
+        }
         return dataSource;
+    }
+
+    private MysqlClient facade() {
+        if (bridge) {
+            return OrmSession.current().mysqlClient();
+        }
+        return this;
+    }
+
+    private MysqlClient executionTarget() {
+        MysqlClient owner = facade();
+        if (owner != this) {
+            return owner.executionTarget();
+        }
+        if (dataSource == null && services != null) {
+            MysqlClient delegated = services.get("mysql");
+            if (delegated == null) {
+                throw new IllegalStateException("default mysql datasource is not registered");
+            }
+            return delegated;
+        }
+        return this;
     }
 
     private Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
 
-
     public void execute(String sql, Object... params) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            owner.execute(sql, params);
+            return;
+        }
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         try {
@@ -115,6 +203,11 @@ public class MysqlClient {
       遍历表使用
      */
     public void executeStreaming(String sql, Object... params) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            owner.executeStreaming(sql, params);
+            return;
+        }
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         try {
@@ -141,6 +234,10 @@ public class MysqlClient {
 
 
     public <T> Set<T> projectionByColumn(String sql, final String columnName, Object... objs) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            return owner.projectionByColumn(sql, columnName, objs);
+        }
         return (Set<T>) this.executeQuery(sql, new SqlCallback() {
             @Override
             public Object execute(ResultSet rs) {
@@ -159,6 +256,10 @@ public class MysqlClient {
     }
 
     public <T> List<T> projectionByColumn2(String sql, final String columnName, Object... objs) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            return owner.projectionByColumn2(sql, columnName, objs);
+        }
         return (List<T>) this.executeQuery(sql, new SqlCallback() {
             @Override
             public Object execute(ResultSet rs) {
@@ -177,6 +278,10 @@ public class MysqlClient {
     }
 
     public List<Map> query(String sql, Object... objs) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            return owner.query(sql, objs);
+        }
         return (List<Map>) this.executeQuery(sql, new SqlCallback() {
             @Override
             public Object execute(ResultSet rs) {
@@ -186,6 +291,10 @@ public class MysqlClient {
     }
 
     public List<Map> streamingQuery(String sql, Object... objs) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            return owner.streamingQuery(sql, objs);
+        }
         return (List<Map>) this.executeStreamingQuery(sql, new SqlCallback() {
             @Override
             public Object execute(ResultSet rs) {
@@ -195,6 +304,10 @@ public class MysqlClient {
     }
 
     public Map single_query(String sql, Object... objs) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            return owner.single_query(sql, objs);
+        }
         return (Map) this.executeQuery(sql, new SqlCallback() {
             @Override
             public Object execute(ResultSet rs) {
@@ -209,6 +322,11 @@ public class MysqlClient {
     }
 
     public void executeBatch(String sql, BatchSqlCallback callback) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            owner.executeBatch(sql, callback);
+            return;
+        }
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         long time1 = System.currentTimeMillis();
@@ -237,6 +355,10 @@ public class MysqlClient {
 
 
     public Map executeQuerySingle(String sql, Object... params) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            return owner.executeQuerySingle(sql, params);
+        }
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -268,6 +390,10 @@ public class MysqlClient {
 
 
     public <T> T executeQuery(String sql, SqlCallback<T> callback, Object... params) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            return owner.executeQuery(sql, callback, params);
+        }
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -300,6 +426,10 @@ public class MysqlClient {
 
 
     public <T> T executeStreamingQuery(String sql, SqlCallback<T> callback, Object... params) {
+        MysqlClient owner = executionTarget();
+        if (owner != this) {
+            return owner.executeStreamingQuery(sql, callback, params);
+        }
         Connection conn = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;

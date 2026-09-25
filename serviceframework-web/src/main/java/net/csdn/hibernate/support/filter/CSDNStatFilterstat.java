@@ -1,5 +1,6 @@
 package net.csdn.hibernate.support.filter;
 
+import com.alibaba.druid.DbType;
 import com.alibaba.druid.filter.Filter;
 import com.alibaba.druid.filter.FilterChain;
 import com.alibaba.druid.filter.FilterEventAdapter;
@@ -127,7 +128,11 @@ public class CSDNStatFilterstat extends FilterEventAdapter implements StatFilter
         }
 
         try {
-            sql = ParameterizedOutputVisitorUtils.parameterize(sql, dbType);
+            DbType parsed = DbType.of(dbType);
+            if (parsed == null) {
+                return sql;
+            }
+            sql = ParameterizedOutputVisitorUtils.parameterize(sql, parsed);
         } catch (Exception e) {
             LOG.error("merge sql error, dbType " + dbType + ", sql : \n" + sql, e);
         }

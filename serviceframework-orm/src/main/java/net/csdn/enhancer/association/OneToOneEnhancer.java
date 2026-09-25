@@ -37,7 +37,13 @@ public class OneToOneEnhancer {
         for (CtField ctField : fields) {
             if (EnhancerHelper.hasAnnotation(ctField, "javax.persistence.OneToOne")) {
                 DBInfo dbInfo = JPA.dbInfo();
-                Map<String, String> columns = dbInfo.tableColumns.get(ctClass.getSimpleName());
+                Map<String, String> columns = dbInfo.columns(ctClass.getName());
+                if (columns == null) {
+                    columns = dbInfo.columns(ctClass.getSimpleName());
+                }
+                if (columns == null) {
+                    continue;
+                }
                 String clzzName = AssociatedHelper.findAssociatedClassName(ctField);
                 CtField mappedByField = AssociatedHelper.findAssociatedField(modelClass, clzzName);
                 if (!columns.containsKey(Strings.toUnderscoreCase(ctField.getName()) + "_id")) {

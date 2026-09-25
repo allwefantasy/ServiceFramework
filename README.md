@@ -6,26 +6,25 @@ ServcieFramework 定位在 **移动互联网后端** 领域,强调开发的高�
 
 
 ## 编译
-现在编译步骤：
+
+默认构建是 Scala 2.13.16、Java 8 字节码、classpath 部署：
 
     git clone git@github.com:allwefantasy/ServiceFramework.git
-    mvn install -Pscala-2.11
+    mvn install
 
-如果你想切换scala版本，则使用：
-
-    ./dev/change-version-to-2.12.sh
-
-经过以上步骤即可使用
+`-Pscala-2.11` 和 `-Pscala-2.12` 还在，没有进入已验收的 JDK 8 / JDK 17 矩阵。本机 JDK 路径和那次矩阵的命令在 [docs/jdk-compatibility.md](docs/jdk-compatibility.md)。字节码增强的当前行为和迁移说明在 [docs/serviceframework-bytecode-migration.md](docs/serviceframework-bytecode-migration.md)。
 
 ## maven 仓库
 
 ```
 <dependency>
   <groupId>net.csdn</groupId>
-  <artifactId>serviceframework-web_2.11</artifactId>
-  <version>2.0.0</version>
+  <artifactId>serviceframework-web_2.13</artifactId>
+  <version>2.0.9</version>
 </dependency>
 ```
+
+这是当前源码树的坐标，也是 JDK 8 / JDK 17 默认矩阵装出来的 JAR。`_2.11` 不在那次验收里。
 
 ### 项目示例
 
