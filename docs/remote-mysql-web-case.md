@@ -1,6 +1,6 @@
 # RemoteService MySQL 上的 Web 端到端用例
 
-日期：2026-09-25。这一页记的是把 ServiceFramework 的 HTTP 服务拉起来，向 RemoteService 上的 MySQL 写入一行，再从库里读回来。它不替代 [compat-services.md](compat-services.md) 里的本机隔离库，也不在 2026-09-25 那次 1212 项矩阵里。那次矩阵用的是本机 `sf_compat`。
+日期：2026-09-25。这一页记的是在这台 Mac 上把 ServiceFramework 的 HTTP 服务拉起来，向 RemoteService 上的 MySQL 写入一行，再从库里读回来。服务本身部署到 RemoteService、再从本机发 HTTP 请求的流程在 [remote-notes-publish.md](remote-notes-publish.md)，当次测试记录在 [remote-notes-report-2026-09-25.md](remote-notes-report-2026-09-25.md)。它不替代 [compat-services.md](compat-services.md) 里的本机隔离库，也不在 2026-09-25 那次 1212 项矩阵里。那次矩阵用的是本机 `sf_compat`。
 
 测试类是 `serviceframework-web/src/test/java/net/csdn/bootstrap/lifecycle/RemoteMysqlWebTest.java`。没有 `SF_REMOTE_MYSQL=true` 时它会跳过。跳过不是这次验收通过。
 

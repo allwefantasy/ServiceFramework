@@ -16,6 +16,8 @@ release.properties
 /serviceframework-common/target
 /serviceframework-dispatcher/target
 /serviceframework-common/target
+/apps/remote-notes/target
+/dev/remote-notes/.publish
 .DS_Store
 .flattened-pom.xml
 

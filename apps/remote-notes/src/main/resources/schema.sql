@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS sf_remote_tag (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NULL,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS sf_remote_note (
+  id INT NOT NULL AUTO_INCREMENT,
+  title VARCHAR(255) NULL,
+  body VARCHAR(255) NULL,
+  tag_id INT NULL,
+  PRIMARY KEY (id),
+  KEY idx_sf_remote_note_tag_id (tag_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

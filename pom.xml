@@ -51,7 +51,7 @@
         <module>serviceframework-web</module>
         <module>serviceframework-dispatcher</module>
         <module>serviceframework-jetty-9-server</module>
-
+        <module>apps/remote-notes</module>
 
     </modules>
 

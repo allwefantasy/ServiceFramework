@@ -1,0 +1,75 @@
+mode: development
+
+cluster:
+  name: remote-notes
+
+path:
+  logs: logs
+
+development:
+  datasources:
+    mysql:
+      host: 127.0.0.1
+      port: 3306
+      database: sf_serviceframework_e2e
+      username: sf_e2e
+      password: "@PASSWORD@"
+      disable: false
+      show_sql: false
+      driver: com.mysql.jdbc.Driver
+      initialSize: 1
+      minIdle: 0
+      maxActive: 8
+      jdbc:
+        useSSL: false
+        connectTimeout: 5000
+    mongodb:
+      disable: true
+    redis:
+      disable: true
+
+application:
+  controller: net.csdn.remotenotes.controller
+  model: net.csdn.remotenotes.model
+  document: ""
+  service: ""
+  util: ""
+  template:
+    engine:
+      enable: false
+  api:
+    qps:
+      enable: false
+  log:
+    enable: true
+  static:
+    enable: false
+  session:
+    enable: false
+
+http:
+  port: 19110
+  host: 0.0.0.0
+  disable: false
+  threads:
+    min: 8
+    max: 64
+
+thrift:
+  disable: true
+
+dubbo:
+  disable: true
+
+qpslimit:
+  enable: false
+
+validator:
+  format: net.csdn.validate.impl.Format
+  numericality: net.csdn.validate.impl.Numericality
+  presence: net.csdn.validate.impl.Presence
+  uniqueness: net.csdn.validate.impl.Uniqueness
+  length: net.csdn.validate.impl.Length
+  associated: net.csdn.validate.impl.Associated
+
+type_mapping: net.csdn.jpa.type.impl.MysqlType
