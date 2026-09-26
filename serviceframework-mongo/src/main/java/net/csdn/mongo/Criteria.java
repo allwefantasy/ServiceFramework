@@ -50,7 +50,6 @@ public class Criteria {
     private Map options = map();
     private Map selector = map();
 
-    private final static String AGGREGATE_REDUCE = "function(obj, prev) { prev.count++; }";
 
 
     public Criteria aggregate() {
@@ -434,11 +433,6 @@ public class Criteria {
     public Criteria(String tableName) {
         this.tableName = tableName;
         init();
-    }
-
-
-    private DBObject grouped(String start, String field, String reduce) {
-        return collection().group(null, translateMapToDBObject(selector), new BasicDBObject("start", "start"), reduce.replaceAll("[field]", field));
     }
 
 

@@ -1,16 +1,20 @@
 # Mongo 增强接入
 
-日期：2026-09-24 写驱动和增强行为，2026-09-25 的整仓矩阵已经把它和 common、Web 一起跑过。本文仍只描述 `serviceframework-mongo`。启动接线在 [framework-extensions.md](framework-extensions.md)，验收范围在 [serviceframework-bytecode-migration.md](serviceframework-bytecode-migration.md)。
+日期：2026-09-26 更新到 `mongodb-driver-legacy` **5.13.0**；本机隔离 MongoDB **8.3.11** 上的最终独立验收已完成，结论见 [multi-database-verification-2026-09-26.md](multi-database-verification-2026-09-26.md)。2026-09-25 的整仓矩阵属于历史结果；下文仍然把它写成历史覆盖，不把后来的代码差异说成已经独立复验。本文仍只描述 `serviceframework-mongo`。启动接线在 [framework-extensions.md](framework-extensions.md)，验收范围在 [serviceframework-bytecode-migration.md](serviceframework-bytecode-migration.md)。
 
 ## 驱动
 
-`mongo-java-driver` **3.12.14**。2.11.4 的 `MongoCredential` 只有 `MONGODB-CR` 和 `GSSAPI`，没有 SCRAM。本机兼容服务是 MongoDB **4.4.29**，认证打开，用户默认是 SCRAM-SHA-256。3.12.14 的类文件主版本是 **50**（Java 6），JDK 8 和 17 都能加载。`com.mongodb.Mongo`、`DB`、`DBCollection`、`BasicDBObject` 都还在，没有改成 4.x 的 `MongoCollection`。
+依赖是 `org.mongodb:mongodb-driver-legacy` **5.13.0**。5.x 把实现拆成 `mongodb-driver-legacy`、`mongodb-driver-core`、`mongodb-driver-sync` 和 `bson` 四个构件；不要只复制 legacy jar。legacy API 保留本模块暴露的 `DB`、`DBCollection`、`DBCursor`、`BasicDBObject` 和 `MongoClient`，类文件主版本仍是 **52**（Java 8），因此同一产物可由 JDK 8 和 JDK 17 加载。
 
-3.12 删了 `DBCollection.ensureIndex`。`Document.index` 改成仍在 `DBCollection` 上的 `createIndex(DBObject, DBObject)`。连接用 `MongoClient` + `MongoCredential.createScramSha256Credential`。
+`mongodb-driver-core` 会以 runtime 传递 `org.mongodb:bson-record-codec:5.13.0`，它是 Java 17 Record 编解码器（class major 61）。本模块 exclude 了它：legacy Document API 不分发这个扩展，driver-core 的 `com.mongodb.Jep395RecordCodecProvider` 反射探测不到时捕获 `ClassNotFoundException`/`UnsupportedClassVersionError` 回退，JDK 8 classpath 因此不带 major 61 字节码。
+
+`com.mongodb.Mongo` 在 5.x 里已经不存在，公开/子类入口统一迁移为 `MongoClient`：`MongoMongo.mongo()`、`CSDNMongoConfiguration.client()`、`closeMongoClient(MongoClient)`，以及 `DB.getMongoClient()`。连接字符串由 `MongoClientURI` 解析；离散账号路径仍是 `MongoCredential.createScramSha256Credential`。`DBCollection.ensureIndex` 仍用 `createIndex(DBObject, DBObject)`。
+
+版本依据：MongoDB 当前稳定系列按官方发布说明 <https://www.mongodb.com/docs/manual/release-notes/> 定为 **8.3.x**（本机 runner 固定 8.3.11）；驱动 **5.13.0** 按 Maven Central 元数据 <https://repo.maven.apache.org/maven2/org/mongodb/mongodb-driver-legacy/maven-metadata.xml> 选定。
 
 ### 日志
 
-中央仓库 `mongo-java-driver-3.12.14.pom` 把 `org.slf4j:slf4j-api` **1.7.6** 标成 `optional`。Maven 不会因为它而带上 API，更不会带上绑定。本地 jar 的 SHA-1 与中央仓库一致：`850383a126cdc5b363fa9ffc780037f6ebeee704`。
+中央仓库 `mongodb-driver-legacy-5.13.0.pom` 仍把 `org.slf4j:slf4j-api` **1.7.6** 标成 `optional`。Maven 不会因为它而带上 API，更不会带上绑定。
 
 驱动的 `com.mongodb.diagnostics.logging.Loggers`（`org.bson.diagnostics.Loggers` 同样）只做 `Class.forName("org.slf4j.Logger")`。找不到类就用 `java.util.logging`，客户端照样能连。这不是初始化失败。
 
@@ -26,16 +30,19 @@
 
 | 键 | 作用 |
 | --- | --- |
-| `{mode}.datasources.mongodb.host` | 默认 `127.0.0.1` |
-| `{mode}.datasources.mongodb.port` | 默认 `27017` |
-| `{mode}.datasources.mongodb.database` | 默认 `csdn_data_center` |
-| `{mode}.datasources.mongodb.username` | 空则不认证 |
-| `{mode}.datasources.mongodb.password` | 有用户名时必填，异常文本里不放口令 |
-| `{mode}.datasources.mongodb.authenticationDatabase` | 没有则读 `authdb`，再默认 `admin` |
-| `{mode}.datasources.mongodb.replicaSet` | 非空时设 `requiredReplicaSetName` |
+| `{mode}.datasources.mongodb.uri` | 非空时优先；连接主机、账号、口令和 `authSource` 都从 URI 来 |
+| `{mode}.datasources.mongodb.host` | 默认 `127.0.0.1`；只在未配置 URI 时读取 |
+| `{mode}.datasources.mongodb.port` | 默认 `27017`；只在未配置 URI 时读取 |
+| `{mode}.datasources.mongodb.database` | 默认 `csdn_data_center`；URI 有数据库路径时让位，没有路径时作 fallback |
+| `{mode}.datasources.mongodb.username` | 空则不认证；只在未配置 URI 时读取 |
+| `{mode}.datasources.mongodb.password` | 离散用户名存在时必填；只在未配置 URI 时校验，异常文本里不放口令 |
+| `{mode}.datasources.mongodb.authenticationDatabase` | 没有则读 `authdb`，再默认 `admin`；只在未配置 URI 时读取 |
+| `{mode}.datasources.mongodb.replicaSet` | 非空时作为 `requiredReplicaSetName` 默认值；URI 自带的 `replicaSet` 选项优先 |
 | `application.document` | 要扫描的包，启用时必填 |
 
-认证走 SCRAM-SHA-256，然后对目标库 `ping`。失败是 `EnhancementFailure`，`rule=mongo-document`，`phase=connect`，`getCause()` 是驱动异常。状态保持 `FAILED`（调用方再 `close()` 才变成 `CLOSED`）。context 会关掉，已经建出的客户端会 `close()`。
+URI 优先级不是文档口号：配置了有效 URI 时，离散的 host/port/username/password/authenticationDatabase 不会再被解析或校验，因此残留的离散用户名、缺失离散口令或非法离散端口不会挡住 URI 连接。URI 自身 malformed 时抛 `mongodb uri is invalid`，不把 URI 或驱动解析原文放进异常。URI 数据库路径存在时覆盖 `{mode}.datasources.mongodb.database`；URI 无路径时才使用离散 database。
+
+认证走 SCRAM-SHA-256（URI 则由连接串自己的 credential/authSource 表示），然后对目标库 `ping`。失败是 `EnhancementFailure`，`rule=mongo-document`，`phase=connect`，`getCause()` 是驱动异常。状态保持 `FAILED`（调用方再 `close()` 才变成 `CLOSED`）。context 会关掉，已经建出的客户端会 `close()`。
 
 其它入口：
 
@@ -44,7 +51,7 @@
 - `configuration.registerAnchor(Class)`：显式登记 anchor。marker 的简单类名如果就是 `ServiceFrameworkPackageAnchor`，也会自动登记。
 - `configuration.configure()`：返回 `MongoMongo`。`MongoMongo.configure` 不返回值。
 - `configuration.close()`：可重复调用。客户端先关掉，并且只关一次；拥有的 context 在放下配置锁之后再关，避免和 context 的锁交叉。客户端 `close` 抛异常时，仍然继续关拥有的 context。先发生的那个异常原样抛出，另一个用 `addSuppressed` 挂上。调用方自己的 scope 还在时，`EnhancementContext.close` 会拒绝，这次配置**不会**变成 `CLOSED`，拥有的 context 留着，scope 结束后再次 `close()` 才把它关掉。客户端和拥有的 context 都已经结束之后，再次调用什么都不做。外来 context 仍然不关。
-- `closeMongoClient(Mongo)`：真正调用驱动 `close` 的地方。默认把异常返回而不是抛出。子类可以包一层，但必须自己关掉这个客户端，或者调用原来的实现。返回的异常不会跳过后面的清理，也不会让下一次再关一次客户端。
+- `closeMongoClient(MongoClient)`：真正调用驱动 `close` 的地方。默认把异常返回而不是抛出。子类可以包一层，但必须自己关掉这个客户端，或者调用原来的实现。返回的异常不会跳过后面的清理，也不会让下一次再关一次客户端。
 - `configuration.state()`：`NEW`、`DISABLED`、`CONFIGURED`、`FAILED`、`CLOSED`。
 - `mongo.activate()`：在**当前线程**压入该 context 的 scope。异步线程必须自己拿到这个 `MongoMongo` 再 `activate()`，不能读别的线程的 ThreadLocal。
 - `MongoMongo.current()`：当前 scope 里的客户端对象；没有 scope，或者 scope 里没有挂上 Mongo，就是 null。不检查客户端是否已经关掉。
@@ -66,16 +73,40 @@
 
 ## 实库测试怎么打开
 
-兼容服务是 `dev/compat-services.sh` 的 MongoDB 4.4.29，认证开着，副本集 `sfcompat`，库只使用 `sf_compat`。测试从 `SF_COMPAT_ENV_FILE` 读账号、口令和 authDB，不打印这些值。集合名只用 `sf_it_` 前缀。
+当前 modern lane 是 `dev/mongo-modern-services.sh`：MongoDB **8.3.11**、`mongosh` **2.12.0**，官方归档按 SHA-1 和 SHA-256 校验后使用；首次下载用 HTTP/1.1、有界重试和 `-C -` 断点续传，校验通过前不会启用归档。实例只监听 `127.0.0.1`，单节点副本集 `sfcompat`，库只使用 `sf_compat`，认证打开。账号、口令和 authDB 写在实例目录 mode `600` 的 env 文件里，不打印。集合名只用 `sf_it_` 前缀。外部 `SF_COMPAT_ENV_FILE` 会被合并，只有 `SF_COMPAT_MONGO_*` 由本 runner 覆盖。
+
+旧的 `dev/compat-services.sh` MongoDB **4.4.29** 只保留为历史/回归基线；它能证明旧支持面，不再当作“latest MongoDB”的证明。
 
 实库用例在下面任一成立时才运行，否则跳过，也不会去连本机 27017：
 
 - 系统属性 `-Dsf.compat.mongo=true`
 - 环境变量 `SF_COMPAT_MONGO=true`（不是 `SF_COMPAT_MONGO_HOST`）
 
-两个可以同时设。标志开了但没有 `SF_COMPAT_ENV_FILE`，或者文件里的库不是 `sf_compat`，用例失败，不算跳过。
+两个可以同时设。标志开了但没有 `SF_COMPAT_ENV_FILE`，或者文件里的库不是 `sf_compat`，用例失败，不算跳过。`JDK8_HOME`/`JDK17_HOME` 指向你自己的 JDK；`mvn` 用默认 settings，需要自定义 mirror 时单独加 `-s <your-settings.xml>`：
 
-`dev/verify-jdk-compatibility.sh` 会清掉 `JAVA_TOOL_OPTIONS` 一类变量，也不会替模块透传任意 `-D`。走那个入口时要自己加上 `SF_COMPAT_MONGO=true`，并让 `compat-services.sh run` 带上 `SF_COMPAT_ENV_FILE`。
+```bash
+cd "$HOME/projects/ServiceFramework"
+JDK8_HOME=/path/to/your/jdk8
+JDK17_HOME=/path/to/your/jdk17
+
+# 已缓存归档的 runner 自检：ping、读写、事务回滚、版本 8.3.11
+dev/mongo-modern-services.sh run -- dev/mongo-modern-services.sh verify
+
+# 整个 Mongo 模块实库 lane（不要改用 surefire:test 打已安装旧 jar）
+dev/mongo-modern-services.sh run -- \
+  env SF_COMPAT_MONGO=true JAVA_HOME="$JDK17_HOME" PATH="$JDK17_HOME/bin:$PATH" \
+  mvn -pl serviceframework-mongo -am \
+  -Dtest=MongoEnhancementLiveTest -Dsurefire.failIfNoSpecifiedTests=false test
+
+# URI 优先级的聚焦回归；同一命令换 JAVA_HOME/PATH 到 JDK8 也可跑
+dev/mongo-modern-services.sh run -- \
+  env SF_COMPAT_MONGO=true JAVA_HOME="$JDK17_HOME" PATH="$JDK17_HOME/bin:$PATH" \
+  mvn -pl serviceframework-mongo -am \
+  -Dtest=MongoEnhancementLiveTest#uriConnectsHonorsUriDatabaseAndIgnoresDiscreteSettings \
+  -Dsurefire.failIfNoSpecifiedTests=false test
+```
+
+最终独立验收：六模块同一产物矩阵在 JDK 8 / JDK 17 各 **1234 executed + 1 skipped（`RemoteMysqlWebTest` opt-in）、0 failure / 0 error**，其中 `MongoEnhancementLiveTest` 在 MongoDB 8.3.11 上双 lane 各 **20/20**，另有最终产物 classpath 的实库探针通过；汇总见 [multi-database-verification-2026-09-26.md](multi-database-verification-2026-09-26.md)。更早的实现阶段自测（8.3.11 上 `serviceframework-mongo` 全量 284 tests、URI 聚焦 1 test）只作历史保留。
 
 ## 诊断
 

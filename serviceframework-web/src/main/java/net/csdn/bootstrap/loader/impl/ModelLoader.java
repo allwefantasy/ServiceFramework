@@ -1,12 +1,12 @@
 package net.csdn.bootstrap.loader.impl;
 
 import net.csdn.bootstrap.ApplicationContext;
-import net.csdn.bootstrap.extension.OrmFrameworkExtension;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.enhancer.EnhancementPlan;
 import net.csdn.common.enhancer.EnhancementRuleIds;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
+import net.csdn.common.settings.JdbcEngine;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ public class ModelLoader implements Loader {
                 settings,
                 application.marker());
         JPA.configure(configuration, application.enhancementContext());
-        if (!OrmFrameworkExtension.mysqlDisabled(settings, application)) {
+        if (!JdbcEngine.primaryDisabled(settings, application.mode().name())) {
             markIfRuleRan(application, EnhancementRuleIds.ENTITY_MAPPING);
         }
     }

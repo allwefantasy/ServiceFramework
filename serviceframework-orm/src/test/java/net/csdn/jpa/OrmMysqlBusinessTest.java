@@ -955,7 +955,9 @@ public class OrmMysqlBusinessTest {
         Arrays.sort(files);
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
-                collectJava(files[i], sources);
+                if (!"types".equals(files[i].getName())) {
+                    collectJava(files[i], sources);
+                }
             } else if (files[i].getName().endsWith(".java")) {
                 sources.add(files[i]);
             }

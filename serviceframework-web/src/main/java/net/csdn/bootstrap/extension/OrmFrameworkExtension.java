@@ -7,12 +7,12 @@ import net.csdn.common.enhancer.EnhancementFailure;
 import net.csdn.common.enhancer.EnhancementRuleIds;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
+import net.csdn.common.settings.JdbcEngine;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
- * MySQL / JPA lifecycle. Loaded only when the datasource is enabled.
+ * JDBC / JPA lifecycle. Loaded only when the selected datasource is enabled.
  * {@link JPA#configure(JPA.CSDNORMConfiguration, net.csdn.common.enhancer.EnhancementContext)}
  * enhances models. {@link JPA#getJPAConfig()} builds the
  * {@code EntityManagerFactory} before a port is opened. The surrounding
@@ -21,8 +21,11 @@ import java.util.List;
 public final class OrmFrameworkExtension implements FrameworkExtension {
 
     public static final String CAPABILITY = "datasource.mysql";
+    public static final String ORM_CAPABILITY = "datasource.orm";
+    public static final String POSTGRES_CAPABILITY = "datasource.postgres";
 
     private JPA.CSDNORMConfiguration configuration;
+    private String selectedEngine = JdbcEngine.MYSQL;
     private boolean configured;
 
     @Override
@@ -32,19 +35,24 @@ public final class OrmFrameworkExtension implements FrameworkExtension {
 
     @Override
     public List<String> provides() {
-        return Collections.singletonList(CAPABILITY);
+        if (JdbcEngine.POSTGRES.equals(selectedEngine)) {
+            return java.util.Arrays.asList(ORM_CAPABILITY, POSTGRES_CAPABILITY);
+        }
+        return java.util.Arrays.asList(CAPABILITY, ORM_CAPABILITY);
     }
 
     @Override
     public boolean enabled(Settings settings, ApplicationContext context) {
-        return !mysqlDisabled(settings, context);
+        JdbcEngine.Selection selection = JdbcEngine.primary(settings, context.mode().name());
+        selectedEngine = selection.engine();
+        return !selection.disabled();
     }
 
     @Override
     public void validate(Settings settings, ApplicationContext context) {
         String packages = settings.get("application.model");
         if (packages == null || packages.trim().length() == 0) {
-            throw failure("application.model is required when MySQL is enabled");
+            throw failure("application.model is required when ORM is enabled");
         }
     }
 

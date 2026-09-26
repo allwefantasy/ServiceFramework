@@ -3,6 +3,7 @@ package net.csdn.modules.persist.mysql;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
+import net.csdn.common.settings.JdbcEngine;
 import net.csdn.jpa.OrmSession;
 
 import javax.sql.DataSource;
@@ -97,20 +98,46 @@ public class MysqlClient {
         return services.get(dataSourceName);
     }
 
+    public MysqlClient service(String dataSourceName) {
+        return mysqlService(dataSourceName);
+    }
+
     public void addNewMySQL(String name, Settings properties) {
+        addNewDatasource(name, properties, JdbcEngine.MYSQL);
+    }
+
+    public void addNewDatasource(String name, Settings properties, String engine) {
         MysqlClient owner = facade();
         if (owner != this) {
-            owner.addNewMySQL(name, properties);
+            owner.addNewDatasource(name, properties, engine);
             return;
         }
         if (dataSourceManager == null || services == null) {
-            throw new IllegalStateException("mysql registry is not available");
+            throw new IllegalStateException("datasource registry is not available");
         }
-        DataSource ds = dataSourceManager.buildPool(properties);
-        dataSourceManager.dataSourceMap().put(name, ds);
+        if (services.containsKey(name)) {
+            throw new IllegalStateException("datasource name is already registered: " + name);
+        }
+        DataSource ds = dataSourceManager.buildPool(properties, engine);
+        dataSourceManager.registerPool(name, ds, engine);
         synchronized (services) {
             services.put(name, new MysqlClient(dataSourceManager, settings, ds, services));
         }
+    }
+
+    /**
+     * Engine recorded for a named pool, or null when the name is not registered.
+     * The services registry is flat across engines, so typed lookup must check this.
+     */
+    public String engineFor(String dataSourceName) {
+        MysqlClient owner = facade();
+        if (owner != this) {
+            return owner.engineFor(dataSourceName);
+        }
+        if (dataSourceManager == null) {
+            return null;
+        }
+        return dataSourceManager.engineFor(dataSourceName);
     }
 
     public MysqlClient defaultMysqlService() {
@@ -121,7 +148,11 @@ public class MysqlClient {
         if (services == null) {
             return null;
         }
-        return services.get("mysql");
+        return services.get(primaryName());
+    }
+
+    public MysqlClient defaultService() {
+        return defaultMysqlService();
     }
 
     public DataSource dataSource() {
@@ -130,10 +161,17 @@ public class MysqlClient {
             return owner.dataSource();
         }
         if (dataSource == null && services != null) {
-            MysqlClient delegated = services.get("mysql");
+            MysqlClient delegated = services.get(primaryName());
             return delegated == null ? null : delegated.dataSource;
         }
         return dataSource;
+    }
+
+    private String primaryName() {
+        if (dataSourceManager == null || dataSourceManager.primaryName() == null) {
+            return JdbcEngine.MYSQL;
+        }
+        return dataSourceManager.primaryName();
     }
 
     private MysqlClient facade() {
@@ -149,9 +187,9 @@ public class MysqlClient {
             return owner.executionTarget();
         }
         if (dataSource == null && services != null) {
-            MysqlClient delegated = services.get("mysql");
+            MysqlClient delegated = services.get(primaryName());
             if (delegated == null) {
-                throw new IllegalStateException("default mysql datasource is not registered");
+                throw new IllegalStateException("primary datasource is not registered");
             }
             return delegated;
         }

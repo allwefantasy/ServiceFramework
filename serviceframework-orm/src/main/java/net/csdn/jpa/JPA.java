@@ -8,6 +8,7 @@ import javassist.LoaderClassPath;
 import net.csdn.common.enhancer.EnhancementContext;
 import net.csdn.common.enhancer.EnhancementDiagnostics;
 import net.csdn.common.enhancer.EnhancementFailure;
+import net.csdn.common.settings.JdbcEngine;
 import net.csdn.common.enhancer.StartupPhaseTrace;
 import net.csdn.common.enhancer.EnhancementRule;
 import net.csdn.common.logging.CSLogger;
@@ -21,7 +22,6 @@ import net.csdn.jpa.enhancer.OrmEnhancer;
 import net.csdn.jpa.model.Model;
 import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
-import net.csdn.jpa.type.impl.MysqlType;
 import net.csdn.validate.ValidatorLoader;
 
 import javax.persistence.Entity;
@@ -156,7 +156,7 @@ public class JPA {
         }
         if (session.hasDefinedModels()) {
             try {
-                if (!mysqlDisabled(configuration)) {
+                if (!primaryDisabled(configuration)) {
                     new ValidatorLoader().load();
                 }
                 session.markConfigured(fingerprint);
@@ -167,7 +167,7 @@ public class JPA {
         }
         session.bindConfiguration(configuration);
         try {
-            if (!mysqlDisabled(configuration)) {
+            if (!primaryDisabled(configuration)) {
                 configuration.buildDefaultDBInfo();
                 session.setDbInfo(configuration.getDbInfo());
                 new JPAModelLoader().load();
@@ -186,7 +186,7 @@ public class JPA {
         if (session == null || !session.isConfigured() || !session.hasConfiguration()) {
             return false;
         }
-        return !mysqlDisabled(session.configuration());
+        return !primaryDisabled(session.configuration());
     }
 
     public static synchronized JPAConfig getJPAConfig() {
@@ -199,7 +199,8 @@ public class JPA {
         if (managed.isEmpty()) {
             throw configurationFailure("no entity classes are registered");
         }
-        String unitName = settings().get(mode() + ".datasources.mysql.database");
+        JdbcEngine.Selection selection = JdbcEngine.primary(settings(), mode());
+        String unitName = selection.group() == null ? null : selection.group().get("database");
         if (unitName == null || unitName.length() == 0) {
             unitName = "serviceframework";
         }
@@ -264,53 +265,49 @@ public class JPA {
     }
 
     public static Map<String, String> properties() {
-        Map<String, Settings> groups = settings().getGroups(mode() + ".datasources");
-        Settings mysqlSetting = groups.get("mysql");
-        return properties(mysqlSetting);
+        JdbcEngine.Selection selection = JdbcEngine.primary(settings(), mode());
+        return properties(selection.group(), selection.engine());
     }
 
-    public static Map<String, String> properties(Settings mysqlSetting) {
-        Map<String, String> properties = new java.util.HashMap<String, String>();
-        properties.put("hibernate.connection.provider_class", mysqlSetting.get("provider_class", "net.csdn.hibernate.support.DruidConnectionProvider"));
-        properties.put("show_sql", mysqlSetting.get("show_sql", "true"));
-        properties.put("driver_class", mysqlSetting.get("driver", "com.mysql.jdbc.Driver"));
-        properties.put("dialect", "org.hibernate.dialect.MySQLDialect");
-        properties.put("format_sql", mysqlSetting.get("format_sql", "false"));
+    public static Map<String, String> properties(Settings datasourceSetting) {
+        String engine = datasourceSetting == null
+                ? JdbcEngine.MYSQL
+                : JdbcEngine.groupEngine(datasourceSetting, JdbcEngine.MYSQL);
+        return properties(datasourceSetting, engine);
+    }
 
-        Map<String, String> jdbcOpts = mysqlSetting.getByPrefix("jdbc.").getAsMap();
-        StringBuilder jdbcOptBuf = new StringBuilder();
-        jdbcOptBuf.append("?useUnicode=true&characterEncoding=utf8");
-        for (Map.Entry<String, String> entry : jdbcOpts.entrySet()) {
-            try {
-                jdbcOptBuf.append("&" + entry.getKey() + "=" + java.net.URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8.toString()));
-            } catch (java.io.UnsupportedEncodingException e) {
-                throw new EnhancementFailure(
-                        EnhancementFailure.Category.CONFIGURATION,
-                        null,
-                        null,
-                        "configure",
-                        "jdbc option was not encoded",
-                        e);
-            }
+    public static Map<String, String> properties(Settings datasourceSetting, String engineName) {
+        String engine = JdbcEngine.normalize(engineName);
+        if (datasourceSetting == null) {
+            throw configurationFailure("selected datasource " + engine + " is missing");
+        }
+        Map<String, String> properties = new java.util.HashMap<String, String>();
+        properties.put("hibernate.connection.provider_class", datasourceSetting.get("provider_class", "net.csdn.hibernate.support.DruidConnectionProvider"));
+        properties.put("show_sql", datasourceSetting.get("show_sql", "true"));
+        properties.put("driver_class", datasourceSetting.get("driver", JdbcEngine.defaultDriver(engine)));
+        properties.put("dialect", datasourceSetting.get("dialect", JdbcEngine.defaultDialect(engine)));
+        properties.put("format_sql", datasourceSetting.get("format_sql", "false"));
+        if (JdbcEngine.POSTGRES.equals(engine)) {
+            properties.put("hibernate.default_schema", JdbcEngine.quotedSchema(datasourceSetting));
         }
 
-        properties.put("url", "jdbc:mysql://" + mysqlSetting.get("host") + ":" + mysqlSetting.get("port") + "/" + mysqlSetting.get("database") + jdbcOptBuf.toString());
+        properties.put("url", JdbcEngine.jdbcUrl(datasourceSetting, engine));
         logger.info("connect url:" + JdbcEndpoints.endpoint(properties.get("url")));
-        properties.put("username", mysqlSetting.get("username"));
-        properties.put("password", mysqlSetting.get("password"));
-        properties.put("maxActive", mysqlSetting.get("maxActive", "50"));
-        properties.put("minIdle", mysqlSetting.get("minIdle", "3"));
-        properties.put("initialSize", mysqlSetting.get("initialSize", "30"));
-        properties.put("maxWait", mysqlSetting.get("maxWait", "20"));
-        properties.put("testOnBorrow", mysqlSetting.get("testOnBorrow", "false"));
-        properties.put("validationQuery", mysqlSetting.get("validationQuery", "SELECT 1"));
-        properties.put("validationQueryTimeout", mysqlSetting.get("validationQueryTimeout", "60000"));
-        properties.put("removeAbandoned", mysqlSetting.get("removeAbandoned", "false"));
-        properties.put("removeAbandonedTimeout", mysqlSetting.get("removeAbandonedTimeout", "1800"));
-        properties.put("logAbandoned", mysqlSetting.get("logAbandoned", "false"));
-        properties.put("init", mysqlSetting.get("init", "true"));
-        properties.put("testWhileIdle", mysqlSetting.get("testWhileIdle", "true"));
-        properties.put("connectionProperties", "druid.stat.logSlowSql=" + mysqlSetting.get("logSlowSql", "true") + ";druid.stat.slowSqlMillis=" + mysqlSetting.get("slowSqlMillis", "500"));
+        properties.put("username", datasourceSetting.get("username"));
+        properties.put("password", datasourceSetting.get("password"));
+        properties.put("maxActive", datasourceSetting.get("maxActive", "50"));
+        properties.put("minIdle", datasourceSetting.get("minIdle", "3"));
+        properties.put("initialSize", datasourceSetting.get("initialSize", "30"));
+        properties.put("maxWait", datasourceSetting.get("maxWait", "20"));
+        properties.put("testOnBorrow", datasourceSetting.get("testOnBorrow", "false"));
+        properties.put("validationQuery", datasourceSetting.get("validationQuery", "SELECT 1"));
+        properties.put("validationQueryTimeout", datasourceSetting.get("validationQueryTimeout", "60000"));
+        properties.put("removeAbandoned", datasourceSetting.get("removeAbandoned", "false"));
+        properties.put("removeAbandonedTimeout", datasourceSetting.get("removeAbandonedTimeout", "1800"));
+        properties.put("logAbandoned", datasourceSetting.get("logAbandoned", "false"));
+        properties.put("init", datasourceSetting.get("init", "true"));
+        properties.put("testWhileIdle", datasourceSetting.get("testWhileIdle", "true"));
+        properties.put("connectionProperties", "druid.stat.logSlowSql=" + datasourceSetting.get("logSlowSql", "true") + ";druid.stat.slowSqlMillis=" + datasourceSetting.get("slowSqlMillis", "500"));
         if (classIsPresent("org.apache.log4j.Priority")) {
             properties.put("filters", "log4j");
         }
@@ -383,8 +380,8 @@ public class JPA {
         diagnostics.noteSafeMetadata(note.previousVersion, note.previousDigest);
     }
 
-    private static boolean mysqlDisabled(CSDNORMConfiguration configuration) {
-        return configuration.getSettings().getAsBoolean(configuration.getMode() + ".datasources.mysql.disable", false);
+    private static boolean primaryDisabled(CSDNORMConfiguration configuration) {
+        return JdbcEngine.primaryDisabled(configuration.getSettings(), configuration.getMode());
     }
 
     private static String fingerprint(CSDNORMConfiguration configuration) {
@@ -393,18 +390,26 @@ public class JPA {
         raw.append(System.identityHashCode(configuration.getClassLoader())).append('\n');
         raw.append(String.valueOf(configuration.getSettings().get("application.model"))).append('\n');
         try {
-            Map<String, Settings> groups = configuration.getSettings().getGroups(configuration.getMode() + ".datasources");
-            Settings mysql = groups.get("mysql");
-            if (mysql != null) {
-                raw.append(String.valueOf(mysql.get("host"))).append('\n');
-                raw.append(String.valueOf(mysql.get("port"))).append('\n');
-                raw.append(String.valueOf(mysql.get("database"))).append('\n');
-                raw.append(String.valueOf(mysql.get("username"))).append('\n');
-                raw.append(String.valueOf(mysql.get("password"))).append('\n');
-                raw.append(String.valueOf(mysql.get("disable"))).append('\n');
+            JdbcEngine.Selection selection = JdbcEngine.primary(
+                    configuration.getSettings(), configuration.getMode());
+            raw.append(selection.engine()).append('\n');
+            raw.append(selection.explicit()).append('\n');
+            Settings datasource = selection.group();
+            if (datasource != null) {
+                raw.append(String.valueOf(datasource.get("host"))).append('\n');
+                raw.append(String.valueOf(datasource.get("port"))).append('\n');
+                raw.append(String.valueOf(datasource.get("database"))).append('\n');
+                raw.append(String.valueOf(datasource.get("username"))).append('\n');
+                raw.append(String.valueOf(datasource.get("password"))).append('\n');
+                raw.append(String.valueOf(datasource.get("disable"))).append('\n');
+                if (JdbcEngine.POSTGRES.equals(selection.engine())) {
+                    raw.append(JdbcEngine.schema(datasource)).append('\n');
+                }
             }
+        } catch (EnhancementFailure failure) {
+            throw failure;
         } catch (RuntimeException e) {
-            throw configurationFailure("mysql settings were not read", e);
+            throw configurationFailure("datasource settings were not read", e);
         }
         List<EnhancementRule> rules = configuration.enhancementRules();
         for (int i = 0; i < rules.size(); i++) {
@@ -579,7 +584,19 @@ public class JPA {
         }
 
         public void buildDefaultDbType() {
-            dbType = new MysqlType();
+            JdbcEngine.Selection selection = JdbcEngine.primary(settings, mode);
+            String mapping = settings.get("type_mapping", JdbcEngine.defaultDbType(selection.engine()));
+            try {
+                Class<?> type = Class.forName(mapping, false, getClassLoader());
+                if (!DBType.class.isAssignableFrom(type)) {
+                    throw configurationFailure("type_mapping does not implement DBType: " + mapping);
+                }
+                dbType = (DBType) type.newInstance();
+            } catch (EnhancementFailure failure) {
+                throw failure;
+            } catch (Exception e) {
+                throw configurationFailure("type_mapping class was not loaded: " + mapping, e);
+            }
         }
 
         public void buildDefaultDBInfo() {

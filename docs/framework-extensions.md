@@ -12,6 +12,8 @@
 
 三个都要由 `dev/compat-services.sh run` 注入 `SF_COMPAT_ENV_FILE`。开关开了但没有这份环境文件时测试失败，不会悄悄跳过。只开其中一两个，不能写成整仓实库矩阵。
 
+PostgreSQL 聚焦验收是另一组隔离服务：`SF_ORM_PG=true` 打开 `OrmPostgresBusinessTest`，`SF_WEB_PG=true` 打开 `ApplicationPostgresTest`，两者都读取 `dev/pg-compat-services.sh run` 注入的 `SF_COMPAT_PG_ENV_FILE`。这组开关不替代上面的 MySQL 回归。
+
 ## 一个应用一个上下文
 
 `ApplicationContext` 拥有这次启动的 `EnhancementContext`、扫描器、Guice 模块、injector、过滤器目录和关闭动作。`ServiceFramwork` 上原来的 `injector`、`scanService`、`classPool`、`modules`、`AllModules` 只作为**默认应用**的别名：第二个 ClassLoader 启动时不会改写它们。`classPool` 这个静态字段也不再是增强用的池；增强用的是当前 `EnhancementContext` 自己的池。
@@ -28,16 +30,16 @@
 
 ## 启动顺序
 
-1. 读配置，确定 mode，以及 HTTP / Thrift / Dubbo / MySQL / MongoDB 是否启用。
+1. 读配置，确定 mode，以及 HTTP / Thrift / Dubbo / JDBC ORM / MongoDB 是否启用。
 2. 装载扩展描述。配置里禁用的扩展只保留类名字符串，不 `Class.forName`。
 3. 检查扩展 id、提供的能力、依赖、重复提供和环。这一步失败时还没有注册，也没有打开端口。
-4. 按拓扑顺序 `validate`，再 `register`。MySQL 启用时，`register` 调用 `JPA.configure(configuration, context)`。MongoDB 启用时调用 `MongoMongo.configure`。这个配置会在应用的 enhancement context 上登记一个 closer；context 关闭时会 unpublish 并关掉客户端。扩展自己的 `close()` 再调一次 `config.close()`，和那条 closer 是同一条收尾，重复调用是空操作。数据源 disable 或 `application.extensions.disabled` 里的类名不会 `Class.forName`，因此不扫描、不连接、也不加载那条实现类。一个写在禁用名单里、目标加载器上根本不存在的类，不会阻止 `configureSystem` 返回。
+4. 按拓扑顺序 `validate`，再 `register`。JDBC ORM 启用时，`register` 调用 `JPA.configure(configuration, context)`。MongoDB 启用时调用 `MongoMongo.configure`。这个配置会在应用的 enhancement context 上登记一个 closer；context 关闭时会 unpublish 并关掉客户端。扩展自己的 `close()` 再调一次 `config.close()`，和那条 closer 是同一条收尾，重复调用是空操作。数据源 disable 或 `application.extensions.disabled` 里的类名不会 `Class.forName`，因此不扫描、不连接、也不加载那条实现类。一个写在禁用名单里、目标加载器上根本不存在的类，不会阻止 `configureSystem` 返回。
 5. 扫描 Service / Util。这两类不改字节码，用 `Class.forName(binaryName, false, targetLoader)`。Controller 走 `controller-filter` 规则，全部 `apply` 成功后才 `define`。过滤器缺方法或签名不对，在这里失败。
 6. 创建 Guice injector，注册路由。
-7. 扩展 `start`。MySQL 启用时这里调用 `JPA.getJPAConfig()`，让 Hibernate 的启动失败发生在监听端口之前。
+7. 扩展 `start`。JDBC ORM 启用时这里调用 `JPA.getJPAConfig()`，让 Hibernate 的启动失败发生在监听端口之前。
 8. 最后才启动 Thrift、HTTP、Dubbo。`mode=test` 不再跳过端口；要跳过就设 `http.disable`、`thrift.disable` 或 `ServiceFramwork.disableHTTP()`。
 
-任何一步失败都会按启动的反序关闭已经创建的扩展和服务器，原始异常保留，关闭中的新异常进 `addSuppressed`。失败路径不会留下监听中的端口。MySQL 或 MongoDB 的配置、连接、增强或 `EntityManagerFactory` 失败发生在 HTTP 监听之前，已经打开的连接和客户端会关掉。
+任何一步失败都会按启动的反序关闭已经创建的扩展和服务器，原始异常保留，关闭中的新异常进 `addSuppressed`。失败路径不会留下监听中的端口。JDBC ORM 或 MongoDB 的配置、连接、增强或 `EntityManagerFactory` 失败发生在 HTTP 监听之前，已经打开的连接和客户端会关掉。
 
 `ModelLoader` 和 `DocumentLoader` 仍是公开入口，但不再自己扫类、不再 `toClass`、也不再把异常打印后继续。它们要求当前线程上有应用上下文，然后分别进入 `JPA.configure(configuration, context)` 和 `MongoMongo.configure`。数据源没启用时不另开一条扫描。异常原样抛出。类定义只走 common 的 `ClassDefiner`。
 
@@ -73,10 +75,12 @@ public interface FrameworkExtension {
 | --- | --- |
 | `application.extensions` | 逗号分隔的启用类名，按书写顺序做拓扑的平局 |
 | `application.extensions.disabled` | 逗号分隔的类名。类可以不存在。不会加载 |
-| `{mode}.datasources.mysql.disable` | 缺省 `false`。为 `true` 时不加载 ORM 扩展 |
+| `{mode}.datasources.primary` | 可选，值是 `mysql` 或 `postgres`（选择器也接受 `postgresql` 别名）。缺省是 `mysql` |
+| `{mode}.datasources.mysql.disable` | 缺省 `false`。只描述 MySQL 组；`primary` 未改或仍是 `mysql` 且它为 `true` 时不加载 ORM。`primary=postgres` 时不会让 PostgreSQL 被当成 MySQL 禁用 |
+| `{mode}.datasources.postgres.disable` | PostgreSQL 主数据源的关闭开关；仅在该组被 `primary=postgres` 选中后参与判断 |
 | `{mode}.datasources.mongodb.disable` | 缺省 `true`。为 `false` 时才加载 Mongo 扩展 |
 
-内置 ORM 扩展提供 `datasource.mysql`，Mongo 扩展提供 `datasource.mongodb`。增加一个扩展只需要实现接口并把类名写进配置，或者在 `start` 之前 `ApplicationContext.addExtension`。不必改 `Bootstrap`。
+内置 ORM 扩展一直提供通用能力 `datasource.orm`，再按 `enabled` 捕获到的主引擎提供 `datasource.mysql` 或 `datasource.postgres`。`OrmFrameworkExtension.CAPABILITY` 仍保持 `datasource.mysql` 这一旧值，供已有 MySQL 扩展声明依赖；选择 PostgreSQL 时不会把它写成 MySQL 能力。`OrmFrameworkExtension.mysqlDisabled(Settings, ApplicationContext)` 也保留旧签名，只读 `{mode}.datasources.mysql.disable` 这个 MySQL 键，不再是主数据源选择器。Mongo 扩展提供 `datasource.mongodb`。增加一个扩展只需要实现接口并把类名写进配置，或者在 `start` 之前 `ApplicationContext.addExtension`。不必改 `Bootstrap`。
 
 `registerModule`、`application.dynamic.implemented.*` 和 ORM 自己的校验器配置还是原来的入口。未启用的数据源不会去加载 `type_mapping` 里的类。
 

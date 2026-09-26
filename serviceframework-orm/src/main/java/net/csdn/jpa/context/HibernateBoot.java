@@ -80,6 +80,8 @@ public final class HibernateBoot {
         put(properties, "hibernate.hbm2ddl.auto", "none");
         put(properties, "hibernate.temp.use_jdbc_metadata_defaults", "false");
         put(properties, "hibernate.archive.autodetection", "none");
+        copyIfPresent(properties, legacy, "hibernate.default_schema");
+        copyIfPresent(properties, legacy, "hibernate.default_catalog");
         String provider = legacy.get("hibernate.connection.provider_class");
         if (provider == null) {
             provider = legacy.get("provider_class");

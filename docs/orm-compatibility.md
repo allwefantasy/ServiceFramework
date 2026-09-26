@@ -6,11 +6,13 @@
 
 `JPA.configure(configuration)` 在没有当前上下文时自己打开一个 `EnhancementContext`，并把它当作默认上下文。调用方也可以先 `activate()`，或调用 `JPA.configure(configuration, context)` 把已有上下文传进来。传进来的上下文由调用方 `close()`。`JPA.shutdown()` 关闭默认上下文。
 
-同一个上下文里，已经成功跑过的同一配置再调用 `configure` 不会重新增强。配置指纹包含模式、加载器身份、`application.model`、MySQL 的主机、端口、库名、用户和口令摘要，以及额外规则的 id 和版本。口令不写进日志。
+同一个上下文里，已经成功跑过的同一配置再调用 `configure` 不会重新增强。配置指纹包含模式、加载器身份、`application.model`、选中的 JDBC 引擎、主机、端口、库名、用户和口令摘要；PostgreSQL 还包含 schema。额外规则的 id 和版本也进指纹。口令不写进日志。
 
 加载器里已经定义过模型之后，换一份配置不能假装热替换。这种情况抛出 `EnhancementFailure`，类别 `CONFLICT`，并要求新的应用 `ClassLoader`。JVM 已定义的类撤不掉。
 
-`ModelClass` 的树、`JPA.models`、配置、`DBInfo`、`JPAConfig`、MySQL 连接池和 Quill 上下文都挂在当前 `EnhancementContext` 的 `OrmSession` 上。静态方法只在当前线程没有 scope 时回退到默认上下文。线程上已经 `activate()` 的上下文如果没有 ORM 会话，调用失败，不会借默认应用的配置、模型或连接池。关掉内层 scope 之后，外层 scope 或默认上下文按原来的栈恢复。显式传给 `JPA.configure(configuration, context)` 的上下文不会替换默认上下文。
+`ModelClass` 的树、`JPA.models`、配置、`DBInfo`、`JPAConfig`、选中的 JDBC 连接池和 Quill 上下文都挂在当前 `EnhancementContext` 的 `OrmSession` 上。静态方法只在当前线程没有 scope 时回退到默认上下文。线程上已经 `activate()` 的上下文如果没有 ORM 会话，调用失败，不会借默认应用的配置、模型或连接池。关掉内层 scope 之后，外层 scope 或默认上下文按原来的栈恢复。显式传给 `JPA.configure(configuration, context)` 的上下文不会替换默认上下文。
+
+主数据源由 `{mode}.datasources.primary` 选择，允许 `mysql` 和 `postgres`（`postgresql` 是选择器别名），缺省仍是 MySQL。`{mode}.datasources.mysql.*` 和 `{mode}.datasources.postgres.*` 都保留原结构，PostgreSQL 另有可选 `schema`（缺省 `public`）。`JdbcEngine` 是 common 里的共享选择器；`mysql.disable` 只关 MySQL 形态，不会让 `primary=postgres` 被误当成 MySQL 禁用。具体配置和测试命令见 [postgresql-support.md](postgresql-support.md)。
 
 ## 模型身份
 
@@ -38,7 +40,7 @@
 
 `JPA.getJPAConfig()` 不再往 `classLoader.getResource(".")` 写 `persistence.xml`。它用已注册的 `@Entity` 类和 `PersistenceUnitInfo` 做 Hibernate 容器引导。原来的 `new JPAConfig(Map, String)` 仍走 `Persistence.createEntityManagerFactory`，给已经准备好 `persistence.xml` 的调用方。
 
-`DBInfo.refresh()` 用 `DatabaseMetaData.getTables` 和一次 `getColumns` 读取当前 catalog，并用 try-with-resources 关闭连接和结果集。快照整体替换，不把表名越积越多。快照身份包含主机、端口、配置的库名和连接上的 catalog；对不上就拒绝使用。列类型会规范成 `MysqlType` 认识的 `TYPE_NAME`（例如 `INTEGER` 和 `INT UNSIGNED` 记成 `INT`）。标识符如果要拼进 SQL，走 `DBInfo.quoteIdentifier`，反引号会加倍。
+`DBInfo.refresh()` 用 `DatabaseMetaData.getTables` 和一次 `getColumns` 读取当前 catalog，并用 try-with-resources 关闭连接和结果集。快照整体替换，不把表名越积越多。快照身份包含主机、端口、配置的库名和连接上的 catalog；PostgreSQL 还记录选中 schema。对不上就拒绝使用。列类型按当前引擎规范：MySQL 仍把 `INTEGER` / `INT UNSIGNED` 记成 `INT`，PostgreSQL 会把 `uuid`、`numeric(10,2)`、`timestamp with time zone` 等规范成 `UUID`、`NUMERIC`、`TIMESTAMPTZ`，交给 `PostgresType` 映射。标识符如果要拼进 SQL，走 `DBInfo.quoteIdentifier`；MySQL 用反引号，PostgreSQL 用双引号并加倍内部引号。
 
 `DBInfo.schemaSnapshot()` 是这份快照的规范文本，不是连接身份。第一行是 `db-schema v1`，然后按表名排序，每张表一行 `table 表名`，其下列按列名排序，一行 `column 列名 TYPE`。没有主机、端口、库名、用户、口令或 JDBC URL。`schemaDigest()` 是这段文本的 SHA-256 小写十六进制，每次调用都重新哈希，不缓存；`schemaDigestComputations()` 因此会增加。`refresh()` 换掉快照之后，下一次摘要跟着变，列元数据也是新的。诊断关闭时，`configure` 不会去算这枚摘要。调用方自己要摘要时直接调 `schemaDigest()`，这和诊断开关无关。
 
@@ -86,23 +88,23 @@ JPA.configure(new JPA.CSDNORMConfiguration(mode, settings, anchor)
 
 校验器实现仍然放在 `JPABase.validateParses` 这个静态列表里，重复 `configure` 不会把同一个解析器再加一遍。它没有按上下文拆开。
 
-`JPABase.mysqlClient` 是指向当前 `OrmSession` 的桥，类初始化时不建池、不连数据库。`new MysqlClient(DataSource)` 仍然只使用调用方传入的数据源。每个应用的 Druid 池由自己的 `DataSourceManager` 按创建顺序持有；中途创建失败会关掉已经打开的池。Quill 拿到的是不关闭底层池的包装。关闭上下文时按创建的逆序先关 Quill 和 `EntityManager`，再关本上下文的池和 `EntityManagerFactory`。同一个池对象只关一次。MySQL 被禁用的上下文不会打开池，也不会使用另一个上下文的池。
+`JPABase.mysqlClient` 是指向当前 `OrmSession` 的桥，类初始化时不建池、不连数据库，并且只在 `primary=mysql` 时可用。PostgreSQL 主数据源走 `JPABase.postgresClient()` 或 `OrmSession.current().postgresClient()`；`MysqlClient` 这个历史类名只是 JDBC 客户端包装，不代表实际引擎。`new MysqlClient(DataSource)` 仍然只使用调用方传入的数据源。每个应用的 Druid 池由自己的 `DataSourceManager` 按创建顺序持有；中途创建失败会关掉已经打开的池。Quill 拿到的是不关闭底层池的包装。关闭上下文时按创建的逆序先关 Quill 和 `EntityManager`，再关本上下文的池和 `EntityManagerFactory`。同一个池对象只关一次。主数据源被禁用的上下文不会打开池，也不会使用另一个上下文的池。
 
 `JPAConfig` 只登记还没关闭的 `EntityManager`。`closeTx` 和 `close` 都会把它拿掉，关闭失败也同样拿掉，不再把已经结束的请求留到进程退出。`JPAContext.close` 会把自己的 `EntityManager` 字段清掉，别的线程上残留的 `ThreadLocal` 因此不会一直握着已经关闭的 Hibernate 会话。`em()` 返回的是包装。对这个包装调用 `close()`，或者 `unwrap(Session.class)` 之后再 `close()`，都会先回滚还开着的事务，再注销并关闭真正的会话。Hibernate 在 JPA 引导下如果事务还没结束就 `close()`，只会把会话标成等待自动关闭，JDBC 连接继续算作借出；先回滚再关，连接才会回到池的可用队列。再往下 unwrap 到 Hibernate 实现类不在这个契约里。`shutdown` 仍会关闭别的线程上还开着的会话；某一个 `close` 失败不会挡住其余资源，第一个异常抛出，其余挂在 suppressed 上。
 
-建池失败时抛出的消息，以及 `JPA.properties` 打出的 `connect url`，只保留 `jdbc:mysql://主机:端口/库名`。查询串和 userinfo 不进这两处诊断，所以 `jdbc.*` 里的口令不会写出来。真正交给驱动的 URL 仍带着这些参数。
+建池失败时抛出的消息，以及 `JPA.properties` 打出的 `connect url`，只保留 `jdbc:mysql://主机:端口/库名` 或 `jdbc:postgresql://主机:端口/库名`。查询串和 userinfo 不进这两处诊断，所以 `jdbc.*` 里的口令不会写出来。真正交给驱动的 URL 仍带着这些参数。
 
 Quill 经 scala-logging 使用 SLF4J。scala-logging 传递依赖是 `slf4j-api` 1.7.26，ORM 直接依赖 1.7.32，把 API 定在这一版，并且不带绑定。没有绑定时 `LoggerFactory` 退回 NOP，上下文照样能建。应用自己选绑定。
 
-`QuillDB.ctx` 是方法，不是进程级 `lazy val`，这样两个应用不会共用一个上下文。Scala 不能写 `import QuillDB.ctx._`。支持的写法是 `val ctx = QuillDB.ctx`，然后 `import ctx._`。`createNewCtxByNameFromStr` 在当前增强上下文里没有 JPA 实体、也没有 Hibernate 时，仍能按 snippet 自己建池。这个池归当前上下文关闭，不会去借另一个应用的池。调用发生时如果既没有 scope，也没有 ORM 会话，池归一个 compat 上下文，只能通过 `QuillDB.close()` 关掉。关掉之后再按同一个名字取，得到的是新池，旧池不会被交回来。`createNewCtxByNameFromYml` 仍在，它读取当前上下文或这个 compat 上下文里已经建好的连接，不会自己再开一个全局池。
+`QuillDB.ctx` 和 `QuillDB.postgresCtx` 都是方法，不是进程级 `lazy val`，这样两个应用不会共用一个上下文。`ctx` 仍要求 `primary=mysql` 并返回 `MysqlJdbcContext`；`postgresCtx` 要求 `primary=postgres` 并返回 `PostgresJdbcContext`。Scala 不能写 `import QuillDB.ctx._`；支持的写法是 `val ctx = QuillDB.postgresCtx`，然后 `import ctx._`。命名 PostgreSQL 池配置在 `{mode}.datasources.multi-postgres.<name>`，对应 `QuillDB.createNewPostgresCtxByNameFromYml(<name>)`；字符串入口是 `createNewPostgresCtxByNameFromStr`。`createNewCtxByNameFromStr` 保留原来的 MySQL 语义，在当前增强上下文里没有 JPA 实体、也没有 Hibernate 时，仍能按 snippet 自己建池。这个池归当前上下文关闭，不会去借另一个应用的池。调用发生时如果既没有 scope，也没有 ORM 会话，池归一个 compat 上下文，只能通过 `QuillDB.close()` 关掉。关掉之后再按同一个名字取，得到的是新池，旧池不会被交回来。`createNewCtxByNameFromYml` 和 `createNewPostgresCtxByNameFromYml` 都在，读取当前上下文或这个 compat 上下文里已经建好的连接，不会自己再开一个全局池。
 
 `JPAConfig.shutdown()` 关掉这个配置还开着的 `EntityManager`（未提交的事务回滚）和工厂，包括别的线程上尚未结束的会话。已经正常结束或关闭失败的会话不留在登记里。调用方应先停止新请求再关；不会去杀业务线程。关闭过程里的多个异常保留第一个，其余挂在 suppressed 上。关掉一个配置不影响另一个配置。关闭之后再取 `EntityManager` 或连接会失败。Hibernate 5.3.7 在 JDK 17 上需要 `javax.xml.bind`。ORM 使用 Central 上的 `jakarta.xml.bind-api` 2.3.2 和 `org.glassfish.jaxb:jaxb-runtime` 2.3.2。这两个坐标的类仍在 `javax.xml.bind` 包里，API 的 class 主版本是 52，运行时基线 class 主版本是 51，不是 Jakarta XML Binding 3 或 4。`javax.xml.bind` 的 110 个类只来自 `jakarta.xml.bind-api` 2.3.2，不是重复。Hibernate 和 Connector/J 没有为这件事升级。
 
-Activation 也停在 1.2.x 的 `javax.activation` 包。Hibernate 5.3.7 带 `javax.activation:javax.activation-api` 1.2.0。`jakarta.xml.bind-api` 2.3.2 再带 `jakarta.activation:jakarta.activation-api` 1.2.1；`jaxb-runtime` 2.3.2 的传递依赖里原来也会带上同一份。两份 jar 里是同一套 31 个 `javax.activation` 类。ORM 在这两个依赖上排除 `jakarta.activation-api`，并直接依赖 `javax.activation-api` 1.2.0。不改成 Jakarta Activation 2 的 `jakarta.activation` 包。SLF4J 仍只有 API 1.7.32，没有 `slf4j-nop` 或其他绑定。Connector/J 5.1.6 连接隔离的 MySQL 8.0.46。
+Activation 也停在 1.2.x 的 `javax.activation` 包。Hibernate 5.3.7 带 `javax.activation:javax.activation-api` 1.2.0。`jakarta.xml.bind-api` 2.3.2 再带 `jakarta.activation:jakarta.activation-api` 1.2.1；`jaxb-runtime` 2.3.2 的传递依赖里原来也会带上同一份。两份 jar 里是同一套 31 个 `javax.activation` 类。ORM 在这两个依赖上排除 `jakarta.activation-api`，并直接依赖 `javax.activation-api` 1.2.0。不改成 Jakarta Activation 2 的 `jakarta.activation` 包。SLF4J 仍只有 API 1.7.32，没有 `slf4j-nop` 或其他绑定。Connector/J 5.1.6 连接隔离的 MySQL 8.0.46；`org.postgresql:postgresql` 42.7.13 由根 POM 管理，并从 `serviceframework-common` 传入 ORM。
 
 ## 自测
 
-JDK 17 编译并 `install` 一次，目标字节码是 8。同一批 `target/classes` 和 `target/test-classes` 再分别用 JDK 17 和 JDK 8 跑 Surefire，中间不 `clean`、不重新编译。哈希记在当次命令输出里。Maven 使用 `-s '/tmp/sf maven central/settings.xml'`。数据库和 Maven 共用协调锁；`dev/compat-services.sh run` 拉起隔离 MySQL 8.0.46，结束时停掉本次进程。口令只留在 `SF_COMPAT_ENV_FILE`。Surefire 子进程认环境变量 `SF_ORM_MYSQL=true`。没开这个开关时实库测试会跳过，跳过不算通过。开了开关但没有隔离库，测试失败。
+JDK 17 编译并 `install` 一次，目标字节码是 8。同一批 `target/classes` 和 `target/test-classes` 再分别用 JDK 17 和 JDK 8 跑 Surefire，中间不 `clean`、不重新编译。哈希记在当次命令输出里。Maven 使用 `-s '/tmp/sf maven central/settings.xml'`。数据库和 Maven 共用协调锁；`dev/compat-services.sh run` 拉起隔离 MySQL 8.0.46，结束时停掉本次进程。口令只留在 `SF_COMPAT_ENV_FILE`。Surefire 子进程认环境变量 `SF_ORM_MYSQL=true`。PostgreSQL 使用独立的 `dev/pg-compat-services.sh run`，注入 `SF_COMPAT_PG_ENV_FILE`，并由 `SF_ORM_PG=true` / `SF_WEB_PG=true` 打开对应测试。没开这些开关时实库测试会跳过，跳过不算通过。开了开关但没有隔离库，测试失败。
 
 聚焦测试：
 
@@ -112,14 +114,16 @@ JDK 17 编译并 `install` 一次，目标字节码是 8。同一批 `target/cla
 - `OrmContextIsolationTest`（默认上下文已配置时，空的 active context 和禁用 context 不能借配置；scope 按栈恢复）
 - `DynamicJpaFinderBytecodeTest`
 - `OrmMysqlBusinessTest`（保存、分页、回滚、关联、三级继承、同名解析，两个真实 `JPAConfig` / 池，多次提交和回滚之后仍打开的 `EntityManager` 回到 0。手动 `close()` 和 `unwrap(Session.class).close()` 之后，Hibernate 池的借出数回到 0，同一条连接回到可用队列并且 `@@autocommit` 恢复为 1。另一个线程上尚未关闭的会话在 shutdown 时被关掉，关掉之后借出数仍是 0。没有 Hibernate 的上下文和 compat 入口上的 Quill `SELECT` 也在这里。`ALTER` 之后 `refresh` 会换掉列元数据和 schema 摘要，连续两次 `schemaDigest()` 计数增加、十六进制不变）
+- `OrmPostgresBusinessTest`（PostgreSQL 主数据源上的保存、分页、回滚、关联、`UUID` / `NUMERIC` / `TIMESTAMP` / `BYTEA` 类型、schema 过滤和 refresh、命名 `multi-postgres` 池、`postgresCtx`，以及两个上下文各自持有并关闭自己的池）
+- `JdbcEngineSelectionTest`（默认 MySQL、PostgreSQL 别名和 schema 传播、非法引擎、类型映射）
 - `OrmDiagnosticsLiveTest`（关闭诊断时不算 schema 摘要、不哈希。打开诊断时父类和子类的原始摘要等于增强前的类字节；查询方法和关联方法记在各自的规则上；用户 getter 保持不变；非叶子跳过查询方法。`final getNote()` 冲突写出类、规则和阶段，并关掉本次拥有的 context。代表报告在 `/tmp/sf-orm-diagnostics-report/`）
 - `TrackedEntityManagerCloseTest`（关闭先回滚再关；关闭失败仍注销，rollback 失败是 primary，随后的 close 失败挂在 suppressed 上）
 - `JdbcEndpointTest`（诊断里的 JDBC 地址去掉查询串和 userinfo；连接用的 URL 仍保留 `jdbc.*`；用合成口令，不写真实口令）
 - `OrmLoggingContractTest`（模块不传递 `slf4j-nop`，classpath 上是 `slf4j-api` 1.7.32。隔离加载器里没有绑定和换上应用自己的绑定，都能建起 Quill `MysqlJdbcContext`）
 - `QueryApiRegressionTest`（Java 和 Scala companion 调用仍在）
-- `QuillImportCompileTest`（`val ctx = QuillDB.ctx; import ctx._` 能编译）
+- `QuillImportCompileTest`（`val ctx = QuillDB.ctx; import ctx._` 和 `postgresCtx` / 命名 PostgreSQL 入口能编译）
 - `DataSourceManagerCloseTest`（同一个池只关一次；关闭失败仍清掉其余登记，并保留 primary 和 suppressed）
 
-两个应用可以共用 `sf_compat`。隔离看的是不同的池、`EntityManager` 和 `connection_id`，以及关掉一边之后另一边还能读写。同一张表里能看见对方已提交的行，这是共享库，不是上下文串了。
+两个应用可以共用 `sf_compat`。隔离看的是不同的池、`EntityManager` 和后端连接号（MySQL 是 `connection_id`，PostgreSQL 是 `pg_backend_pid()`），以及关掉一边之后另一边还能读写。同一张表里能看见对方已提交的行，这是共享库，不是上下文串了。
 
 扫描到的类如果父类字节码缺失，`ModelClass.isModelSubclass` 抛出 `EnhancementFailure`，类别 `ENHANCEMENT`，阶段 `hierarchy`，类名是目标，detail 里有父类名。父类链能解析且不是 `Model` 的普通类仍然返回 false，扫描会跳过它。

@@ -2,6 +2,7 @@ package net.csdn.jpa;
 
 import net.csdn.common.enhancer.EnhancementContext;
 import net.csdn.common.enhancer.EnhancementFailure;
+import net.csdn.common.settings.JdbcEngine;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.enhancer.ModelClass;
@@ -41,7 +42,7 @@ public final class OrmSession {
     private boolean configured;
     private boolean definedModels;
     private boolean entityMappingDone;
-    private MysqlClient mysqlClient;
+    private MysqlClient sqlClient;
     private Object quillState;
     private final List<Closeable> closeables = new ArrayList<Closeable>();
     private boolean resourcesClosed;
@@ -189,22 +190,24 @@ public final class OrmSession {
     }
 
     /**
-     * Mysql client for this application. A disabled or unconfigured context does not open a pool.
+     * Selected JDBC client for this application. A disabled or unconfigured
+     * context does not open a pool. The historical {@code MysqlClient} type is
+     * engine-neutral JDBC plumbing; engine-specific APIs below gate by name.
      */
-    public MysqlClient mysqlClient() {
+    public MysqlClient sqlClient() {
         synchronized (this) {
             ensureOpen();
-            if (mysqlClient != null) {
-                return mysqlClient;
+            if (sqlClient != null) {
+                return sqlClient;
             }
         }
-        if (!hasConfiguration() || mysqlDisabled()) {
+        if (!hasConfiguration() || primaryDisabled()) {
             throw new EnhancementFailure(
                     EnhancementFailure.Category.CONFIGURATION,
                     null,
                     null,
-                    "mysql",
-                    "mysql is not available in this context",
+                    "datasource",
+                    "primary datasource is not available in this context",
                     null);
         }
         Settings settings = configuration.getSettings();
@@ -216,11 +219,11 @@ public final class OrmSession {
                     manager.close();
                     throw sessionFailure("ORM context is closed");
                 }
-                if (mysqlClient != null) {
+                if (sqlClient != null) {
                     manager.close();
-                    return mysqlClient;
+                    return sqlClient;
                 }
-                mysqlClient = created;
+                sqlClient = created;
                 closeables.add(manager);
                 return created;
             }
@@ -235,14 +238,45 @@ public final class OrmSession {
     }
 
     /**
-     * This session has a configuration whose MySQL pools may be opened.
+     * MySQL-specific legacy entry point. It does not silently run against a
+     * PostgreSQL primary.
+     */
+    public MysqlClient mysqlClient() {
+        requirePrimaryEngine(JdbcEngine.MYSQL);
+        return sqlClient();
+    }
+
+    /**
+     * PostgreSQL entry point for the selected primary datasource.
+     */
+    public MysqlClient postgresClient() {
+        requirePrimaryEngine(JdbcEngine.POSTGRES);
+        return sqlClient();
+    }
+
+    /**
+     * This session has a configuration whose selected JDBC pools may be opened.
      * A disabled or missing configuration is false and must not borrow another session.
      */
-    public boolean mysqlAvailable() {
+    public boolean datasourceAvailable() {
         if (resourcesClosed || !configured || configuration == null) {
             return false;
         }
-        return !mysqlDisabled();
+        return !primaryDisabled();
+    }
+
+    /**
+     * This session has an enabled MySQL primary.
+     */
+    public boolean mysqlAvailable() {
+        return datasourceAvailable() && JdbcEngine.MYSQL.equals(primaryEngine());
+    }
+
+    /**
+     * This session has an enabled PostgreSQL primary.
+     */
+    public boolean postgresAvailable() {
+        return datasourceAvailable() && JdbcEngine.POSTGRES.equals(primaryEngine());
     }
 
     public Object quillState() {
@@ -262,11 +296,32 @@ public final class OrmSession {
         }
     }
 
-    private boolean mysqlDisabled() {
+    private boolean primaryDisabled() {
         if (configuration == null) {
             return true;
         }
-        return configuration.getSettings().getAsBoolean(configuration.getMode() + ".datasources.mysql.disable", false);
+        return JdbcEngine.primaryDisabled(configuration.getSettings(), configuration.getMode());
+    }
+
+    private String primaryEngine() {
+        if (configuration == null) {
+            return null;
+        }
+        return JdbcEngine.primary(configuration.getSettings(), configuration.getMode()).engine();
+    }
+
+    private void requirePrimaryEngine(String engine) {
+        String actual = primaryEngine();
+        if (!JdbcEngine.normalize(engine).equals(actual)) {
+            throw new EnhancementFailure(
+                    EnhancementFailure.Category.CONFIGURATION,
+                    null,
+                    null,
+                    "datasource",
+                    JdbcEngine.normalize(engine) + " datasource API requires datasources.primary=" + JdbcEngine.normalize(engine)
+                            + "; actual primary is " + String.valueOf(actual),
+                    null);
+        }
     }
 
     private void ensureOpen() {
@@ -354,7 +409,7 @@ public final class OrmSession {
             snapshot = new ArrayList<Closeable>(closeables);
             closeables.clear();
             jpaConfig = null;
-            mysqlClient = null;
+            sqlClient = null;
             quillState = null;
         }
         List<Throwable> failures = new ArrayList<Throwable>();

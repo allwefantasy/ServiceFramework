@@ -4,6 +4,7 @@ import net.csdn.bootstrap.ApplicationContext;
 import net.csdn.bootstrap.FrameworkExtension;
 import net.csdn.common.collections.WowCollections;
 import net.csdn.common.enhancer.EnhancementFailure;
+import net.csdn.common.settings.JdbcEngine;
 import net.csdn.common.settings.Settings;
 
 import java.util.ArrayList;
@@ -36,11 +37,10 @@ public final class ExtensionSession {
 
     public void prepare(ApplicationContext context, Settings settings, List<FrameworkExtension> programmatic) {
         List<Descriptor> descriptors = new ArrayList<Descriptor>();
-        boolean mysql = !Boolean.TRUE.equals(settings.getAsBoolean(
-                context.mode().name() + ".datasources.mysql.disable", Boolean.FALSE));
+        boolean orm = !JdbcEngine.primaryDisabled(settings, context.mode().name());
         boolean mongo = !Boolean.TRUE.equals(settings.getAsBoolean(
                 context.mode().name() + ".datasources.mongodb.disable", Boolean.TRUE));
-        descriptors.add(new Descriptor(BuiltinExtensions.ORM, mysql));
+        descriptors.add(new Descriptor(BuiltinExtensions.ORM, orm));
         descriptors.add(new Descriptor(BuiltinExtensions.MONGO, mongo));
         for (String name : WowCollections.split2(settings.get("application.extensions"), ",")) {
             if (name.trim().length() > 0) {

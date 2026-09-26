@@ -19,12 +19,28 @@
             <artifactId>serviceframework-common_2.13</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <!-- mongodb-driver-legacy keeps the com.mongodb.DB / DBCollection /
+             DBCursor / MongoClient API this module exposes. It needs
+             mongodb-driver-core, mongodb-driver-sync and bson at runtime;
+             com.mongodb.Mongo no longer exists, so the client type is
+             MongoClient. Class file major version stays 52 (Java 8).
+             bson-record-codec is excluded: it is the driver-core optional
+             Java 17 Record codec (class major 61). The legacy Document API
+             this module distributes does not include that extension, and
+             driver-core probes for it reflectively, catching
+             ClassNotFoundException/UnsupportedClassVersionError when absent. -->
         <dependency>
             <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>3.12.14</version>
+            <artifactId>mongodb-driver-legacy</artifactId>
+            <version>5.13.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.mongodb</groupId>
+                    <artifactId>bson-record-codec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        <!-- Driver POM declares slf4j-api 1.7.6 optional, so Maven does not bring it.
+        <!-- Driver POM declares slf4j-api optional, so Maven does not bring it.
              1.7.32 is the API only (class major 49). The application chooses a binding. -->
         <dependency>
             <groupId>org.slf4j</groupId>

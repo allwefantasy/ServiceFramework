@@ -4,7 +4,7 @@
 
 - Projects 目录下的 ActiveORM（常被叫作 `active-ORM`）与本项目是关联项目。本机目录是 `~/projects/active_orm`，远程仓库是 `https://github.com/allwefantasy/active_orm`。
 - 本仓库里的权威实现是 `serviceframework-orm`。独立仓库是同源的 ActiveORM，集成方式是启动时字节码增强，不是运行时远程调用。跨项目排查时先确认 `~/projects/active_orm` 存在，再读对应源码。
-- 不要把独立 `active_orm` 的 jar 和 `serviceframework-orm` 放进同一个 classpath。外部仓库仍是更老的 Java / Hibernate 线，不能当成已经和本仓库的 JDK 8 / JDK 17 构建对齐。维护边界见 `docs/active-orm-maintenance.md`。
+- 不要把独立 `active_orm` 的 jar 和 `serviceframework-orm` 放进同一个 classpath。独立仓库现已是 Java 8 编译目标，并在 JDK 8 / JDK 17 上各自独立构建与实库验收；但它仍是自己那条更老的 Hibernate 线和 JVM 级单一全局 `JPA` 上下文，不是框架的 per-context 模型，两边的验收结论也不能互相借用。维护边界见 `docs/active-orm-maintenance.md`。
 
 ## RemoteService MySQL 端到端
 

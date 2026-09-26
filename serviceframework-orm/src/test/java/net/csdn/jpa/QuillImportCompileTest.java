@@ -60,6 +60,7 @@ public class QuillImportCompileTest {
         String output = new String(Files.readAllBytes(log.toPath()), StandardCharsets.UTF_8);
         assertEquals(output, 0, exit);
         assertTrue(new File(out, "net/csdn/jpa/quillcheck/StableImport.class").isFile());
+        assertTrue(new File(out, "net/csdn/jpa/quillcheck/PostgresImport.class").isFile());
     }
 
     private static String sourceText() {
@@ -69,6 +70,13 @@ public class QuillImportCompileTest {
                 + "  val ctx = net.csdn.jpa.QuillDB.ctx\n"
                 + "  import ctx._\n"
                 + "  val listed = quote { query[Probe].map(_.id) }\n"
+                + "}\n"
+                + "object PostgresImport {\n"
+                + "  val pg = net.csdn.jpa.QuillDB.postgresCtx\n"
+                + "  import pg._\n"
+                + "  val pgListed = quote { query[Probe].map(_.id) }\n"
+                + "  val namedPg = net.csdn.jpa.QuillDB.createNewPostgresCtxByNameFromYml(\"report\")\n"
+                + "  val snippetPg = net.csdn.jpa.QuillDB.createNewPostgresCtxByNameFromStr(\"report\", \"\")\n"
                 + "}\n";
     }
 

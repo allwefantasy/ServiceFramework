@@ -11,6 +11,7 @@ import net.csdn.common.env.Environment;
 import net.csdn.common.exception.ExceptionHandler;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
+import net.csdn.common.settings.JdbcEngine;
 import net.csdn.common.settings.Settings;
 import net.csdn.constants.CError;
 import net.csdn.http.server.JettyServer;
@@ -83,7 +84,7 @@ public class HttpServer {
         registerHttpFinishProcessor(new DefaultHttpFinishProcessor());
 
         Environment environment = new Environment(settings);
-        disableMysql = settings.getAsBoolean(ServiceFramwork.currentMode() + ".datasources.mysql.disable", false);
+        disableMysql = JdbcEngine.primaryDisabled(settings, ServiceFramwork.currentMode().name());
         JettyServer jettyServer = new JettyServer();
         httpPort = settings.getAsInt("http.port", generateHttpPort());
 

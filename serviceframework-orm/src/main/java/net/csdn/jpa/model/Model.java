@@ -2,6 +2,7 @@ package net.csdn.jpa.model;
 
 import net.csdn.common.exception.AutoGeneration;
 import net.csdn.jpa.JPA;
+import net.csdn.jpa.OrmSession;
 import net.csdn.jpa.exception.JPAQueryException;
 import net.csdn.modules.persist.mysql.MysqlClient;
 
@@ -21,7 +22,7 @@ import static net.csdn.common.collections.WowCollections.map;
 public class Model extends JPABase {
 
     public static List<Map> findBySql(String sql, Object... params) {
-        return mysqlClient.query(sql, params);
+        return OrmSession.current().sqlClient().query(sql, params);
     }
 
     public static JPAQuery findByHQL(String hql, Object... params) {
@@ -29,11 +30,11 @@ public class Model extends JPABase {
     }
 
     public static MysqlClient nativeSqlClient() {
-        return mysqlClient.defaultMysqlService();
+        return OrmSession.current().sqlClient().defaultMysqlService();
     }
 
     public static MysqlClient nativeSqlClient(String dbName) {
-        return mysqlClient.mysqlService(dbName);
+        return OrmSession.current().sqlClient().mysqlService(dbName);
     }
 
     //field validate

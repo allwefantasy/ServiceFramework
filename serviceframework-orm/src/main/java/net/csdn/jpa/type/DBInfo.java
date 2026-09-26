@@ -4,6 +4,7 @@ import net.csdn.common.Strings;
 import net.csdn.common.enhancer.EnhancementFailure;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
+import net.csdn.common.settings.JdbcEngine;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -46,12 +47,16 @@ public class DBInfo {
     private static final String SCHEMA_HEADER = "db-schema v1";
 
     private final Settings settings;
+    private final JdbcEngine.Selection selection;
+    private final String engine;
     private final boolean disabled;
     private final String host;
     private final String port;
     private final String database;
+    private final String schema;
     private final String username;
     private final String password;
+    private final String driver;
     private final String url;
     private final Map<String, String> aliasToTable = new LinkedHashMap<String, String>();
     private volatile Snapshot snapshot = Snapshot.empty();
@@ -59,15 +64,23 @@ public class DBInfo {
     private int schemaDigestComputations;
 
     public DBInfo(Settings settings) {
+        this(settings, JPA.mode());
+    }
+
+    public DBInfo(Settings settings, String mode) {
         this.settings = settings;
-        Settings mysql = mysqlSettings(settings);
-        this.disabled = mysql == null || settings.getAsBoolean(JPA.mode() + ".datasources.mysql.disable", false);
-        this.host = mysql == null ? "" : value(mysql.get("host"));
-        this.port = mysql == null ? "" : value(mysql.get("port"));
-        this.database = mysql == null ? "" : value(mysql.get("database"));
-        this.username = mysql == null ? "" : value(mysql.get("username"));
-        this.password = mysql == null ? "" : value(mysql.get("password"));
-        this.url = mysql == null ? "" : JPA.properties(mysql).get("url");
+        this.selection = JdbcEngine.primary(settings, mode);
+        this.engine = selection.engine();
+        this.disabled = selection.disabled();
+        Settings datasource = selection.group();
+        this.host = datasource == null ? "" : value(datasource.get("host"));
+        this.port = datasource == null ? "" : value(datasource.get("port"));
+        this.database = datasource == null ? "" : value(datasource.get("database"));
+        this.schema = JdbcEngine.POSTGRES.equals(engine) && datasource != null ? JdbcEngine.schema(datasource) : "";
+        this.username = datasource == null ? "" : value(datasource.get("username"));
+        this.password = datasource == null ? "" : value(datasource.get("password"));
+        this.driver = datasource == null ? "" : value(datasource.get("driver", JdbcEngine.defaultDriver(engine)));
+        this.url = datasource == null ? "" : JPA.properties(datasource, engine).get("url");
         if (!disabled) {
             try {
                 refresh();
@@ -85,7 +98,7 @@ public class DBInfo {
 
     public void refresh() {
         if (disabled) {
-            throw metadataFailure("mysql is disabled", null);
+            throw metadataFailure(engine + " datasource is disabled", null);
         }
         long started = System.nanoTime();
         int tableCalls = 0;
@@ -96,14 +109,19 @@ public class DBInfo {
             if (catalog == null || catalog.length() == 0 || !catalog.equalsIgnoreCase(database)) {
                 throw metadataFailure("connected catalog does not match configured database", null);
             }
+            String schemaPattern = JdbcEngine.POSTGRES.equals(engine) ? schema : null;
             DatabaseMetaData metaData = connection.getMetaData();
             Map<String, Map<String, String>> columnsByTable = new LinkedHashMap<String, Map<String, String>>();
             List<String> names = new ArrayList<String>();
             tableCalls++;
-            try (ResultSet tables = metaData.getTables(catalog, null, "%", new String[]{"TABLE"})) {
+            try (ResultSet tables = metaData.getTables(catalog, schemaPattern, "%", new String[]{"TABLE"})) {
                 while (tables.next()) {
                     String tableCatalog = tables.getString("TABLE_CAT");
+                    String tableSchema = tables.getString("TABLE_SCHEM");
                     if (tableCatalog != null && !tableCatalog.equalsIgnoreCase(catalog)) {
+                        continue;
+                    }
+                    if (JdbcEngine.POSTGRES.equals(engine) && !schema.equals(tableSchema)) {
                         continue;
                     }
                     String tableName = tables.getString("TABLE_NAME");
@@ -115,10 +133,14 @@ public class DBInfo {
                 }
             }
             columnCalls++;
-            try (ResultSet columns = metaData.getColumns(catalog, null, "%", "%")) {
+            try (ResultSet columns = metaData.getColumns(catalog, schemaPattern, "%", "%")) {
                 while (columns.next()) {
                     String tableCatalog = columns.getString("TABLE_CAT");
+                    String tableSchema = columns.getString("TABLE_SCHEM");
                     if (tableCatalog != null && !tableCatalog.equalsIgnoreCase(catalog)) {
+                        continue;
+                    }
+                    if (JdbcEngine.POSTGRES.equals(engine) && !schema.equals(tableSchema)) {
                         continue;
                     }
                     String tableName = columns.getString("TABLE_NAME");
@@ -128,10 +150,10 @@ public class DBInfo {
                     if (table == null || columnName == null) {
                         continue;
                     }
-                    table.put(columnName, normalizeTypeName(typeName));
+                    table.put(columnName, normalizeTypeName(engine, typeName));
                 }
             }
-            String identity = identity(host, port, database, catalog);
+            String identity = identity(engine, host, port, database, catalog, schema);
             Snapshot next = new Snapshot(identity, names, columnsByTable);
             this.snapshot = next;
             rememberTableAliases(names);
@@ -169,6 +191,10 @@ public class DBInfo {
         }
         if (database.length() > 0 && snapshot.identity.indexOf("/" + database + "#") < 0) {
             throw metadataFailure("schema snapshot does not include the configured database", null);
+        }
+        if (JdbcEngine.POSTGRES.equals(engine)
+                && !snapshot.identity.endsWith("#schema=" + schema)) {
+            throw metadataFailure("schema snapshot does not include the configured postgres schema", null);
         }
         if (key == null) {
             return null;
@@ -282,8 +308,15 @@ public class DBInfo {
     }
 
     public static String quoteIdentifier(String identifier) {
+        return quoteIdentifier(JdbcEngine.MYSQL, identifier);
+    }
+
+    public static String quoteIdentifier(String engine, String identifier) {
         if (identifier == null) {
             throw metadataFailure("identifier is required", null);
+        }
+        if (JdbcEngine.POSTGRES.equals(JdbcEngine.normalize(engine))) {
+            return "\"" + identifier.replace("\"", "\"\"") + "\"";
         }
         return "`" + identifier.replace("`", "``") + "`";
     }
@@ -293,6 +326,17 @@ public class DBInfo {
      * Unknown names are returned unchanged, uppercased, so a new type is not silently remapped.
      */
     public static String normalizeTypeName(String typeName) {
+        return normalizeTypeName(JdbcEngine.MYSQL, typeName);
+    }
+
+    public static String normalizeTypeName(String engine, String typeName) {
+        if (JdbcEngine.POSTGRES.equals(JdbcEngine.normalize(engine))) {
+            return normalizePostgresTypeName(typeName);
+        }
+        return normalizeMysqlTypeName(typeName);
+    }
+
+    private static String normalizeMysqlTypeName(String typeName) {
         if (typeName == null) {
             return "";
         }
@@ -348,6 +392,59 @@ public class DBInfo {
         return upper;
     }
 
+    private static String normalizePostgresTypeName(String typeName) {
+        if (typeName == null) {
+            return "";
+        }
+        String upper = typeName.trim().toUpperCase(Locale.ROOT);
+        if (upper.equals("INT8") || upper.equals("BIGSERIAL") || upper.startsWith("BIGINT")) {
+            return "BIGINT";
+        }
+        if (upper.equals("INT2") || upper.startsWith("SMALLINT") || upper.equals("SMALLSERIAL")) {
+            return "SMALLINT";
+        }
+        if (upper.equals("INT4") || upper.equals("SERIAL") || upper.startsWith("INTEGER") || upper.startsWith("INT")) {
+            return "INT";
+        }
+        if (upper.equals("BOOL") || upper.equals("BOOLEAN")) {
+            return "BOOLEAN";
+        }
+        if (upper.startsWith("VARCHAR") || upper.startsWith("CHARACTER VARYING")) {
+            return "VARCHAR";
+        }
+        if (upper.equals("BPCHAR") || upper.startsWith("CHAR")) {
+            return "CHAR";
+        }
+        if (upper.equals("TEXT")) {
+            return "TEXT";
+        }
+        if (upper.equals("FLOAT4") || upper.equals("REAL")) {
+            return "FLOAT";
+        }
+        if (upper.equals("FLOAT8") || upper.startsWith("DOUBLE")) {
+            return "DOUBLE";
+        }
+        if (upper.startsWith("NUMERIC") || upper.startsWith("DECIMAL")) {
+            return "NUMERIC";
+        }
+        if (upper.equals("TIMESTAMPTZ") || upper.startsWith("TIMESTAMP WITH")) {
+            return "TIMESTAMPTZ";
+        }
+        if (upper.startsWith("TIMESTAMP")) {
+            return "TIMESTAMP";
+        }
+        if (upper.startsWith("DATE")) {
+            return "DATE";
+        }
+        if (upper.equals("BYTEA")) {
+            return "BYTEA";
+        }
+        if (upper.equals("UUID")) {
+            return "UUID";
+        }
+        return upper;
+    }
+
     private void rememberTableAliases(List<String> names) {
         for (int i = 0; i < names.size(); i++) {
             String table = names.get(i);
@@ -369,27 +466,20 @@ public class DBInfo {
         return null;
     }
 
-    private static void loadDriver() {
+    private void loadDriver() {
         try {
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName(driver);
         } catch (ClassNotFoundException e) {
-            throw metadataFailure("mysql driver com.mysql.jdbc.Driver is not on the classpath", e);
+            throw metadataFailure(engine + " driver " + driver + " is not on the classpath", e);
         }
     }
 
-    private static Settings mysqlSettings(Settings settings) {
-        if (settings == null) {
-            throw metadataFailure("settings are required", null);
+    private static String identity(String engine, String host, String port, String database, String catalog, String schema) {
+        String value = engine + "://" + host + ":" + port + "/" + database + "#catalog=" + catalog;
+        if (JdbcEngine.POSTGRES.equals(engine)) {
+            value += "#schema=" + schema;
         }
-        Map<String, Settings> groups = settings.getGroups(JPA.mode() + ".datasources");
-        if (groups == null) {
-            return null;
-        }
-        return groups.get("mysql");
-    }
-
-    private static String identity(String host, String port, String database, String catalog) {
-        return "mysql://" + host + ":" + port + "/" + database + "#catalog=" + catalog;
+        return value;
     }
 
     private static String value(String text) {

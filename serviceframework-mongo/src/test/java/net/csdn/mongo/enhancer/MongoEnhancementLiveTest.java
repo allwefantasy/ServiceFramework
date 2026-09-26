@@ -4,7 +4,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.LoaderClassPath;
@@ -155,7 +155,7 @@ public class MongoEnhancementLiveTest {
                 MongoMongo bound = configuration.mongoMongo();
                 assertNotNull(bound);
                 assertTrue(bound.isClientClosed());
-                Mongo client = configuration.client();
+                MongoClient client = configuration.client();
                 try {
                     client.getDB("sf_compat").command(new BasicDBObject("ping", 1));
                     fail("closed mongo client still accepted a command");
@@ -165,6 +165,76 @@ public class MongoEnhancementLiveTest {
             } finally {
                 configuration.close();
             }
+        }
+    }
+
+    @Test
+    public void uriConnectsHonorsUriDatabaseAndIgnoresDiscreteSettings() throws Exception {
+        requireLive();
+        Map<String, String> env = credentials();
+        String prefix = prefix();
+        System.setProperty(PREFIX_KEY, prefix);
+        File classes = compileFixtures();
+        URLClassLoader loader = newLoader(classes);
+        MongoMongo.CSDNMongoConfiguration configuration = null;
+        try {
+            Class<?> anchor = anchor(loader);
+            String uri = "mongodb://" + env.get("SF_COMPAT_MONGO_USER") + ":"
+                    + env.get("SF_COMPAT_MONGO_PASSWORD")
+                    + "@" + env.get("SF_COMPAT_MONGO_HOST") + ":" + env.get("SF_COMPAT_MONGO_PORT")
+                    + "/" + env.get("SF_COMPAT_MONGO_DATABASE")
+                    + "?replicaSet=" + env.get("SF_COMPAT_MONGO_REPLSET")
+                    + "&authSource=" + env.get("SF_COMPAT_MONGO_AUTH_DB");
+            Settings settings = ImmutableSettings.settingsBuilder()
+                    .put("mode", "test")
+                    .put("application.document", "net.csdn.mongo.fixture")
+                    .put("test.datasources.mongodb.uri", uri)
+                    // Discrete connection settings are stale on purpose: the URI
+                    // must still be the only source parsed for this connection.
+                    .put("test.datasources.mongodb.host", "192.0.2.1")
+                    .put("test.datasources.mongodb.port", "not-a-port")
+                    .put("test.datasources.mongodb.database", "unused_database")
+                    .put("test.datasources.mongodb.username", "stale_discrete_user")
+                    .put("test.datasources.mongodb.authenticationDatabase", "ignored_authdb")
+                    .classLoader(anchor.getClassLoader())
+                    .build();
+            configuration = new MongoMongo.CSDNMongoConfiguration("test", settings, anchor);
+            configuration.configure();
+            assertEquals(env.get("SF_COMPAT_MONGO_DATABASE"), configuration.mongoMongo().dbName());
+            assertEquals(MongoMongo.CSDNMongoConfiguration.State.CONFIGURED, configuration.state());
+            Class<?> record = loader.loadClass("net.csdn.mongo.fixture.Record");
+            assertEquals("Hello|Hello|true|Next|null", exerciseRecord(record, prefix + "-uri"));
+            drop(configuration.mongoMongo(), prefix);
+        } finally {
+            if (configuration != null) {
+                configuration.close();
+            }
+            loader.close();
+            deleteQuietly(classes);
+        }
+    }
+
+    @Test
+    public void invalidUriFailsWithoutEchoingIt() throws Exception {
+        String uri = "mongodb://u:the uri password@127.0.0.1:1/not a db";
+        Settings settings = ImmutableSettings.settingsBuilder()
+                .put("mode", "test")
+                .put("application.document", "net.csdn.mongo.fixture")
+                .put("test.datasources.mongodb.uri", uri)
+                .build();
+        MongoMongo.CSDNMongoConfiguration configuration = new MongoMongo.CSDNMongoConfiguration(
+                "test", settings, MongoEnhancementLiveTest.class);
+        try {
+            configuration.configure();
+            fail("an invalid uri must fail configure");
+        } catch (EnhancementFailure failure) {
+            assertEquals(EnhancementFailure.Category.CONFIGURATION, failure.getCategory());
+            assertEquals("connect", failure.getPhase());
+            String message = String.valueOf(failure.getMessage());
+            assertFalse(message.contains("the uri password"));
+            assertFalse(message.contains("mongodb://u:"));
+        } finally {
+            configuration.close();
         }
     }
 
@@ -262,22 +332,22 @@ public class MongoEnhancementLiveTest {
 
             assertNull(MongoMongo.current());
             DBCollection baked = (DBCollection) callStatic(recordA, "collection", new Class<?>[0], new Object[0]);
-            assertSame(first.client(), baked.getDB().getMongo());
+            assertSame(first.client(), baked.getDB().getMongoClient());
             EnhancementContext.Scope scope = second.mongoMongo().activate();
             try {
                 assertSame(second.mongoMongo(), MongoMongo.current());
                 DBCollection switched = (DBCollection) callStatic(recordA, "collection", new Class<?>[0], new Object[0]);
-                assertSame(second.client(), switched.getDB().getMongo());
+                assertSame(second.client(), switched.getDB().getMongoClient());
                 Criteria criteria = new Criteria(documentClass(recordA));
-                assertSame(second.client(), criteria.collection().getDB().getMongo());
+                assertSame(second.client(), criteria.collection().getDB().getMongoClient());
                 Criteria nativeQuery = new Criteria(prefix + "_record");
-                assertSame(second.client(), nativeQuery.collection().getDB().getMongo());
+                assertSame(second.client(), nativeQuery.collection().getDB().getMongoClient());
             } finally {
                 scope.close();
             }
             assertNull(MongoMongo.current());
             DBCollection restored = (DBCollection) callStatic(recordA, "collection", new Class<?>[0], new Object[0]);
-            assertSame(first.client(), restored.getDB().getMongo());
+            assertSame(first.client(), restored.getDB().getMongoClient());
             try {
                 new Criteria(prefix + "_record").collection();
                 fail("native query with two clients needs an active scope");
@@ -306,7 +376,7 @@ public class MongoEnhancementLiveTest {
 
             String otherId = prefix + "-other";
             insertRecord(recordB, otherId, "FromB");
-            Mongo closedClient = first.client();
+            MongoClient closedClient = first.client();
             first.close();
             first.close();
             assertTrue(first.enhancementContext().isClosed());
@@ -374,7 +444,7 @@ public class MongoEnhancementLiveTest {
             assertSame(injector, MongoMongo.injector());
             Settings settings = MongoMongo.settings();
             DBCollection baked = (DBCollection) callStatic(record, "collection", new Class<?>[0], new Object[0]);
-            assertSame(configured.client(), baked.getDB().getMongo());
+            assertSame(configured.client(), baked.getDB().getMongoClient());
             assertSame(configured.mongoMongo(), Document.mongo());
 
             empty = EnhancementContext.open(loader);
@@ -383,8 +453,8 @@ public class MongoEnhancementLiveTest {
             assertSame(settings, MongoMongo.settings());
             assertSame(configured.mongoMongo(), Document.mongo());
             DBCollection restored = (DBCollection) callStatic(record, "collection", new Class<?>[0], new Object[0]);
-            assertSame(configured.client(), restored.getDB().getMongo());
-            assertSame(configured.client(), new Criteria(prefix + "_record").collection().getDB().getMongo());
+            assertSame(configured.client(), restored.getDB().getMongoClient());
+            assertSame(configured.client(), new Criteria(prefix + "_record").collection().getDB().getMongoClient());
 
             disabledContext = EnhancementContext.open(loader);
             Settings disabledSettings = ImmutableSettings.settingsBuilder()
@@ -452,7 +522,7 @@ public class MongoEnhancementLiveTest {
             insertRecord(recordA, idA, "FromA");
             insertRecord(recordB, idB, "FromB");
 
-            Mongo closedClient = first.client();
+            MongoClient closedClient = first.client();
             contextA.close();
             assertTrue(contextA.isClosed());
             assertFalse(contextB.isClosed());
@@ -575,7 +645,7 @@ public class MongoEnhancementLiveTest {
             String idB = prefix + "-owned-b";
             insertRecord(recordB, idB, "FromB");
 
-            Mongo closedClient = first.client();
+            MongoClient closedClient = first.client();
             String database = first.mongoMongo().dbName();
             scope = first.enhancementContext().activate();
             try {
@@ -694,7 +764,7 @@ public class MongoEnhancementLiveTest {
         try {
             quiet = failingConfiguration(env, anchor(quietLoader));
             quiet.configure();
-            Mongo quietClient = quiet.client();
+            MongoClient quietClient = quiet.client();
             String quietDatabase = quiet.mongoMongo().dbName();
             try {
                 quiet.close();
@@ -2055,7 +2125,7 @@ public class MongoEnhancementLiveTest {
         }
 
         @Override
-        protected Throwable closeMongoClient(Mongo client) {
+        protected Throwable closeMongoClient(MongoClient client) {
             closes.incrementAndGet();
             Throwable failure = super.closeMongoClient(client);
             if (failure != null) {

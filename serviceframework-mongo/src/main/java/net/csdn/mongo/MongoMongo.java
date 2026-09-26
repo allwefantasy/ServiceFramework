@@ -5,9 +5,9 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.CommandResult;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoClientURI;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import javassist.ClassPool;
@@ -68,12 +68,12 @@ public class MongoMongo {
 
     private static final CSLogger logger = Loggers.getLogger(MongoMongo.class);
 
-    private final Mongo mongo;
+    private final MongoClient mongo;
     private final String dbName;
     private final CSDNMongoConfiguration configuration;
     private final AtomicBoolean clientClosed = new AtomicBoolean();
 
-    private MongoMongo(Mongo mongo, String dbName, CSDNMongoConfiguration configuration) {
+    private MongoMongo(MongoClient mongo, String dbName, CSDNMongoConfiguration configuration) {
         this.mongo = mongo;
         this.dbName = dbName;
         this.configuration = configuration;
@@ -188,7 +188,7 @@ public class MongoMongo {
         return configuration;
     }
 
-    public Mongo mongo() {
+    public MongoClient mongo() {
         return mongo;
     }
 
@@ -454,7 +454,7 @@ public class MongoMongo {
             return mongoMongo;
         }
 
-        public Mongo client() {
+        public MongoClient client() {
             return mongoMongo == null ? null : mongoMongo.mongo;
         }
 
@@ -549,7 +549,7 @@ public class MongoMongo {
          * One driver close. Return the failure instead of throwing it so
          * configuration cleanup can continue. The client is closed at most once.
          */
-        protected Throwable closeMongoClient(Mongo client) {
+        protected Throwable closeMongoClient(MongoClient client) {
             try {
                 client.close();
                 return null;
@@ -646,18 +646,22 @@ public class MongoMongo {
             }
         }
 
+        /**
+         * Connects the driver client and validates it with ping.
+         * <p>
+         * {@code {mode}.datasources.mongodb.uri} takes precedence over the
+         * discrete host/port/username/password/authenticationDatabase settings:
+         * when it is set, credentials and hosts come from the connection string
+         * (replica sets and TLS go through URI options). A database path in the
+         * URI wins over {@code {mode}.datasources.mongodb.database}; when the
+         * URI has no database path the discrete database setting applies. The
+         * URI value itself is never put into an exception or log line.
+         */
         private void connectClient(ClassLoader loader) {
             String prefix = mode + ".datasources.mongodb.";
-            String host = settings.get(prefix + "host", "127.0.0.1");
-            int port = settings.getAsInt(prefix + "port", Integer.valueOf(27017)).intValue();
+            String uri = settings.get(prefix + "uri");
             String database = settings.get(prefix + "database", "csdn_data_center");
-            String username = settings.get(prefix + "username", "");
-            String password = settings.get(prefix + "password");
-            String authDatabase = settings.get(prefix + "authenticationDatabase", settings.get(prefix + "authdb", "admin"));
             String replicaSet = settings.get(prefix + "replicaSet", "");
-            if (username != null && username.length() > 0 && password == null) {
-                throw failure(EnhancementFailure.Category.CONFIGURATION, null, "connect", "mongodb password is required when username is set", null);
-            }
             MongoClientOptions.Builder options = MongoClientOptions.builder()
                     .serverSelectionTimeout(8000)
                     .connectTimeout(8000)
@@ -665,21 +669,49 @@ public class MongoMongo {
             if (replicaSet != null && replicaSet.length() > 0) {
                 options.requiredReplicaSetName(replicaSet);
             }
-            MongoClientOptions built = options.build();
-            ServerAddress address = new ServerAddress(host, port);
-            Mongo client;
-            try {
-                if (username == null || username.length() == 0) {
-                    client = new MongoClient(address, built);
-                } else {
-                    MongoCredential credential = MongoCredential.createScramSha256Credential(
-                            username,
-                            authDatabase,
-                            password.toCharArray());
-                    client = new MongoClient(address, credential, built);
+            MongoClient client;
+            if (uri != null && uri.trim().length() > 0) {
+                MongoClientURI mongoURI;
+                try {
+                    mongoURI = new MongoClientURI(uri.trim(), options);
+                } catch (Throwable thrown) {
+                    // The connection string can carry credentials; the parser
+                    // message may embed it, so the cause is dropped on purpose.
+                    throw failure(EnhancementFailure.Category.CONFIGURATION, null, "connect", "mongodb uri is invalid", null);
                 }
-            } catch (Throwable thrown) {
-                throw connectFailure(thrown);
+                try {
+                    client = new MongoClient(mongoURI);
+                } catch (Throwable thrown) {
+                    throw connectFailure(thrown);
+                }
+                String uriDatabase = mongoURI.getDatabase();
+                if (uriDatabase != null && uriDatabase.length() > 0) {
+                    database = uriDatabase;
+                }
+            } else {
+                String host = settings.get(prefix + "host", "127.0.0.1");
+                int port = settings.getAsInt(prefix + "port", Integer.valueOf(27017)).intValue();
+                String username = settings.get(prefix + "username", "");
+                String password = settings.get(prefix + "password");
+                String authDatabase = settings.get(prefix + "authenticationDatabase", settings.get(prefix + "authdb", "admin"));
+                if (username != null && username.length() > 0 && password == null) {
+                    throw failure(EnhancementFailure.Category.CONFIGURATION, null, "connect", "mongodb password is required when username is set", null);
+                }
+                MongoClientOptions built = options.build();
+                ServerAddress address = new ServerAddress(host, port);
+                try {
+                    if (username == null || username.length() == 0) {
+                        client = new MongoClient(address, built);
+                    } else {
+                        MongoCredential credential = MongoCredential.createScramSha256Credential(
+                                username,
+                                authDatabase,
+                                password.toCharArray());
+                        client = new MongoClient(address, credential, built);
+                    }
+                } catch (Throwable thrown) {
+                    throw connectFailure(thrown);
+                }
             }
             mongoMongo = new MongoMongo(client, database, this);
             final CSDNMongoConfiguration owner = this;

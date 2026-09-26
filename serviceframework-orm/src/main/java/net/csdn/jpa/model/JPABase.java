@@ -4,6 +4,7 @@ import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
 import net.csdn.common.reflect.ReflectHelper;
 import net.csdn.jpa.JPA;
+import net.csdn.jpa.OrmSession;
 import net.csdn.jpa.association.Association;
 import net.csdn.jpa.context.JPAConfig;
 import net.csdn.jpa.context.JPAContext;
@@ -38,6 +39,14 @@ public class JPABase implements GenericModel {
      */
     @Deprecated
     public final static MysqlClient mysqlClient = MysqlClient.currentBridge();
+
+    public static MysqlClient postgresClient() {
+        return OrmSession.current().postgresClient();
+    }
+
+    public static MysqlClient sqlClient() {
+        return OrmSession.current().sqlClient();
+    }
 
     public static JPAContext getJPAContext() {
         return getJPAConfig().getJPAContext();

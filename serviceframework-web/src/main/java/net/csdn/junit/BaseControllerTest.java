@@ -2,6 +2,7 @@ package net.csdn.junit;
 
 import net.csdn.ServiceFramwork;
 import net.csdn.common.exception.RenderFinish;
+import net.csdn.common.settings.JdbcEngine;
 import net.csdn.common.settings.Settings;
 import net.csdn.modules.http.HttpServer;
 import net.csdn.modules.http.RestController;
@@ -42,7 +43,8 @@ public class BaseControllerTest extends IocTest {
         return response;
     }
 
-    boolean disableMysql = injector.getInstance(Settings.class).getAsBoolean(ServiceFramwork.mode + ".datasources.mysql.disable", false);
+    boolean disableMysql = JdbcEngine.primaryDisabled(
+            injector.getInstance(Settings.class), ServiceFramwork.mode.name());
 
     private void catchRenderFinish(Exception e) throws Exception {
         if (e instanceof RenderFinish) {

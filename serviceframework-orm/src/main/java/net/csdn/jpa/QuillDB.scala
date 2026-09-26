@@ -3,25 +3,25 @@ package net.csdn.jpa
 import java.io.{ByteArrayInputStream, InputStreamReader}
 import java.util
 
-import io.getquill.{MysqlJdbcContext, SnakeCase}
+import io.getquill.context.jdbc.JdbcContext
+import io.getquill.{MysqlJdbcContext, PostgresJdbcContext, SnakeCase}
 import net.csdn.common.enhancer.{EnhancementContext, EnhancementFailure}
 import net.csdn.common.io.Streams
-import net.csdn.common.settings.ImmutableSettings
+import net.csdn.common.settings.{ImmutableSettings, JdbcEngine, Settings}
 import net.csdn.common.settings.ImmutableSettings.YamlSettingsLoader
 import net.csdn.modules.persist.mysql.{DataSourceManager, SharedDataSource}
 
 /**
  * Quill contexts belong to one OrmSession.
  *
- * `ctx` is a method so two applications do not share a process-wide context.
- * Scala rejects `import QuillDB.ctx._` because a method is not a stable path.
- * The supported form is `val ctx = QuillDB.ctx` and then `import ctx._`.
+ * `ctx` and `postgresCtx` are methods so two applications do not share a
+ * process-wide context. Scala rejects `import QuillDB.ctx._` because a method
+ * is not a stable path. The supported form is `val ctx = QuillDB.ctx` and then
+ * `import ctx._` (or the equivalent `postgresCtx`).
  *
- * `createNewCtxByNameFromStr` still opens a pool from a snippet when the
- * current enhancement context has no JPA entities. That pool closes with the
- * context and is not taken from another application. With no scope and no ORM
- * session, the pool is owned by a compat context. `close` drops that owner.
- * A later call creates a new pool and does not return the closed one.
+ * `createNewCtxByNameFromStr` keeps the original MySQL spelling. PostgreSQL
+ * callers use `createNewPostgresCtxByNameFromStr`; both forms bind the pool to
+ * the same owner lifecycle and never reuse another application's pool.
  */
 object QuillDB {
 
@@ -60,28 +60,52 @@ object QuillDB {
   def createDataSource: javax.sql.DataSource with java.io.Closeable = sharedDefault(OrmSession.current())
 
   def ctx: MysqlJdbcContext[SnakeCase.type] = {
-    val session = OrmSession.current()
-    val source = sharedDefault(session)
-    if (source == null) {
-      throw missing("default")
-    }
-    resources(session).defaultCtx(source)
+    defaultCtx(JdbcEngine.MYSQL).asInstanceOf[MysqlJdbcContext[SnakeCase.type]]
+  }
+
+  def postgresCtx: PostgresJdbcContext[SnakeCase.type] = {
+    defaultCtx(JdbcEngine.POSTGRES).asInstanceOf[PostgresJdbcContext[SnakeCase.type]]
   }
 
   def createNewCtxByNameFromYml(name: String): MysqlJdbcContext[SnakeCase.type] = {
+    namedFromYml(name, JdbcEngine.MYSQL).asInstanceOf[MysqlJdbcContext[SnakeCase.type]]
+  }
+
+  def createNewPostgresCtxByNameFromYml(name: String): PostgresJdbcContext[SnakeCase.type] = {
+    namedFromYml(name, JdbcEngine.POSTGRES).asInstanceOf[PostgresJdbcContext[SnakeCase.type]]
+  }
+
+  def createNewCtxByNameFromStr(name: String, snippet: String): MysqlJdbcContext[SnakeCase.type] = {
+    namedFromSnippet(name, snippet, JdbcEngine.MYSQL).asInstanceOf[MysqlJdbcContext[SnakeCase.type]]
+  }
+
+  def createNewPostgresCtxByNameFromStr(name: String, snippet: String): PostgresJdbcContext[SnakeCase.type] = {
+    namedFromSnippet(name, snippet, JdbcEngine.POSTGRES).asInstanceOf[PostgresJdbcContext[SnakeCase.type]]
+  }
+
+  private def defaultCtx(engine: String): JdbcContext[_, SnakeCase.type] = {
+    val session = OrmSession.current()
+    val source = sharedDefault(session, engine)
+    if (source == null) {
+      throw missing(engine, "default")
+    }
+    resources(session).defaultCtx(engine, source)
+  }
+
+  private def namedFromYml(name: String, engine: String): JdbcContext[_, SnakeCase.type] = {
     val session = namedOwner()
     val existing = session.quillState()
     if (existing != null) {
-      val cached = existing.asInstanceOf[QuillResources].cached(name)
+      val cached = existing.asInstanceOf[QuillResources].cached(engine, name)
       if (cached != null) {
         return cached
       }
     }
-    val source = sourceFor(session, name)
-    resources(session).named(name, source)
+    val source = sourceFor(session, name, engine)
+    resources(session).named(engine, name, source)
   }
 
-  def createNewCtxByNameFromStr(name: String, snippet: String): MysqlJdbcContext[SnakeCase.type] = {
+  private def namedFromSnippet(name: String, snippet: String, engine: String): JdbcContext[_, SnakeCase.type] = {
     val loadedSettings: util.Map[String, String] = YamlSettingsLoader.load(
       Streams.copyToString(new InputStreamReader(new ByteArrayInputStream(snippet.getBytes("utf-8")), "UTF-8")))
     val settingBuilder = ImmutableSettings.settingsBuilder()
@@ -91,23 +115,19 @@ object QuillDB {
     val session = snippetOwner()
     val existing = session.quillState()
     if (existing != null) {
-      val cached = existing.asInstanceOf[QuillResources].cached(name)
+      val cached = existing.asInstanceOf[QuillResources].cached(engine, name)
       if (cached != null) {
         return cached
       }
     }
-    if (session.mysqlAvailable()) {
-      val service = session.mysqlClient().defaultMysqlService()
-      if (service == null) {
-        throw missing(name)
-      }
-      service.addNewMySQL(name, prefix)
+    if (session.hasConfiguration() && session.datasourceAvailable()) {
+      session.sqlClient().addNewDatasource(name, prefix, engine)
     } else {
       val opened = resources(session)
       val manager = DataSourceManager.standalone(ImmutableSettings.settingsBuilder().build())
       try {
-        val pool = manager.buildPool(prefix)
-        opened.own(name, manager, pool)
+        val pool = manager.buildPool(prefix, engine)
+        opened.own(engine, name, manager, pool)
       } catch {
         case thrown: RuntimeException =>
           try {
@@ -118,8 +138,8 @@ object QuillDB {
           throw thrown
       }
     }
-    val source = sourceFor(session, name)
-    resources(session).named(name, source)
+    val source = sourceFor(session, name, engine)
+    resources(session).named(engine, name, source)
   }
 
   /**
@@ -180,10 +200,16 @@ object QuillDB {
   }
 
   private def sharedDefault(session: OrmSession): SharedDataSource = {
-    if (!session.mysqlAvailable()) {
+    val engine = primaryEngine(session)
+    sharedDefault(session, engine)
+  }
+
+  private def sharedDefault(session: OrmSession, engine: String): SharedDataSource = {
+    requirePrimary(session, engine)
+    if (!session.datasourceAvailable()) {
       return null
     }
-    val service = session.mysqlClient().defaultMysqlService()
+    val service = session.sqlClient().defaultMysqlService()
     if (service == null || service.dataSource() == null) {
       null
     } else {
@@ -191,11 +217,19 @@ object QuillDB {
     }
   }
 
-  private def sourceFor(session: OrmSession, name: String): SharedDataSource = {
-    if (session.mysqlAvailable()) {
-      val service = session.mysqlClient().mysqlService(name)
+  private def sourceFor(session: OrmSession, name: String, engine: String): SharedDataSource = {
+    if (session.datasourceAvailable()) {
+      val client = session.sqlClient()
+      val service = client.mysqlService(name)
       if (service == null || service.dataSource() == null) {
         return null
+      }
+      val actual = client.engineFor(name)
+      if (actual == null) {
+        throw untracked(name)
+      }
+      if (JdbcEngine.normalize(actual) != JdbcEngine.normalize(engine)) {
+        throw wrongEngine(engine, name, actual)
       }
       return new SharedDataSource(service.dataSource())
     }
@@ -203,11 +237,32 @@ object QuillDB {
     if (state == null) {
       return null
     }
-    val owned = state.asInstanceOf[QuillResources].ownedSource(name)
+    val owned = state.asInstanceOf[QuillResources].ownedSource(engine, name)
     if (owned == null) {
       null
     } else {
       new SharedDataSource(owned)
+    }
+  }
+
+  private def primaryEngine(session: OrmSession): String = {
+    if (!session.hasConfiguration()) {
+      return JdbcEngine.MYSQL
+    }
+    JdbcEngine.primary(session.configuration().getSettings, session.configuration().getMode).engine()
+  }
+
+  private def requirePrimary(session: OrmSession, engine: String): Unit = {
+    val actual = primaryEngine(session)
+    if (JdbcEngine.normalize(engine) != actual) {
+      throw new EnhancementFailure(
+        EnhancementFailure.Category.CONFIGURATION,
+        null,
+        null,
+        "quill",
+        JdbcEngine.normalize(engine) + " Quill API requires datasources.primary=" + JdbcEngine.normalize(engine)
+          + "; actual primary is " + String.valueOf(actual),
+        null)
     }
   }
 
@@ -221,70 +276,113 @@ object QuillDB {
       null)
   }
 
-  private def missing(name: String): EnhancementFailure = {
+  private def missing(engine: String, name: String): EnhancementFailure = {
     new EnhancementFailure(
       EnhancementFailure.Category.CONFIGURATION,
       null,
       null,
       "quill",
-      "mysql datasource was not found: " + name,
+      JdbcEngine.normalize(engine) + " datasource was not found: " + name,
+      null)
+  }
+
+  private def wrongEngine(engine: String, name: String, actual: String): EnhancementFailure = {
+    new EnhancementFailure(
+      EnhancementFailure.Category.CONFIGURATION,
+      null,
+      null,
+      "quill",
+      "datasource engine mismatch for " + name + ": expected "
+        + JdbcEngine.normalize(engine) + ", actual " + JdbcEngine.normalize(actual),
+      null)
+  }
+
+  private def untracked(name: String): EnhancementFailure = {
+    new EnhancementFailure(
+      EnhancementFailure.Category.CONFIGURATION,
+      null,
+      null,
+      "quill",
+      "datasource " + name + " has no recorded engine",
       null)
   }
 }
 
 final class QuillResources extends java.io.Closeable {
-  private val contexts = new java.util.ArrayList[MysqlJdbcContext[SnakeCase.type]]()
-  private val cache = new java.util.LinkedHashMap[String, MysqlJdbcContext[SnakeCase.type]]()
+  private val contexts = new java.util.ArrayList[JdbcContext[_, SnakeCase.type]]()
+  private val cache = new java.util.LinkedHashMap[String, JdbcContext[_, SnakeCase.type]]()
   private val ownedManagers = new java.util.ArrayList[DataSourceManager]()
   private val ownedSources = new java.util.LinkedHashMap[String, javax.sql.DataSource]()
-  private var defaultContext: MysqlJdbcContext[SnakeCase.type] = _
+  private var defaultContexts = new java.util.LinkedHashMap[String, JdbcContext[_, SnakeCase.type]]()
   private var closed = false
 
-  def cached(name: String): MysqlJdbcContext[SnakeCase.type] = synchronized {
-    cache.get(name)
+  private def cacheKey(engine: String, name: String): String = JdbcEngine.normalize(engine) + "\u0000" + name
+
+  def cached(engine: String, name: String): JdbcContext[_, SnakeCase.type] = synchronized {
+    cache.get(cacheKey(engine, name))
   }
 
-  def ownedSource(name: String): javax.sql.DataSource = synchronized {
-    ownedSources.get(name)
+  def ownedSource(engine: String, name: String): javax.sql.DataSource = synchronized {
+    ownedSources.get(cacheKey(engine, name))
   }
 
-  def own(name: String, manager: DataSourceManager, pool: javax.sql.DataSource): Unit = synchronized {
+  def own(engine: String, name: String, manager: DataSourceManager, pool: javax.sql.DataSource): Unit = synchronized {
     ensureOpen()
-    ownedManagers.add(manager)
-    ownedSources.put(name, pool)
-  }
-
-  def defaultCtx(source: javax.sql.DataSource with java.io.Closeable): MysqlJdbcContext[SnakeCase.type] = synchronized {
-    ensureOpen()
-    if (defaultContext == null) {
-      defaultContext = open(source, "default")
+    val key = cacheKey(engine, name)
+    if (ownedSources.containsKey(key)) {
+      throw new EnhancementFailure(
+        EnhancementFailure.Category.CONFLICT,
+        null,
+        null,
+        "quill",
+        "datasource name is already registered: " + name,
+        null)
     }
-    defaultContext
+    ownedManagers.add(manager)
+    ownedSources.put(key, pool)
   }
 
-  def named(name: String, source: javax.sql.DataSource with java.io.Closeable): MysqlJdbcContext[SnakeCase.type] = synchronized {
+  def defaultCtx(engine: String, source: javax.sql.DataSource with java.io.Closeable): JdbcContext[_, SnakeCase.type] = synchronized {
     ensureOpen()
-    val found = cache.get(name)
+    val key = JdbcEngine.normalize(engine)
+    val found = defaultContexts.get(key)
     if (found != null) {
       found
     } else {
-      val created = open(source, name)
-      cache.put(name, created)
+      val created = open(key, source, "default")
+      defaultContexts.put(key, created)
       created
     }
   }
 
-  private def open(source: javax.sql.DataSource with java.io.Closeable, name: String): MysqlJdbcContext[SnakeCase.type] = {
+  def named(engine: String, name: String, source: javax.sql.DataSource with java.io.Closeable): JdbcContext[_, SnakeCase.type] = synchronized {
+    ensureOpen()
+    val key = cacheKey(engine, name)
+    val found = cache.get(key)
+    if (found != null) {
+      found
+    } else {
+      val created = open(engine, source, name)
+      cache.put(key, created)
+      created
+    }
+  }
+
+  private def open(engine: String, source: javax.sql.DataSource with java.io.Closeable, name: String): JdbcContext[_, SnakeCase.type] = {
     if (source == null) {
       throw new EnhancementFailure(
         EnhancementFailure.Category.CONFIGURATION,
         null,
         null,
         "quill",
-        "mysql datasource was not found: " + name,
+        JdbcEngine.normalize(engine) + " datasource was not found: " + name,
         null)
     }
-    val created = new MysqlJdbcContext(SnakeCase, source)
+    val created = if (JdbcEngine.POSTGRES == JdbcEngine.normalize(engine)) {
+      new PostgresJdbcContext(SnakeCase, source)
+    } else {
+      new MysqlJdbcContext(SnakeCase, source)
+    }
     contexts.add(created)
     created
   }
@@ -313,7 +411,7 @@ final class QuillResources extends java.io.Closeable {
     }
     contexts.clear()
     cache.clear()
-    defaultContext = null
+    defaultContexts.clear()
     index = ownedManagers.size() - 1
     while (index >= 0) {
       try {

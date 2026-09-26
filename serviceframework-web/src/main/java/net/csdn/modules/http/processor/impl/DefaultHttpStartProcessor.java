@@ -3,6 +3,7 @@ package net.csdn.modules.http.processor.impl;
 import net.csdn.ServiceFramwork;
 import net.csdn.common.logging.CSLogger;
 import net.csdn.common.logging.Loggers;
+import net.csdn.common.settings.JdbcEngine;
 import net.csdn.common.settings.Settings;
 import net.csdn.hibernate.support.filter.CSDNStatFilterstat;
 import net.csdn.modules.controller.API;
@@ -23,7 +24,7 @@ public class DefaultHttpStartProcessor implements HttpStartProcessor {
 
     @Override
     public void process(Settings settings, HttpServletRequest request, HttpServletResponse response, ProcessInfo processInfo) {
-        disableMysql = settings.getAsBoolean(ServiceFramwork.currentMode() + ".datasources.mysql.disable", false);
+        disableMysql = JdbcEngine.primaryDisabled(settings, ServiceFramwork.currentMode().name());
         startORM(disableMysql);
         ServiceFramwork.currentInjector().getInstance(API.class).qpsIncrement(processInfo.method);
 

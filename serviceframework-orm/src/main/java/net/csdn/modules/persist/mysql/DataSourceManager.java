@@ -8,6 +8,7 @@ import net.csdn.common.logging.Loggers;
 import net.csdn.common.settings.Settings;
 import net.csdn.jpa.JPA;
 import net.csdn.jpa.JdbcEndpoints;
+import net.csdn.common.settings.JdbcEngine;
 
 import javax.sql.DataSource;
 import java.io.Closeable;
@@ -27,9 +28,11 @@ import java.util.Map;
 public class DataSourceManager implements Closeable {
 
     private final Map<String, DataSource> dataSourceMap = new LinkedHashMap<String, DataSource>();
+    private final Map<String, String> engineMap = new LinkedHashMap<String, String>();
     private final List<DataSource> creationOrder = new ArrayList<DataSource>();
     private final Settings settings;
     private final CSLogger logger = Loggers.getLogger(DataSourceManager.class);
+    private String primaryName = JdbcEngine.MYSQL;
     private boolean closed;
 
     @Inject
@@ -75,22 +78,29 @@ public class DataSourceManager implements Closeable {
         return dataSourceMap;
     }
 
+    /**
+     * Engine recorded for a named pool, or null when the name is not registered.
+     * The flat {@link #dataSourceMap} mixes MySQL and PostgreSQL pools, so a
+     * typed lookup must check this before wrapping a pool in a dialect context.
+     */
+    public String engineFor(String name) {
+        return engineMap.get(name);
+    }
+
+    public String primaryName() {
+        return primaryName;
+    }
+
     private void buildAll(String mode) {
         try {
-            if (settings.getAsBoolean(mode + ".datasources.mysql.disable", false)) {
+            JdbcEngine.Selection primary = JdbcEngine.primary(settings, mode);
+            primaryName = primary.groupName();
+            if (primary.disabled()) {
                 return;
             }
-            Map<String, Settings> groups = settings.getGroups(mode + ".datasources");
-            Settings mysql = groups.get("mysql");
-            if (mysql != null) {
-                dataSourceMap.put("mysql", buildPool(mysql));
-            }
-            if (groups.get("multi-mysql") != null) {
-                Map<String, Settings> mysqlGroups = settings.getGroups(mode + ".datasources.multi-mysql");
-                for (Map.Entry<String, Settings> entry : mysqlGroups.entrySet()) {
-                    dataSourceMap.put(entry.getKey(), buildPool(entry.getValue()));
-                }
-            }
+            putPool(primary.groupName(), buildPool(primary.group(), primary.engine()), primary.engine());
+            buildNamedPools(settings.getGroups(mode + ".datasources.multi-mysql"), JdbcEngine.MYSQL);
+            buildNamedPools(settings.getGroups(mode + ".datasources.multi-postgres"), JdbcEngine.POSTGRES);
         } catch (RuntimeException e) {
             try {
                 close();
@@ -101,11 +111,40 @@ public class DataSourceManager implements Closeable {
         }
     }
 
-    public synchronized DataSource buildPool(Settings mysqlSetting) {
+    private void buildNamedPools(Map<String, Settings> groups, String engine) {
+        if (groups == null) {
+            return;
+        }
+        for (Map.Entry<String, Settings> entry : groups.entrySet()) {
+            putPool(entry.getKey(), buildPool(entry.getValue(), engine), engine);
+        }
+    }
+
+    /**
+     * Registers a pool built by {@link #buildPool} under {@code name} and records
+     * its engine so a typed lookup can reject a pool of the other engine.
+     */
+    public void registerPool(String name, DataSource dataSource, String engine) {
+        putPool(name, dataSource, engine);
+    }
+
+    private void putPool(String name, DataSource dataSource, String engine) {
+        if (dataSourceMap.containsKey(name)) {
+            throw new IllegalStateException("datasource name is already registered: " + name);
+        }
+        dataSourceMap.put(name, dataSource);
+        engineMap.put(name, JdbcEngine.normalize(engine));
+    }
+
+    public synchronized DataSource buildPool(Settings datasourceSetting) {
+        return buildPool(datasourceSetting, JdbcEngine.MYSQL);
+    }
+
+    public synchronized DataSource buildPool(Settings datasourceSetting, String engine) {
         if (closed) {
             throw new IllegalStateException("datasource manager is closed");
         }
-        Map<String, String> properties = new HashMap<String, String>(JPA.properties(mysqlSetting));
+        Map<String, String> properties = new HashMap<String, String>(JPA.properties(datasourceSetting, engine));
         String url = properties.get("url");
         // Hold the instance ourselves. The factory's init=true path throws away
         // the pool when the first connection fails, and its create thread keeps running.
@@ -182,6 +221,7 @@ public class DataSourceManager implements Closeable {
         }
         creationOrder.clear();
         dataSourceMap.clear();
+        engineMap.clear();
         if (!failures.isEmpty()) {
             throw chain(failures);
         }

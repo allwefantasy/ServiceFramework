@@ -7,6 +7,7 @@ import net.csdn.bootstrap.ApplicationContext;
 import net.csdn.bootstrap.loader.Loader;
 import net.csdn.common.scan.ScanModule;
 import net.csdn.common.settings.Settings;
+import net.csdn.common.settings.JdbcEngine;
 import net.csdn.jpa.type.DBInfo;
 import net.csdn.jpa.type.DBType;
 import net.csdn.modules.cache.AppCacheModule;
@@ -41,19 +42,20 @@ public class ModuelLoader implements Loader {
             moduleList.add(new CacheModule());
         }
         moduleList.add(new AppCacheModule());
-        boolean disableMysql = settings.getAsBoolean(application.mode().name() + ".datasources.mysql.disable", false);
+        boolean disableOrm = JdbcEngine.primaryDisabled(settings, application.mode().name());
 
-        if (!disableMysql) {
+        if (!disableOrm) {
             moduleList.add(new AbstractModule() {
                 @Override
                 protected void configure() {
-                    bind(DBInfo.class).toInstance(new DBInfo(settings));
+                    bind(DBInfo.class).toInstance(new DBInfo(settings, application.mode().name()));
                 }
             });
             moduleList.add(new AbstractModule() {
                 @Override
                 protected void configure() {
-                    String clzzName = settings.get("type_mapping", "net.csdn.jpa.type.impl.MysqlType");
+                    String clzzName = settings.get("type_mapping",
+                            JdbcEngine.defaultDbType(JdbcEngine.primary(settings, application.mode().name()).engine()));
                     final Class czz;
                     try {
                         czz = Class.forName(clzzName, false, application.targetLoader());

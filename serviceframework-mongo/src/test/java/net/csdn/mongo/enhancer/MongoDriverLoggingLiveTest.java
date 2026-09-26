@@ -55,23 +55,46 @@ public class MongoDriverLoggingLiveTest {
                 "sf.compat.mongo is not enabled",
                 MongoEnhancementLiveTest.mongoRequested());
         Map<String, String> env = MongoEnhancementLiveTest.credentials();
-        URL driver = jarOf(com.mongodb.MongoClient.class);
+        URL[] driver = driverJars();
         URL api = jarOf(org.slf4j.Logger.class);
-        assertFalse(driver.toString(), driver.toString().contains("slf4j"));
-        connect(new URL[]{driver}, env, false, null);
+        connect(driver, env, false, null);
         ByteArrayOutputStream unbound = new ByteArrayOutputStream();
-        connect(new URL[]{driver, api}, env, true, unbound);
+        connect(concat(driver, api), env, true, unbound);
         String fallback = unbound.toString("UTF-8");
         assertTrue(fallback, fallback.contains("StaticLoggerBinder"));
         assertTrue(fallback, fallback.contains("no-operation") || fallback.contains("NOP"));
         File binding = compileBinding(api);
         try {
-            int[] counts = connect(new URL[]{binding.toURI().toURL(), driver, api}, env, true, null);
+            int[] counts = connect(concat(driver, binding.toURI().toURL(), api), env, true, null);
             assertTrue("test binding was not used", counts[0] > 0);
             assertTrue("test binding received no driver log events", counts[1] > 0);
         } finally {
             deleteQuietly(binding.getParentFile());
         }
+    }
+
+    /**
+     * The 5.x driver is split across four artifacts; all of them are needed for
+     * a connection and none may carry an slf4j binding or the slf4j API.
+     */
+    private static URL[] driverJars() {
+        URL[] jars = new URL[]{
+                jarOf(com.mongodb.MongoClient.class),
+                jarOf(com.mongodb.MongoClientSettings.class),
+                jarOf(com.mongodb.client.MongoClients.class),
+                jarOf(org.bson.BsonDocument.class)
+        };
+        for (int i = 0; i < jars.length; i++) {
+            assertFalse(jars[i].toString(), jars[i].toString().contains("slf4j"));
+        }
+        return jars;
+    }
+
+    private static URL[] concat(URL[] head, URL... tail) {
+        URL[] all = new URL[head.length + tail.length];
+        System.arraycopy(head, 0, all, 0, head.length);
+        System.arraycopy(tail, 0, all, head.length, tail.length);
+        return all;
     }
 
     /**

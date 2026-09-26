@@ -72,6 +72,7 @@
         <javassist.version>3.33.0-GA</javassist.version>
         <guice.version>5.1.0</guice.version>
         <mysql.connector.version>5.1.6</mysql.connector.version>
+        <postgresql.version>42.7.13</postgresql.version>
         <javax.persistence.api.version>2.2</javax.persistence.api.version>
         <scalac.release.arg>-release:8</scalac.release.arg>
         <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
@@ -184,6 +185,11 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.connector.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
